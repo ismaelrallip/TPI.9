@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "dgSpecHash": "9YgjEQfDc/4=",
+  "success": false,
+  "projectFilePath": "C:\\Net\\TP-Grupo-9\\WebAPI\\WebAPI.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\santi\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.18\\microsoft.aspnetcore.openapi.7.0.18.nupkg.sha512",
+    "C:\\Users\\santi\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
+    "C:\\Users\\santi\\.nuget\\packages\\microsoft.openapi\\1.4.3\\microsoft.openapi.1.4.3.nupkg.sha512",
+    "C:\\Users\\santi\\.nuget\\packages\\swashbuckle.aspnetcore\\6.5.0\\swashbuckle.aspnetcore.6.5.0.nupkg.sha512",
+    "C:\\Users\\santi\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.5.0\\swashbuckle.aspnetcore.swagger.6.5.0.nupkg.sha512",
+    "C:\\Users\\santi\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.5.0\\swashbuckle.aspnetcore.swaggergen.6.5.0.nupkg.sha512",
+    "C:\\Users\\santi\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.5.0\\swashbuckle.aspnetcore.swaggerui.6.5.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1104",
+      "level": "Error",
+      "message": "No se encuentra el proyecto \"C:\\Net\\TP-Grupo-9\\Domain.Model\\Domain.Model.csproj\". Compruebe que la referencia al proyecto sea válida y que exista el archivo de proyecto.",
+      "projectPath": "C:\\Net\\TP-Grupo-9\\WebAPI\\WebAPI.csproj",
+      "filePath": "C:\\Net\\TP-Grupo-9\\WebAPI\\WebAPI.csproj",
+      "libraryId": "C:\\Net\\TP-Grupo-9\\Domain.Model\\Domain.Model.csproj",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1104",
+      "level": "Error",
+      "message": "No se encuentra el proyecto \"C:\\Net\\TP-Grupo-9\\Application.Services\\Application.Services.csproj\". Compruebe que la referencia al proyecto sea válida y que exista el archivo de proyecto.",
+      "projectPath": "C:\\Net\\TP-Grupo-9\\WebAPI\\WebAPI.csproj",
+      "filePath": "C:\\Net\\TP-Grupo-9\\WebAPI\\WebAPI.csproj",
+      "libraryId": "C:\\Net\\TP-Grupo-9\\Application.Services\\Application.Services.csproj",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

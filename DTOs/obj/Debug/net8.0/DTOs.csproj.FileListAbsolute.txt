@@ -9,3 +9,15 @@ C:\Users\ismae\source\repos\TPI-EnMemoria\DTOs\obj\Debug\net8.0\DTOs.dll
 C:\Users\ismae\source\repos\TPI-EnMemoria\DTOs\obj\Debug\net8.0\refint\DTOs.dll
 C:\Users\ismae\source\repos\TPI-EnMemoria\DTOs\obj\Debug\net8.0\DTOs.pdb
 C:\Users\ismae\source\repos\TPI-EnMemoria\DTOs\obj\Debug\net8.0\ref\DTOs.dll
+C:\Net\TP-Grupo-9\DTOs\bin\Debug\net8.0\DTOs.deps.json
+C:\Net\TP-Grupo-9\DTOs\bin\Debug\net8.0\DTOs.dll
+C:\Net\TP-Grupo-9\DTOs\bin\Debug\net8.0\DTOs.pdb
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\DTOs.GeneratedMSBuildEditorConfig.editorconfig
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\DTOs.AssemblyInfoInputs.cache
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\DTOs.AssemblyInfo.cs
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\DTOs.csproj.CoreCompileInputs.cache
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\DTOs.sourcelink.json
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\DTOs.dll
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\refint\DTOs.dll
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\DTOs.pdb
+C:\Net\TP-Grupo-9\DTOs\obj\Debug\net8.0\ref\DTOs.dll
