@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace DTOs
+﻿namespace DTOs
 {
     public class ClienteDTO
     {
@@ -9,9 +7,7 @@ namespace DTOs
         public string Apellido { get; set; }
 
         public string Email { get; set; }
-        public int PaisId { get; set; }
-        public string? PaisNombre { get; set; }
-        public DateTime FechaAlta { get; set; }
-
+        public string Telefono { get; set; }
+        public string Password { get; set; }
     }
 }
