@@ -40,7 +40,7 @@ namespace WebAPI
                 {
                     DeliveryDTO deliveryDTO = await deliveryService.AddAsync(dto);
 
-                    return Results.Created($"/deliveries/{deliveryDTO.Id}", deliveryDTO);
+                    return Results.Created($"/deliveries/{deliveryDTO.IdDelivery}", deliveryDTO);
                 }
                 catch (ArgumentException ex)
                 {
@@ -91,6 +91,8 @@ namespace WebAPI
             .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
 
+            // comentado ya que se elimino el otro criteria, revisar luego
+            /*
             app.MapGet("/deliveries/criteria", async (string texto, IDeliveryService deliveryService) =>
             {
                 try
@@ -106,6 +108,7 @@ namespace WebAPI
             })
             .WithName("GetDeliveriesByCriteria")
             .WithOpenApi();
+            */
         }
     }
 }

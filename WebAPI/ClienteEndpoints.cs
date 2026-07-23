@@ -90,6 +90,8 @@ namespace WebAPI
             .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
 
+            // comento lo de criteria ya que se elimino
+            /*
             app.MapGet("/clientes/criteria", async (string texto, IClienteService clienteService) =>
             {
                 try
@@ -105,6 +107,7 @@ namespace WebAPI
             })
             .WithName("GetClientesByCriteria")
             .WithOpenApi();
+            */
         }
     }
 }
