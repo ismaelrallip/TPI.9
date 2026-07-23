@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services
 {
-    internal class DeliveryService : IDeliveryService
+    public class DeliveryService : IDeliveryService
     {
         private readonly IDeliveryRepository deliveryRepository;
         public DeliveryService(IDeliveryRepository deliveryRepository)

@@ -8,7 +8,7 @@ namespace WebAPI
     {
         public static void MapDeliveryEndpoints(this WebApplication app)
         {
-            app.MapGet("/delivery/{id}", async (int id, IDeliveryService deliveryService) =>
+            app.MapGet("/deliveries/{id}", async (int id, IDeliveryService deliveryService) =>
             {
                 DeliveryDTO? dto = await deliveryService.GetAsync(id);
 
@@ -24,7 +24,7 @@ namespace WebAPI
             .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
 
-            app.MapGet("/delivery", async (IDeliveryService deliveryService) =>
+            app.MapGet("/deliveries", async (IDeliveryService deliveryService) =>
             {
                 var dtos = await deliveryService.GetAllAsync();
 
