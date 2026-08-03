@@ -2,6 +2,10 @@
 
 **Trabajo Práctico Integrador - Tecnologías de Desarrollo de Software IDE**
 
+## Integrantes
+* **Rallip Sanchez, Ismael** - Legajo: 51392 - Ismaelrasa@gmail.com
+* **Bertotti, Santino** - Legajo: 52967 - santinobertotti1@gmail.com
+* **Tessore, Marco** - Legajo: 53126 - marcoeltrebol@gmail.com
 
 ## Descripción
 Este repositorio contiene la el sistema  para gestionar los pedidos, clientes y delivery de una hamburguesería. 
