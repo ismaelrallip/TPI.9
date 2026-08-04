@@ -10,5 +10,6 @@ namespace Data
         Task<IEnumerable<Cliente>> GetAllAsync();
         Task<bool> UpdateAsync(Cliente cliente);
         Task<bool> EmailExistsAsync(string email, int? excludeId = null);
+        Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null);
     }
 }

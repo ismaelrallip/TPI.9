@@ -37,7 +37,10 @@ if (app.Environment.IsDevelopment())
 app.UseCors("DevCors");
 
 // HTTPS redirection en todos los entornos
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+    {
+	    app.UseHttpsRedirection();
+    }
 
 // Map endpoints
 app.MapClienteEndpoints();

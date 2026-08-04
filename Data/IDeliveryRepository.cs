@@ -15,5 +15,6 @@ namespace Data
         Task<IEnumerable<Delivery>> GetAllAsync();
         Task<bool> UpdateAsync(Delivery cliente);
         Task<bool> DniExistsAsync(int dni, int? excludeId = null);
+        Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null);
     }
 }

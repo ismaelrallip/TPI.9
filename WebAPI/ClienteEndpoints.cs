@@ -89,25 +89,6 @@ namespace WebAPI
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
-
-            // comento lo de criteria ya que se elimino
-            /*
-            app.MapGet("/clientes/criteria", async (string texto, IClienteService clienteService) =>
-            {
-                try
-                {
-                    var criteria = new ClienteCriteriaDTO { Texto = texto };
-                    var clientes = await clienteService.GetByCriteriaAsync(criteria);
-                    return Results.Ok(clientes);
-                }
-                catch (Exception ex)
-                {
-                    return Results.BadRequest(new { error = ex.Message });
-                }
-            })
-            .WithName("GetClientesByCriteria")
-            .WithOpenApi();
-            */
         }
     }
 }

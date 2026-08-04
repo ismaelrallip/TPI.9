@@ -19,7 +19,6 @@ namespace Domain.Model
         public Delivery(int idDelivery, string nombre, string apellido, string telefono, int dni)
         {
             SetIdDelivery(idDelivery);
-            SetIdDelivery(idDelivery);
             SetNombre(nombre);
             SetApellido(apellido);
             SetTelefono(telefono);
@@ -35,22 +34,22 @@ namespace Domain.Model
 
         public void SetNombre(string nombre)
         {
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre no puede ser nulo o vacío.", nameof(nombre));
+            if (string.IsNullOrWhiteSpace(nombre) || nombre.Length < 2 || nombre.Length > 50)
+                throw new ArgumentException("El nombre es obligatorio y debe tener entre 2 y 50 caracteres.", nameof(nombre));
             Nombre = nombre;
         }
 
         public void SetApellido(string apellido)
         {
-            if (string.IsNullOrWhiteSpace(apellido))
-                throw new ArgumentException("El apellido no puede ser nulo o vacío.", nameof(apellido));
+            if (string.IsNullOrWhiteSpace(apellido) || apellido.Length < 2 || apellido.Length > 50)
+                throw new ArgumentException("El apellido es obligatorio y debe tener entre 2 y 50 caracteres.", nameof(apellido));
             Apellido = apellido;
         }
 
         public void SetTelefono(string telefono)
         {
-            if (string.IsNullOrWhiteSpace(telefono))
-                throw new ArgumentException("El teléfono no puede ser nulo o vacío.", nameof(telefono));
+            if (string.IsNullOrWhiteSpace(telefono) || telefono.Length <= 8 || !telefono.All(char.IsDigit))
+                throw new ArgumentException("El teléfono es obligatorio, debe tener más de 8 dígitos y contener solo números.", nameof(telefono));
             Telefono = telefono;
         }
 

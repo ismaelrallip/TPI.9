@@ -90,25 +90,6 @@ namespace WebAPI
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
-
-            // comentado ya que se elimino el otro criteria, revisar luego
-            /*
-            app.MapGet("/deliveries/criteria", async (string texto, IDeliveryService deliveryService) =>
-            {
-                try
-                {
-                    var criteria = new DeliveryCriteriaDTO { Texto = texto };
-                    var deliveries = await deliveryService.GetByCriteriaAsync(criteria);
-                    return Results.Ok(deliveries);
-                }
-                catch (Exception ex)
-                {
-                    return Results.BadRequest(new { error = ex.Message });
-                }
-            })
-            .WithName("GetDeliveriesByCriteria")
-            .WithOpenApi();
-            */
         }
     }
 }

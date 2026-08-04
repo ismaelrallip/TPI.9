@@ -67,5 +67,14 @@ namespace Data
             }
             return Task.FromResult(query.Any());
         }
+        public Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null)
+        {
+            var query = deliveries.Where(c => c.Telefono == telefono);
+            if (excludeId.HasValue)
+            {
+                query = query.Where(c => c.IdDelivery != excludeId.Value);
+            }
+            return Task.FromResult(query.Any());
+        }
     }
 }
