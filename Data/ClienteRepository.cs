@@ -1,46 +1,48 @@
 ﻿using Domain.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data
 {
     public class ClienteRepository : IClienteRepository
     {
-        private static readonly List<Cliente> clientes = new List<Cliente>();
-        private static int nextId = 1;
+        private readonly TPIContext context;
 
-        public Task AddAsync(Cliente cliente)
+        public ClienteRepository(TPIContext context)
         {
-            // Simular auto-increment de ID
-            cliente.SetId(nextId);
-            nextId++;
-
-            clientes.Add(cliente);
-            return Task.CompletedTask;
+            this.context = context;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task AddAsync(Cliente cliente)
         {
-            var cliente = clientes.FirstOrDefault(c => c.Id == id);
+            context.Clientes.Add(cliente);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var cliente = await context.Clientes.FindAsync(id);
             if (cliente != null)
             {
-                clientes.Remove(cliente);
-                return Task.FromResult(true);
+                context.Clientes.Remove(cliente);
+                await context.SaveChangesAsync();
+                return true;
             }
-            return Task.FromResult(false);
+            return false;
         }
 
-        public Task<Cliente?> GetAsync(int id)
+        public async Task<Cliente?> GetAsync(int id)
         {
-            return Task.FromResult(clientes.FirstOrDefault(c => c.Id == id));
+            return await context.Clientes.FindAsync(id);
         }
 
-        public Task<IEnumerable<Cliente>> GetAllAsync()
+        public async Task<IEnumerable<Cliente>> GetAllAsync()
         {
-            return Task.FromResult<IEnumerable<Cliente>>(clientes.ToList());
+            return await context.Clientes.ToListAsync();
         }
 
-        public Task<bool> UpdateAsync(Cliente cliente)
+        public async Task<bool> UpdateAsync(Cliente cliente)
         {
-            var existing = clientes.FirstOrDefault(c => c.Id == cliente.Id);
+            var existing = await context.Clientes.FindAsync(cliente.Id);
             if (existing != null)
             {
                 existing.SetNombre(cliente.Nombre);
@@ -49,28 +51,30 @@ namespace Data
                 existing.SetTelefono(cliente.Telefono);
                 existing.SetPassword(cliente.Password);
 
-                return Task.FromResult(true);
+                await context.SaveChangesAsync();
+                return true;
             }
-            return Task.FromResult(false);
+            return false;
         }
 
-        public Task<bool> EmailExistsAsync(string email, int? excludeId = null)
+        public async Task<bool> EmailExistsAsync(string email, int? excludeId = null)
         {
-            var query = clientes.Where(c => c.Email.ToLower() == email.ToLower());
+            var query = context.Clientes.Where(c => c.Email.ToLower() == email.ToLower());
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.Id != excludeId.Value);
             }
-            return Task.FromResult(query.Any());
+            return await query.AnyAsync();
         }
-        public Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null)
+
+        public async Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null)
         {
-            var query = clientes.Where(c => c.Telefono == telefono);
+            var query = context.Clientes.Where(c => c.Telefono == telefono);
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.Id != excludeId.Value);
             }
-            return Task.FromResult(query.Any());
+            return await query.AnyAsync();
         }
     }
 }

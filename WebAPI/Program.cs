@@ -1,12 +1,17 @@
 using WebAPI;
 using Application.Services;
 using Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Entity Framework Context
+builder.Services.AddDbContext<TPIContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // CORS 
 builder.Services.AddCors(options =>
@@ -38,9 +43,9 @@ app.UseCors("DevCors");
 
 // HTTPS redirection en todos los entornos
 if (!app.Environment.IsDevelopment())
-    {
-	    app.UseHttpsRedirection();
-    }
+{
+    app.UseHttpsRedirection();
+}
 
 // Map endpoints
 app.MapClienteEndpoints();

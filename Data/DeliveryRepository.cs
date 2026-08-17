@@ -1,51 +1,48 @@
 ﻿using Domain.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data
 {
     public class DeliveryRepository : IDeliveryRepository
     {
-        private static readonly List<Delivery> deliveries = new List<Delivery>();
-        private static int nextId = 1;
+        private readonly TPIContext context;
 
-        public Task AddAsync(Delivery delivery)
+        public DeliveryRepository(TPIContext context)
         {
-            // Simular auto-increment de ID
-            delivery.SetIdDelivery(nextId);
-            nextId++;
-
-            deliveries.Add(delivery);
-            return Task.CompletedTask;
+            this.context = context;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task AddAsync(Delivery delivery)
         {
-            var delivery = deliveries.FirstOrDefault(c => c.IdDelivery == id);
+            context.Deliveries.Add(delivery);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var delivery = await context.Deliveries.FindAsync(id);
             if (delivery != null)
             {
-                deliveries.Remove(delivery);
-                return Task.FromResult(true);
+                context.Deliveries.Remove(delivery);
+                await context.SaveChangesAsync();
+                return true;
             }
-            return Task.FromResult(false);
+            return false;
         }
 
-        public Task<Delivery?> GetAsync(int id)
+        public async Task<Delivery?> GetAsync(int id)
         {
-            return Task.FromResult(deliveries.FirstOrDefault(c => c.IdDelivery == id));
+            return await context.Deliveries.FindAsync(id);
         }
 
-        public Task<IEnumerable<Delivery>> GetAllAsync()
+        public async Task<IEnumerable<Delivery>> GetAllAsync()
         {
-            return Task.FromResult<IEnumerable<Delivery>>(deliveries.ToList());
+            return await context.Deliveries.ToListAsync();
         }
 
-        public Task<bool> UpdateAsync(Delivery delivery)
+        public async Task<bool> UpdateAsync(Delivery delivery)
         {
-            var existing = deliveries.FirstOrDefault(c => c.IdDelivery == delivery.IdDelivery);
+            var existing = await context.Deliveries.FindAsync(delivery.IdDelivery);
             if (existing != null)
             {
                 existing.SetNombre(delivery.Nombre);
@@ -53,28 +50,30 @@ namespace Data
                 existing.SetTelefono(delivery.Telefono);
                 existing.SetDni(delivery.Dni);
 
-                return Task.FromResult(true);
+                await context.SaveChangesAsync();
+                return true;
             }
-            return Task.FromResult(false);
+            return false;
         }
 
-        public Task<bool> DniExistsAsync(int dni, int? excludeId = null)
+        public async Task<bool> DniExistsAsync(int dni, int? excludeId = null)
         {
-            var query = deliveries.Where(c => c.Dni == dni);
+            var query = context.Deliveries.Where(c => c.Dni == dni);
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.IdDelivery != excludeId.Value);
             }
-            return Task.FromResult(query.Any());
+            return await query.AnyAsync();
         }
-        public Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null)
+
+        public async Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null)
         {
-            var query = deliveries.Where(c => c.Telefono == telefono);
+            var query = context.Deliveries.Where(c => c.Telefono == telefono);
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.IdDelivery != excludeId.Value);
             }
-            return Task.FromResult(query.Any());
+            return await query.AnyAsync();
         }
     }
 }
