@@ -8,7 +8,8 @@ namespace Data
     {
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Delivery> Deliveries { get; set; }
-
+        public DbSet<Ingrediente> Ingredientes { get; set; }
+        public DbSet<Hamburguesa> Hamburguesas { get; set; }
         public TPIContext(DbContextOptions<TPIContext> options) : base(options)
         {
             this.Database.EnsureCreated();
@@ -59,6 +60,24 @@ namespace Data
                 entity.Property(e => e.Telefono).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Dni).IsRequired();
                 entity.HasIndex(e => e.Dni).IsUnique();
+            });
+
+            modelBuilder.Entity<Ingrediente>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Descripcion).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Stock).IsRequired();
+            });
+
+            modelBuilder.Entity<Hamburguesa>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Descripcion).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Precio).IsRequired().HasColumnType("decimal(18,2)");
             });
         }
     }
