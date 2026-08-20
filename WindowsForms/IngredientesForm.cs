@@ -38,17 +38,7 @@ namespace WindowsForms
 
         private void buttonAddIngrediente_Click(object sender, EventArgs e)
         {
-            using (var formModal = new AgregarIngredienteForm(_ingredienteService))
-            {
-                // ShowDialog() lo abre como popup modal
-                if (formModal.ShowDialog() == DialogResult.OK)
-                {
-                    // Si guardó con éxito, recarga el gridView
-                    textBoxBuscarIngredientes.Text = string.Empty;
-                    LoadIngredientes();
-                }
-            }
-
+            AgregarIngrediente();
         }
 
         // FUNCIONES
@@ -63,6 +53,45 @@ namespace WindowsForms
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al cargar ingredientes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dataGridViewIngredientes_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            var ingredienteSeleccionado = dataGridViewIngredientes.Rows[e.RowIndex].DataBoundItem as Ingrediente;
+
+            if (ingredienteSeleccionado != null)
+            {
+                ActualizarIngrediente();
+            }
+        }
+
+        private void AgregarIngrediente() 
+        {
+            using (var formModal = new AgregarIngredienteForm(_ingredienteService))
+            {
+                // ShowDialog() lo abre como popup modal
+                if (formModal.ShowDialog() == DialogResult.OK)
+                {
+                    // Si guardó con éxito, recarga el gridView
+                    textBoxBuscarIngredientes.Text = string.Empty;
+                    LoadIngredientes();
+                }
+            }
+        }
+        private void ActualizarIngrediente() 
+        {
+            using (var formModal = new ActualizarIngredienteForm(_ingredienteService))
+            {
+                // ShowDialog() lo abre como popup modal
+                if (formModal.ShowDialog() == DialogResult.OK)
+                {
+                    // Si guardó con éxito, recarga el gridView
+                    textBoxBuscarIngredientes.Text = string.Empty;
+                    LoadIngredientes();
+                }
             }
         }
     }

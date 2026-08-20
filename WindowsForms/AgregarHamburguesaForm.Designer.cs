@@ -32,6 +32,7 @@
             textBoxDescripcion = new TextBox();
             textBoxNombre = new TextBox();
             textBoxPrecio = new TextBox();
+            checkedListBoxIngredientes = new CheckedListBox();
             SuspendLayout();
             // 
             // buttonAddIngrediente
@@ -43,6 +44,7 @@
             buttonAddIngrediente.TabIndex = 8;
             buttonAddIngrediente.Text = "AGREGAR";
             buttonAddIngrediente.UseVisualStyleBackColor = true;
+            buttonAddIngrediente.Click += buttonAddIngrediente_Click;
             // 
             // textBoxDescripcion
             // 
@@ -65,17 +67,26 @@
             // textBoxPrecio
             // 
             textBoxPrecio.Font = new Font("Segoe UI", 12F);
-            textBoxPrecio.Location = new Point(38, 249);
+            textBoxPrecio.Location = new Point(38, 230);
             textBoxPrecio.Name = "textBoxPrecio";
             textBoxPrecio.PlaceholderText = "Precio...";
             textBoxPrecio.Size = new Size(259, 39);
             textBoxPrecio.TabIndex = 9;
+            // 
+            // checkedListBoxIngredientes
+            // 
+            checkedListBoxIngredientes.FormattingEnabled = true;
+            checkedListBoxIngredientes.Location = new Point(38, 317);
+            checkedListBoxIngredientes.Name = "checkedListBoxIngredientes";
+            checkedListBoxIngredientes.Size = new Size(259, 200);
+            checkedListBoxIngredientes.TabIndex = 10;
             // 
             // AgregarHamburguesaForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(553, 646);
+            Controls.Add(checkedListBoxIngredientes);
             Controls.Add(textBoxPrecio);
             Controls.Add(buttonAddIngrediente);
             Controls.Add(textBoxDescripcion);
@@ -93,5 +104,6 @@
         private TextBox textBoxDescripcion;
         private TextBox textBoxNombre;
         private TextBox textBoxPrecio;
+        private CheckedListBox checkedListBoxIngredientes;
     }
 }
