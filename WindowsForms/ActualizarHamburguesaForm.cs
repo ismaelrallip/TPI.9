@@ -16,26 +16,32 @@ namespace WindowsForms
     public partial class ActualizarHamburguesaForm : Form
     {
         private readonly HamburguesaService _hamburguesaService;
-        private Hamburguesa hamburguesa;
+        private Hamburguesa _hamburguesa;
+        private string nombre;
+        private string descripcion;
+        private decimal precio;
+        private List<Ingrediente> ingredientesSeleccionados;
+        private HamburguesaDTO hambuCambiada = new HamburguesaDTO();
+
         public ActualizarHamburguesaForm(HamburguesaService hamburguesaService, Hamburguesa hamburguesa)
         {
             this._hamburguesaService = hamburguesaService;
-            this.hamburguesa = hamburguesa;
+            this._hamburguesa = hamburguesa;
             InitializeComponent();
         }
 
         private void ActualizarHamburguesaForm_Load(object sender, EventArgs e)
         {
-            textBoxNombre.Text = hamburguesa.Nombre;
-            textBoxDescripcion.Text = hamburguesa.Descripcion;
-            textBoxPrecio.Text = hamburguesa.Precio.ToString();
+            textBoxNombre.Text = _hamburguesa.Nombre;
+            textBoxDescripcion.Text = _hamburguesa.Descripcion;
+            textBoxPrecio.Text = _hamburguesa.Precio.ToString();
 
             checkedListBoxIngredientes.DisplayMember = "Nombre";
             checkedListBoxIngredientes.Items.Clear();
 
-            if (hamburguesa.Ingredientes != null)
+            if (_hamburguesa.Ingredientes != null)
             {
-                checkedListBoxIngredientes.Items.AddRange(hamburguesa.Ingredientes.ToArray());
+                checkedListBoxIngredientes.Items.AddRange(_hamburguesa.Ingredientes.ToArray());
             }
         }
 
@@ -44,12 +50,43 @@ namespace WindowsForms
             ActualizarHamburguesa();
         }
 
-        private async void ActualizarHamburguesa() 
+        private async void ActualizarHamburguesa()
         {
-            string nombre = textBoxNombre.Text;
-            string descripcion = textBoxDescripcion.Text;
-            decimal precio = decimal.Parse(textBoxPrecio.Text);
-            List<Ingrediente> ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems
+            SeleccionarDatos();
+            try
+            {
+                await _hamburguesaService.UpdateAsync(hambuCambiada);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al agregar el ingrediente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void buttonDeleteHamburguesa_Click(object sender, EventArgs e)
+        {
+            EliminarHamburguesa();
+        }
+
+        private async void EliminarHamburguesa() 
+        {
+            try
+            {
+                await _hamburguesaService.DeleteAsync(_hamburguesa.Id);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al agregar el ingrediente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void SeleccionarDatos() 
+        {
+            nombre = textBoxNombre.Text;
+            descripcion = textBoxDescripcion.Text;
+            precio = decimal.Parse(textBoxPrecio.Text);
+            ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems
                                                 .Cast<Ingrediente>()
                                                 .ToList();
 
@@ -61,23 +98,10 @@ namespace WindowsForms
             }
 
             // Crear un ingredientea actualizado
-            HamburguesaDTO hambuCambiada = new HamburguesaDTO();
             hambuCambiada.Nombre = nombre;
             hambuCambiada.Descripcion = descripcion;
             hambuCambiada.Precio = precio;
             hambuCambiada.Ingredientes = ingredientesSeleccionados;
-
-            // Llamar al método para agregar el ingrediente a la base de datos
-
-            try
-            {
-                await _hamburguesaService.UpdateAsync(hambuCambiada);
-                this.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al agregar el ingrediente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
     }
 }

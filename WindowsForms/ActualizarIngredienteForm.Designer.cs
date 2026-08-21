@@ -32,13 +32,14 @@
             numericUpDownStock = new NumericUpDown();
             textBoxDescripcion = new TextBox();
             textBoxNombre = new TextBox();
+            buttonDeleteIngrediente = new Button();
             ((System.ComponentModel.ISupportInitialize)numericUpDownStock).BeginInit();
             SuspendLayout();
             // 
             // buttonUpdateIngrediente
             // 
             buttonUpdateIngrediente.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonUpdateIngrediente.Location = new Point(186, 403);
+            buttonUpdateIngrediente.Location = new Point(247, 444);
             buttonUpdateIngrediente.Name = "buttonUpdateIngrediente";
             buttonUpdateIngrediente.Size = new Size(195, 53);
             buttonUpdateIngrediente.TabIndex = 9;
@@ -63,7 +64,6 @@
             textBoxDescripcion.PlaceholderText = "Descripcion...";
             textBoxDescripcion.Size = new Size(259, 39);
             textBoxDescripcion.TabIndex = 7;
-            textBoxDescripcion.TextChanged += this.textBoxDescripcion_TextChanged;
             // 
             // textBoxNombre
             // 
@@ -73,13 +73,25 @@
             textBoxNombre.PlaceholderText = "Nombre...";
             textBoxNombre.Size = new Size(259, 39);
             textBoxNombre.TabIndex = 6;
-            textBoxNombre.TextChanged += textBoxNombre_TextChanged;
+            // 
+            // buttonDeleteIngrediente
+            // 
+            buttonDeleteIngrediente.BackColor = Color.Red;
+            buttonDeleteIngrediente.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
+            buttonDeleteIngrediente.ForeColor = SystemColors.ButtonHighlight;
+            buttonDeleteIngrediente.Location = new Point(30, 444);
+            buttonDeleteIngrediente.Name = "buttonDeleteIngrediente";
+            buttonDeleteIngrediente.Size = new Size(149, 53);
+            buttonDeleteIngrediente.TabIndex = 19;
+            buttonDeleteIngrediente.Text = "ELIMINAR";
+            buttonDeleteIngrediente.UseVisualStyleBackColor = false;
             // 
             // ActualizarIngredienteForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(420, 528);
+            ClientSize = new Size(454, 528);
+            Controls.Add(buttonDeleteIngrediente);
             Controls.Add(buttonUpdateIngrediente);
             Controls.Add(numericUpDownStock);
             Controls.Add(textBoxDescripcion);
@@ -98,5 +110,6 @@
         private NumericUpDown numericUpDownStock;
         private TextBox textBoxDescripcion;
         private TextBox textBoxNombre;
+        private Button buttonDeleteIngrediente;
     }
 }

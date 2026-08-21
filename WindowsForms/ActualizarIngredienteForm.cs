@@ -63,5 +63,23 @@ namespace WindowsForms
                 MessageBox.Show($"Error al agregar el ingrediente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void buttonDeleteIngrediente_Click(object sender, EventArgs e)
+        {
+            EliminarIngrediente();
+        }
+
+        private async void EliminarIngrediente() 
+        {
+            try
+            {
+                await _ingredienteService.DeleteAsync(_ingrediente.Id);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al agregar el ingrediente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

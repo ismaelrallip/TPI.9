@@ -33,6 +33,7 @@
             textBoxPrecio = new TextBox();
             textBoxDescripcion = new TextBox();
             textBoxNombre = new TextBox();
+            buttonDeleteHamburguesa = new Button();
             SuspendLayout();
             // 
             // buttonUpdateHamburguesa
@@ -81,11 +82,25 @@
             textBoxNombre.Size = new Size(259, 39);
             textBoxNombre.TabIndex = 14;
             // 
+            // buttonDeleteHamburguesa
+            // 
+            buttonDeleteHamburguesa.BackColor = Color.Red;
+            buttonDeleteHamburguesa.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
+            buttonDeleteHamburguesa.ForeColor = SystemColors.ButtonHighlight;
+            buttonDeleteHamburguesa.Location = new Point(37, 532);
+            buttonDeleteHamburguesa.Name = "buttonDeleteHamburguesa";
+            buttonDeleteHamburguesa.Size = new Size(149, 53);
+            buttonDeleteHamburguesa.TabIndex = 18;
+            buttonDeleteHamburguesa.Text = "ELIMINAR";
+            buttonDeleteHamburguesa.UseVisualStyleBackColor = false;
+            buttonDeleteHamburguesa.Click += buttonDeleteHamburguesa_Click;
+            // 
             // ActualizarHamburguesaForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(511, 608);
+            Controls.Add(buttonDeleteHamburguesa);
             Controls.Add(checkedListBoxIngredientes);
             Controls.Add(textBoxPrecio);
             Controls.Add(textBoxDescripcion);
@@ -105,5 +120,6 @@
         private TextBox textBoxPrecio;
         private TextBox textBoxDescripcion;
         private TextBox textBoxNombre;
+        private Button buttonDeleteHamburguesa;
     }
 }

@@ -64,7 +64,7 @@ namespace WindowsForms
 
             if (ingredienteSeleccionado != null)
             {
-                ActualizarIngrediente();
+                ActualizarIngrediente(ingredienteSeleccionado);
             }
         }
 
@@ -81,9 +81,9 @@ namespace WindowsForms
                 }
             }
         }
-        private void ActualizarIngrediente() 
+        private void ActualizarIngrediente(Ingrediente ingredienteSeleccionado) 
         {
-            using (var formModal = new ActualizarIngredienteForm(_ingredienteService))
+            using (var formModal = new ActualizarIngredienteForm(_ingredienteService, ingredienteSeleccionado))
             {
                 // ShowDialog() lo abre como popup modal
                 if (formModal.ShowDialog() == DialogResult.OK)
