@@ -1,50 +1,53 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Data;
-using Application.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace WindowsForms
 {
-    static class Program
+    internal static class Program
     {
-        public static IServiceProvider? ServiceProvider { get; private set; }
-
         [STAThread]
         static void Main()
         {
-            System.Windows.Forms.Application.EnableVisualStyles();
-            System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+            ApplicationConfiguration.Initialize();
+            System.Windows.Forms.Application.ThreadException += Application_ThreadException;
+            System.Windows.Forms.Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
 
-            var host = Host.CreateDefaultBuilder()
-                .ConfigureServices((context, services) =>
-                {
-                    services.AddDbContext<TPIContext>(options =>
-                        options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=TPI_HamburgueseriaDB;Trusted_Connection=True;MultipleActiveResultSets=true"));
+            MainAsync();
+        }
 
-                    services.AddScoped<IClienteRepository, ClienteRepository>();
-                    services.AddScoped<IDeliveryRepository, DeliveryRepository>();
-
-                    services.AddScoped<IClienteService, ClienteService>();
-                    services.AddScoped<IDeliveryService, DeliveryService>();
-
-                    services.AddTransient<LoginForm>();
-                    services.AddTransient<Home>();
-                    services.AddTransient<ClienteForm>();
-                    services.AddTransient<ClienteDetailForm>();
-                    services.AddTransient<DeliveryForm>();
-                    services.AddTransient<DeliveryDetailForm>();
-                })
-                .Build();
-
-            ServiceProvider = host.Services;
-
-            var loginForm = ServiceProvider.GetRequiredService<LoginForm>();
-            if (loginForm.ShowDialog() == DialogResult.OK)
+        private static void MainAsync()
+        {
+            while (true)
             {
-                var homeForm = ServiceProvider.GetRequiredService<Home>();
-                System.Windows.Forms.Application.Run(homeForm);
+                using var loginForm = new LoginForm();
+                if (loginForm.ShowDialog() != DialogResult.OK || loginForm.Sesion == null)
+                {
+                    return; // Canceló el login: cierra la app.
+                }
+
+                if (loginForm.Sesion.Role == "Administrador")
+                {
+                    try
+                    {
+                        System.Windows.Forms.Application.Run(new HomeAdministrador());
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error en la aplicación: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    return; // Por ahora, al cerrar HomeAdministrador se termina la app (sin logout todavía).
+                }
+                else
+                {
+                    // Todavía no armamos la pantalla del Cliente.
+                    MessageBox.Show("La pantalla para Clientes todavía no está disponible.", "Aviso",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    
+                }
             }
+        }
+
+        private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
+        {
+            MessageBox.Show($"Error inesperado: {e.Exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

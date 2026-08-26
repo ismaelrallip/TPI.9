@@ -7,7 +7,9 @@ namespace Application.Services
         Task<ClienteDTO> AddAsync(ClienteDTO dto);
         Task<bool> DeleteAsync(int id);
         Task<ClienteDTO?> GetAsync(int id);
+        Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(ClienteCriteriaDTO criteria);
         Task<IEnumerable<ClienteDTO>> GetAllAsync();
         Task<bool> UpdateAsync(ClienteDTO dto);
+
     }
 }
