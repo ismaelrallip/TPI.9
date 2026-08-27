@@ -12,12 +12,12 @@ namespace Data
             this.context = context;
         }
 
-        public async Task<List<Hamburguesa>> GetAllAsync()
+        public async Task<IEnumerable<Hamburguesa>> GetAllAsync()
         {
             return await context.Hamburguesas.ToListAsync();
         }
 
-        public async Task<Hamburguesa> GetByIdAsync(int id)
+        public async Task<Hamburguesa?> GetByIdAsync(int id)
         {
             return await context.Hamburguesas.FindAsync(id);
         }
@@ -28,26 +28,28 @@ namespace Data
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Hamburguesa hamburguesa)
+        public async Task<bool> UpdateAsync(Hamburguesa hamburguesa)
         {
             var existingHamburguesa = await context.Hamburguesas.FindAsync(hamburguesa.Id);
             if (existingHamburguesa == null)
-                return;
+                return false;
             existingHamburguesa.SetNombre(hamburguesa.Nombre);
             existingHamburguesa.SetDescripcion(hamburguesa.Descripcion);
             existingHamburguesa.SetIngredientes(hamburguesa.Ingredientes);
             context.Hamburguesas.Update(existingHamburguesa);
             await context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var hamburguesa = await context.Hamburguesas.FindAsync(id);
-            if (hamburguesa != null)
-            {
-                context.Hamburguesas.Remove(hamburguesa);
-                await context.SaveChangesAsync();
-            }
+            if (hamburguesa == null)
+                return false;
+
+            context.Hamburguesas.Remove(hamburguesa);
+            await context.SaveChangesAsync();
+            return true;
         }
     }
 }

@@ -42,6 +42,7 @@
             dataGridViewIngredientes.RowHeadersWidth = 62;
             dataGridViewIngredientes.Size = new Size(992, 441);
             dataGridViewIngredientes.TabIndex = 0;
+            dataGridViewIngredientes.CellContentDoubleClick += dataGridViewIngredientes_CellContentDoubleClick;
             // 
             // textBoxBuscarIngredientes
             // 
