@@ -28,5 +28,17 @@ namespace WindowsForms
             DeliveryLista deliveriesForm = new DeliveryLista();
             deliveriesForm.ShowDialog();
         }
+
+        private void hamburguesasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            HamburguesaForm hambuForm = new HamburguesaForm();
+            hambuForm.ShowDialog();
+        }
+
+        private void ingredientesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            IngredientesForm ingForm = new IngredientesForm();
+            ingForm.ShowDialog();
+        }
     }
 }

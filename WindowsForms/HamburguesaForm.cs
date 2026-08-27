@@ -15,12 +15,12 @@ namespace WindowsForms
 {
     public partial class HamburguesaForm : Form
     {
-        private readonly HamburguesaService _hamburguesaService;
+        private readonly HamburguesaService hamburguesaService;
 
         private IEnumerable<Hamburguesa> _hamburguesas;
-        public HamburguesaForm(HamburguesaService hamburguesaService)
+
+        public HamburguesaForm()
         {
-            _hamburguesaService = hamburguesaService;
             InitializeComponent();
         }
 
@@ -34,7 +34,7 @@ namespace WindowsForms
         {
             try
             {
-                var hamburguesas = await _hamburguesaService.GetAllAsync();
+                var hamburguesas = await hamburguesaService.GetAllAsync();
                 _hamburguesas = (IEnumerable<Hamburguesa>)hamburguesas;
                 dataGridViewHamburguesas.DataSource = hamburguesas.ToList();
             }
@@ -60,7 +60,7 @@ namespace WindowsForms
 
         private void buttonAddHamburguesa_Click(object sender, EventArgs e)
         {
-            using (var formModal = new AgregarHamburguesaForm(_hamburguesaService))
+            using (var formModal = new AgregarHamburguesaForm(hamburguesaService))
             {
                 // ShowDialog() lo abre como popup modal
                 if (formModal.ShowDialog() == DialogResult.OK)

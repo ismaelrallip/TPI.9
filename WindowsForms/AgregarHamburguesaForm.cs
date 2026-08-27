@@ -45,14 +45,19 @@ namespace WindowsForms
             {
                 string nombre = textBoxNombre.Text;
                 string descripcion = textBoxDescripcion.Text;
+                // precio
                 decimal precio = decimal.Parse(textBoxPrecio.Text);
+                DateTime fechaDesde = DateTime.Now;
+
+                Precio _precio = new Precio(fechaDesde, precio);
+                //
                 Ingrediente[] ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems.Cast<Ingrediente>().ToArray();
 
                 HamburguesaDTO nuevaHamburguesa = new HamburguesaDTO();
                 nuevaHamburguesa.Id = 0;
                 nuevaHamburguesa.Nombre = nombre;
                 nuevaHamburguesa.Descripcion = descripcion;
-                nuevaHamburguesa.Precio = precio;
+                nuevaHamburguesa.Precio = _precio;
                 nuevaHamburguesa.Ingredientes = ingredientesSeleccionados.ToList();
 
                 _hamburguesaService.AddAsync(nuevaHamburguesa);

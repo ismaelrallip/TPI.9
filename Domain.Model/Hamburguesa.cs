@@ -11,9 +11,9 @@ namespace Domain.Model
         public int Id { get; private set; }
         public string Nombre { get; private set; }
         public string Descripcion { get; private set; }
-        public decimal Precio { get; private set; }
+        public Precio Precio { get; private set; }
         public List<Ingrediente> Ingredientes { get; private set; }
-        public Hamburguesa(int id, string nombre, string descripcion, decimal precio, List<Ingrediente> ingredientes)
+        public Hamburguesa(int id, string nombre, string descripcion, Precio precio, List<Ingrediente> ingredientes)
         {
             SetId(id);
             SetNombre(nombre);
@@ -39,9 +39,9 @@ namespace Domain.Model
                 throw new ArgumentException("La descripción es obligatoria y debe tener entre 2 y 200 caracteres.", nameof(descripcion));
             Descripcion = descripcion;
         }
-        public void SetPrecio(decimal precio)
+        public void SetPrecio(Precio precio)
         {
-            if (precio < 0)
+            if (precio.Monto < 0)
                 throw new ArgumentException("El precio debe ser mayor o igual a 0.", nameof(precio));
             Precio = precio;
         }
