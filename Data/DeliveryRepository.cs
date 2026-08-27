@@ -1,4 +1,5 @@
 ﻿using Domain.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data
@@ -74,6 +75,42 @@ namespace Data
                 query = query.Where(c => c.IdDelivery != excludeId.Value);
             }
             return await query.AnyAsync();
+        }
+        public async Task<IEnumerable<Delivery>> GetByCriteriaAsync(DeliveryCriteria criteria)
+        {
+            const string sql = @"
+            SELECT IdDelivery, Nombre, Apellido, Telefono, Dni
+            FROM Deliveries
+            WHERE Nombre LIKE @SearchTerm
+               OR Apellido LIKE @SearchTerm
+               OR Telefono LIKE @SearchTerm
+               OR CAST(Dni AS NVARCHAR(20)) LIKE @SearchTerm
+            ORDER BY Nombre, Apellido";
+
+            var deliveries = new List<Delivery>();
+            string? connectionString = context.Database.GetConnectionString();
+            string searchPattern = $"%{criteria.Texto}%";
+
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@SearchTerm", searchPattern);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var delivery = new Delivery(
+                    reader.GetInt32(reader.GetOrdinal("IdDelivery")),
+                    reader.GetString(reader.GetOrdinal("Nombre")),
+                    reader.GetString(reader.GetOrdinal("Apellido")),
+                    reader.GetString(reader.GetOrdinal("Telefono")),
+                    reader.GetInt32(reader.GetOrdinal("Dni"))
+                );
+                deliveries.Add(delivery);
+            }
+
+            return deliveries;
         }
     }
 }

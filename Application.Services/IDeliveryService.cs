@@ -14,5 +14,6 @@ namespace Application.Services
         Task<DeliveryDTO?> GetAsync(int id);
         Task<IEnumerable<DeliveryDTO>> GetAllAsync();
         Task<bool> UpdateAsync(DeliveryDTO dto);
+        Task<IEnumerable<DeliveryDTO>> GetByCriteriaAsync(DeliveryCriteriaDTO criteria);
     }
 }

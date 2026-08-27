@@ -89,5 +89,20 @@ namespace Application.Services
             Cliente cliente = new Cliente(dto.Id, dto.Nombre, dto.Apellido, dto.Email, dto.Telefono, dto.Password);
             return await clienteRepository.UpdateAsync(cliente);
         }
+        public async Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(ClienteCriteriaDTO criteria)
+        {
+            var domainCriteria = new ClienteCriteria(criteria.Texto);
+            var clientes = await clienteRepository.GetByCriteriaAsync(domainCriteria);
+
+            return clientes.Select(cliente => new ClienteDTO
+            {
+                Id = cliente.Id,
+                Nombre = cliente.Nombre,
+                Apellido = cliente.Apellido,
+                Email = cliente.Email,
+                Telefono = cliente.Telefono,
+                Password = cliente.Password
+            }).ToList();
+        }
     }
 }
