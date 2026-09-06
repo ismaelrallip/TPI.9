@@ -13,6 +13,10 @@ namespace Domain.Model
         public string Descripcion { get; private set; }
         public Precio Precio { get; private set; }
         public List<Ingrediente> Ingredientes { get; private set; }
+        // se agrega constructor vacío para EF Core
+        private Hamburguesa()
+        {
+        }
         public Hamburguesa(int id, string nombre, string descripcion, Precio precio, List<Ingrediente> ingredientes)
         {
             SetId(id);

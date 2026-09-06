@@ -77,7 +77,15 @@ namespace Data
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Descripcion).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.Precio).IsRequired().HasColumnType("decimal(18,2)");
+
+                entity.OwnsOne(e => e.Precio, p =>
+                {
+                    p.Property(x => x.Monto)
+                     .HasColumnName("Precio")
+                     .HasColumnType("decimal(18,2)")
+                     .IsRequired();
+                    p.Property(x => x.FechaDesde).HasColumnName("PrecioFechaDesde");
+                });
             });
         }
     }
