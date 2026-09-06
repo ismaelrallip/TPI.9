@@ -1,24 +1,14 @@
-﻿using Application.Services;
+﻿using API.Clients;
 using Domain.Model;
 using DTOs;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace WindowsForms
 {
     public partial class AgregarHamburguesaForm : Form
     {
-        private readonly HamburguesaService _hamburguesaService;
-        public AgregarHamburguesaForm(HamburguesaService hamburguesaService)
+        public AgregarHamburguesaForm()
         {
-            this._hamburguesaService = hamburguesaService;
             InitializeComponent();
         }
 
@@ -32,7 +22,7 @@ namespace WindowsForms
         {
             checkedListBoxIngredientes.DisplayMember = "Nombre";
             checkedListBoxIngredientes.Items.Clear();
-            var ingredientes = await _hamburguesaService.GetAllAsync();
+            var ingredientes = await IngredienteApiClient.GetAllAsync();
             if (ingredientes != null)
             {
                 checkedListBoxIngredientes.Items.AddRange(ingredientes.ToArray());
@@ -60,7 +50,7 @@ namespace WindowsForms
                 nuevaHamburguesa.Precio = _precio;
                 nuevaHamburguesa.Ingredientes = ingredientesSeleccionados.ToList();
 
-                _hamburguesaService.AddAsync(nuevaHamburguesa);
+                HamburguesaApiClient.AddAsync(nuevaHamburguesa);
                 
 
             }

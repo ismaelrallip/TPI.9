@@ -1,23 +1,13 @@
-﻿using Application.Services;
+﻿using API.Clients;
 using Domain.Model;
 using DTOs;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+
 
 namespace WindowsForms
 {
     public partial class ActualizarHamburguesaForm : Form
     {
-        private readonly HamburguesaService _hamburguesaService;
         private Hamburguesa _hamburguesa;
         private string nombre;
         private string descripcion;
@@ -27,9 +17,8 @@ namespace WindowsForms
 
         private HamburguesaDTO hambuCambiada = new HamburguesaDTO();
 
-        public ActualizarHamburguesaForm(HamburguesaService hamburguesaService, Hamburguesa hamburguesa)
+        public ActualizarHamburguesaForm(Hamburguesa hamburguesa)
         {
-            this._hamburguesaService = hamburguesaService;
             this._hamburguesa = hamburguesa;
             InitializeComponent();
         }
@@ -59,7 +48,7 @@ namespace WindowsForms
             try
             {
                 SeleccionarDatos();
-                await _hamburguesaService.UpdateAsync(hambuCambiada);
+                await HamburguesaApiClient.UpdateAsync(hambuCambiada);
                 this.Close();
             }
             catch (Exception ex)
@@ -112,7 +101,7 @@ namespace WindowsForms
         {
             try
             {
-                await _hamburguesaService.DeleteAsync(_hamburguesa.Id);
+                await HamburguesaApiClient.DeleteAsync(_hamburguesa.Id);
                 this.Close();
             }
             catch (Exception ex)

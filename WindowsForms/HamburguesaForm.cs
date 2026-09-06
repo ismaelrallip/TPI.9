@@ -1,21 +1,11 @@
-﻿using Application.Services;
-using Domain.Model;
-using Application.Services;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using Domain.Model;
+using API.Clients;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace WindowsForms
 {
     public partial class HamburguesaForm : Form
     {
-        private readonly HamburguesaService hamburguesaService;
 
         private IEnumerable<Hamburguesa> _hamburguesas;
 
@@ -34,7 +24,7 @@ namespace WindowsForms
         {
             try
             {
-                var hamburguesas = await hamburguesaService.GetAllAsync();
+                var hamburguesas = await HamburguesaApiClient.GetAllAsync();
                 _hamburguesas = (IEnumerable<Hamburguesa>)hamburguesas;
                 dataGridViewHamburguesas.DataSource = hamburguesas.ToList();
             }
@@ -60,7 +50,21 @@ namespace WindowsForms
 
         private void buttonAddHamburguesa_Click(object sender, EventArgs e)
         {
-            using (var formModal = new AgregarHamburguesaForm(hamburguesaService))
+            using (var formModal = new AgregarHamburguesaForm())
+            {
+                // ShowDialog() lo abre como popup modal
+                if (formModal.ShowDialog() == DialogResult.OK)
+                {
+                    // Si guardó con éxito, recarga el gridView
+                    textBoxBuscarHamburguesa.Text = string.Empty;
+                    LoadHamburguesas();
+                }
+            }
+        }
+
+        private void ActualizarHamburguesa(Hamburguesa hamburguesaSeleccionada)
+        {
+            using (var formModal = new ActualizarHamburguesaForm(hamburguesaSeleccionada))
             {
                 // ShowDialog() lo abre como popup modal
                 if (formModal.ShowDialog() == DialogResult.OK)

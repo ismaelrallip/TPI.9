@@ -1,14 +1,12 @@
 ﻿using DTOs;
-using Application.Services;
+using API.Clients;
 
 namespace WindowsForms
 {
     public partial class AgregarIngredienteForm : Form
     {
-        private readonly IngredienteService _ingredienteService;
-        public AgregarIngredienteForm(IngredienteService ingredienteService)
+        public AgregarIngredienteForm()
         {
-            this._ingredienteService = ingredienteService;
             InitializeComponent();
         }
 
@@ -35,7 +33,7 @@ namespace WindowsForms
 
             try
             {
-                await _ingredienteService.AddAsync(nuevoIngrediente);
+                await IngredienteApiClient.AddAsync(nuevoIngrediente);
                 this.Close();
             }
             catch (Exception ex)

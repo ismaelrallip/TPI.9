@@ -1,4 +1,4 @@
-﻿using Application.Services;
+﻿using API.Clients;
 using Domain.Model;
 using System.Data;
 
@@ -6,7 +6,6 @@ namespace WindowsForms
 {
     public partial class IngredientesForm : Form
     {
-        private readonly IngredienteService ingredienteService;
 
         private IEnumerable<Ingrediente> _ingredientes;
 
@@ -45,7 +44,7 @@ namespace WindowsForms
         {
             try
             {
-                var ingredientes = await ingredienteService.GetAllAsync();
+                var ingredientes = await IngredienteApiClient.GetAllAsync();
                 _ingredientes = (IEnumerable<Ingrediente>)ingredientes;
                 dataGridViewIngredientes.DataSource = ingredientes.ToList();
             }
@@ -69,7 +68,7 @@ namespace WindowsForms
 
         private void AgregarIngrediente() 
         {
-            using (var formModal = new AgregarIngredienteForm(ingredienteService))
+            using (var formModal = new AgregarIngredienteForm())
             {
                 // ShowDialog() lo abre como popup modal
                 if (formModal.ShowDialog() == DialogResult.OK)
@@ -82,7 +81,7 @@ namespace WindowsForms
         }
         private void ActualizarIngrediente(Ingrediente ingredienteSeleccionado) 
         {
-            using (var formModal = new ActualizarIngredienteForm(ingredienteService, ingredienteSeleccionado))
+            using (var formModal = new ActualizarIngredienteForm(ingredienteSeleccionado))
             {
                 // ShowDialog() lo abre como popup modal
                 if (formModal.ShowDialog() == DialogResult.OK)

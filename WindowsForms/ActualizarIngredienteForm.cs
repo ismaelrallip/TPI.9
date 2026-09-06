@@ -1,26 +1,15 @@
-﻿using Application.Services;
-using Domain.Model;
+﻿using Domain.Model;
 using DTOs;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using API.Clients;
 
 namespace WindowsForms
 {
     public partial class ActualizarIngredienteForm : Form
     {
-        private readonly IngredienteService _ingredienteService;
         private Ingrediente _ingrediente;
-        public ActualizarIngredienteForm(IngredienteService ingredienteService, Ingrediente ingrediente)
+        public ActualizarIngredienteForm(Ingrediente ingrediente)
         {
             this._ingrediente = ingrediente;
-            this._ingredienteService = ingredienteService;
             InitializeComponent();
         }
 
@@ -55,7 +44,7 @@ namespace WindowsForms
 
             try
             {
-                await _ingredienteService.UpdateAsync(ingredienteCambiado);
+                await IngredienteApiClient.UpdateAsync(ingredienteCambiado);
                 this.Close();
             }
             catch (Exception ex)
@@ -73,7 +62,7 @@ namespace WindowsForms
         {
             try
             {
-                await _ingredienteService.DeleteAsync(_ingrediente.Id);
+                await IngredienteApiClient.DeleteAsync(_ingrediente.Id);
                 this.Close();
             }
             catch (Exception ex)
