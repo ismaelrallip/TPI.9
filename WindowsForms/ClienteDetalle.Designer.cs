@@ -112,6 +112,7 @@
             cancelarButton.TabIndex = 22;
             cancelarButton.Text = "Cancelar";
             cancelarButton.UseVisualStyleBackColor = true;
+            cancelarButton.Click += cancelarButton_Click;
             // 
             // aceptarButton
             // 
