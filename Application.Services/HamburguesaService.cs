@@ -1,6 +1,7 @@
 ﻿using Data;
 using Domain.Model;
 using DTOs;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace Application.Services
     public class HamburguesaService : IHamburguesaService
     {
         private readonly IHamburguesaRepository hamburguesaRepository;
+        private readonly TPIContext _context;
 
         public HamburguesaService(IHamburguesaRepository hamburguesaRepository)
         {
@@ -20,7 +22,10 @@ namespace Application.Services
 
         public async Task<HamburguesaDTO> AddAsync(HamburguesaDTO dto)
         {
-            Hamburguesa hamburguesa = new Hamburguesa(0, dto.Nombre, dto.Descripcion, dto.Precio, dto.Ingredientes);
+            List<Ingrediente> ingredientes = dto.Ingredientes.Select(i => _context.Ingredientes.Find(i.Id))
+                                                    .Where(i => i != null)
+                                                    .ToList();
+            Hamburguesa hamburguesa = new Hamburguesa(0, dto.Nombre, dto.Descripcion, dto.Precio, ingredientes);
             await hamburguesaRepository.AddAsync(hamburguesa);
             dto.Id = hamburguesa.Id;
             return dto;

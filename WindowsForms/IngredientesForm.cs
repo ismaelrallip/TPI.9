@@ -1,13 +1,14 @@
 ﻿using API.Clients;
 using Domain.Model;
 using System.Data;
+using DTOs;
 
 namespace WindowsForms
 {
     public partial class IngredientesForm : Form
     {
 
-        private IEnumerable<Ingrediente> _ingredientes;
+        private IEnumerable<IngredienteDTO> _ingredientes;
 
 
         public IngredientesForm()
@@ -45,7 +46,7 @@ namespace WindowsForms
             try
             {
                 var ingredientes = await IngredienteApiClient.GetAllAsync();
-                _ingredientes = (IEnumerable<Ingrediente>)ingredientes;
+                _ingredientes = ingredientes;
                 dataGridViewIngredientes.DataSource = ingredientes.ToList();
             }
             catch (Exception ex)
@@ -56,14 +57,14 @@ namespace WindowsForms
 
         private void dataGridViewIngredientes_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0)
+                return;
 
-            var ingredienteSeleccionado = dataGridViewIngredientes.Rows[e.RowIndex].DataBoundItem as Ingrediente;
+            DataGridViewRow fila = dataGridViewIngredientes.Rows[e.RowIndex];
 
-            if (ingredienteSeleccionado != null)
-            {
-                ActualizarIngrediente(ingredienteSeleccionado);
-            }
+            int id = Convert.ToInt32(fila.Cells["Id"].Value);
+
+            ActualizarIngrediente(id);
         }
 
         private void AgregarIngrediente() 
@@ -79,9 +80,9 @@ namespace WindowsForms
                 }
             }
         }
-        private void ActualizarIngrediente(Ingrediente ingredienteSeleccionado) 
+        private void ActualizarIngrediente(int id) 
         {
-            using (var formModal = new ActualizarIngredienteForm(ingredienteSeleccionado))
+            using (var formModal = new ActualizarIngredienteForm(id))
             {
                 // ShowDialog() lo abre como popup modal
                 if (formModal.ShowDialog() == DialogResult.OK)

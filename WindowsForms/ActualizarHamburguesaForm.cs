@@ -8,7 +8,8 @@ namespace WindowsForms
 {
     public partial class ActualizarHamburguesaForm : Form
     {
-        private Hamburguesa _hamburguesa;
+        private HamburguesaDTO _hamburguesa;
+        private int idRecibida;
         private string nombre;
         private string descripcion;
         private decimal precio;
@@ -17,14 +18,16 @@ namespace WindowsForms
 
         private HamburguesaDTO hambuCambiada = new HamburguesaDTO();
 
-        public ActualizarHamburguesaForm(Hamburguesa hamburguesa)
+        public ActualizarHamburguesaForm(int id)
         {
-            this._hamburguesa = hamburguesa;
+            this.idRecibida = id;
             InitializeComponent();
         }
 
-        private void ActualizarHamburguesaForm_Load(object sender, EventArgs e)
+        private async void ActualizarHamburguesaForm_Load(object sender, EventArgs e)
         {
+            _hamburguesa = await HamburguesaApiClient.GetAsync(idRecibida);
+
             textBoxNombre.Text = _hamburguesa.Nombre;
             textBoxDescripcion.Text = _hamburguesa.Descripcion;
             textBoxPrecio.Text = _hamburguesa.Precio.Monto.ToString();
@@ -86,6 +89,7 @@ namespace WindowsForms
             }
 
             // Crear un ingredientea actualizado
+            hambuCambiada.Id = idRecibida;
             hambuCambiada.Nombre = nombre;
             hambuCambiada.Descripcion = descripcion;
             hambuCambiada.Precio = _precio;
@@ -101,7 +105,7 @@ namespace WindowsForms
         {
             try
             {
-                await HamburguesaApiClient.DeleteAsync(_hamburguesa.Id);
+                await HamburguesaApiClient.DeleteAsync(idRecibida);
                 this.Close();
             }
             catch (Exception ex)

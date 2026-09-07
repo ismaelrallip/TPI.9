@@ -29,7 +29,7 @@ namespace WindowsForms
             }
         }
 
-        private void buttonAddIngrediente_Click(object sender, EventArgs e)
+        private async void buttonAddIngrediente_Click(object sender, EventArgs e)
         {
             try 
             {
@@ -41,18 +41,24 @@ namespace WindowsForms
 
                 Precio _precio = new Precio(fechaDesde, precio);
                 //
-                Ingrediente[] ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems.Cast<Ingrediente>().ToArray();
+                IngredienteDTO[] ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems.Cast<IngredienteDTO>().ToArray();
+                List<Ingrediente> ingredientes = ingredientesSeleccionados.Select(
+                    dto => new Ingrediente(
+                            dto.Id,
+                            dto.Nombre,
+                            dto.Descripcion,
+                            dto.Stock
+                            )).ToList();
 
                 HamburguesaDTO nuevaHamburguesa = new HamburguesaDTO();
                 nuevaHamburguesa.Id = 0;
                 nuevaHamburguesa.Nombre = nombre;
                 nuevaHamburguesa.Descripcion = descripcion;
                 nuevaHamburguesa.Precio = _precio;
-                nuevaHamburguesa.Ingredientes = ingredientesSeleccionados.ToList();
+                nuevaHamburguesa.Ingredientes = ingredientes;
 
-                HamburguesaApiClient.AddAsync(nuevaHamburguesa);
-                
-
+                await HamburguesaApiClient.AddAsync(nuevaHamburguesa);
+                this.Close();
             }
             catch (FormatException)
             {

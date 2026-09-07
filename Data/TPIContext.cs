@@ -88,6 +88,9 @@ namespace Data
                      .IsRequired();
                     p.Property(x => x.FechaDesde).HasColumnName("PrecioFechaDesde");
                 });
+
+                entity.HasMany(e => e.Ingredientes)
+                      .WithMany();
             });
 
             modelBuilder.Entity<PrecioDelivery>(entity =>

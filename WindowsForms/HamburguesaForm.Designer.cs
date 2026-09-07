@@ -38,10 +38,14 @@
             // 
             dataGridViewHamburguesas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewHamburguesas.Location = new Point(45, 186);
+            dataGridViewHamburguesas.MultiSelect = false;
             dataGridViewHamburguesas.Name = "dataGridViewHamburguesas";
+            dataGridViewHamburguesas.ReadOnly = true;
             dataGridViewHamburguesas.RowHeadersWidth = 62;
+            dataGridViewHamburguesas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewHamburguesas.Size = new Size(992, 441);
             dataGridViewHamburguesas.TabIndex = 1;
+            dataGridViewHamburguesas.CellContentDoubleClick += dataGridViewHamburguesas_CellContentDoubleClick;
             // 
             // buttonAddHamburguesa
             // 
