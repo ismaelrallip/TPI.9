@@ -40,5 +40,11 @@ namespace WindowsForms
             IngredientesForm ingForm = new IngredientesForm();
             ingForm.ShowDialog();
         }
+
+        private void precioDeliveryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PrecioDeliveryHistorico precioDeliveryForm = new PrecioDeliveryHistorico();
+            precioDeliveryForm.ShowDialog();
+        }
     }
 }

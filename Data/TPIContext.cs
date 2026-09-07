@@ -15,6 +15,8 @@ namespace Data
             this.Database.EnsureCreated();
         }
 
+        public DbSet<PrecioDelivery> PreciosDelivery { get; set; }
+
         public TPIContext()
         {
             this.Database.EnsureCreated();
@@ -86,6 +88,14 @@ namespace Data
                      .IsRequired();
                     p.Property(x => x.FechaDesde).HasColumnName("PrecioFechaDesde");
                 });
+            });
+
+            modelBuilder.Entity<PrecioDelivery>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Monto).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.FechaDesde).IsRequired();
             });
         }
     }
