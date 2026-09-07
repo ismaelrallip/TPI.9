@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services
 {
-    public class IngredienteService
+    public class IngredienteService : IIngredienteService
     {
         private readonly IIngredienteRepository ingredienteRepository;
 
