@@ -38,7 +38,7 @@ namespace WindowsForms
 
         private async void agregarButton_Click(object sender, EventArgs e)
         {
-            using var detalle = new ClienteDetalle(FormMode.Add, new ClienteDTO());
+            var detalle = new ClienteDetalle(FormMode.Add, new ClienteDTO());
             if (detalle.ShowDialog(this) == DialogResult.OK)
             {
                 await CargarClientesAsync();

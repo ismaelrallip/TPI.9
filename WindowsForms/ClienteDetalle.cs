@@ -90,7 +90,6 @@ namespace WindowsForms
                     }
 
                     DialogResult = DialogResult.OK;
-                    Close();
                 }
                 catch (Exception ex)
                 {
@@ -106,7 +105,6 @@ namespace WindowsForms
         private void cancelarButton_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
-            Close();
         }
 
         private void SetCliente()
