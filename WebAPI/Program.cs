@@ -29,6 +29,9 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 
+builder.Services.AddScoped<IPrecioDeliveryRepository, PrecioDeliveryRepository>();
+builder.Services.AddScoped<IPrecioDeliveryService, PrecioDeliveryService>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 var app = builder.Build();
 
@@ -52,5 +55,6 @@ if (!app.Environment.IsDevelopment())
 app.MapClienteEndpoints();
 app.MapDeliveryEndpoints();
 app.MapAuthEndpoints();
+app.MapPrecioDeliveryEndpoints();
 
 app.Run();

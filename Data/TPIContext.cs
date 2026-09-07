@@ -10,12 +10,11 @@ namespace Data
         public DbSet<Delivery> Deliveries { get; set; }
         public DbSet<Ingrediente> Ingredientes { get; set; }
         public DbSet<Hamburguesa> Hamburguesas { get; set; }
+        public DbSet<PrecioDelivery> PreciosDelivery { get; set; }
         public TPIContext(DbContextOptions<TPIContext> options) : base(options)
         {
             this.Database.EnsureCreated();
         }
-
-        public DbSet<PrecioDelivery> PreciosDelivery { get; set; }
 
         public TPIContext()
         {
