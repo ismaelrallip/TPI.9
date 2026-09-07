@@ -29,6 +29,15 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 
+builder.Services.AddScoped<IHamburguesaRepository, HamburguesaRepository>();
+builder.Services.AddScoped<IHamburguesaService, HamburguesaService>();
+
+builder.Services.AddScoped<IIngredienteRepository, IngredienteRepository>();
+builder.Services.AddScoped<IIngredienteService, IngredienteService>();
+
+builder.Services.AddScoped<IPrecioDeliveryRepository, PrecioDeliveryRepository>();
+builder.Services.AddScoped<IPrecioDeliveryService, PrecioDeliveryService>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 var app = builder.Build();
 
@@ -52,5 +61,8 @@ if (!app.Environment.IsDevelopment())
 app.MapClienteEndpoints();
 app.MapDeliveryEndpoints();
 app.MapAuthEndpoints();
+app.MapHamburguesaEndpoints();
+app.MapIngredienteEndpoints();
+app.MapPrecioDeliveryEndpoints();
 
 app.Run();
