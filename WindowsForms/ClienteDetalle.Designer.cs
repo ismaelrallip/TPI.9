@@ -180,11 +180,9 @@
             passwordTextBox.Location = new Point(302, 289);
             passwordTextBox.Margin = new Padding(2);
             passwordTextBox.Name = "passwordTextBox";
+            passwordTextBox.PasswordChar = '*';
             passwordTextBox.Size = new Size(235, 27);
             passwordTextBox.TabIndex = 30;
-            passwordTextBox.TextChanged += passwordTextBox_TextChanged;
-            passwordTextBox.Enter += passwordTextBox_Enter;
-            passwordTextBox.Leave += passwordTextBox_Leave;
             // 
             // ClienteDetalle
             // 
