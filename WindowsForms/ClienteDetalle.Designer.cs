@@ -44,6 +44,8 @@
             errorProvider = new ErrorProvider(components);
             telefonoTextBox = new TextBox();
             passwordTextBox = new TextBox();
+            confirmarPasswordTextBox = new TextBox();
+            label1 = new Label();
             ((System.ComponentModel.ISupportInitialize)errorProvider).BeginInit();
             SuspendLayout();
             // 
@@ -105,7 +107,7 @@
             // 
             // cancelarButton
             // 
-            cancelarButton.Location = new Point(530, 350);
+            cancelarButton.Location = new Point(533, 383);
             cancelarButton.Margin = new Padding(2);
             cancelarButton.Name = "cancelarButton";
             cancelarButton.Size = new Size(92, 29);
@@ -116,7 +118,7 @@
             // 
             // aceptarButton
             // 
-            aceptarButton.Location = new Point(425, 350);
+            aceptarButton.Location = new Point(428, 383);
             aceptarButton.Margin = new Padding(2);
             aceptarButton.Name = "aceptarButton";
             aceptarButton.Size = new Size(92, 29);
@@ -184,6 +186,25 @@
             passwordTextBox.Size = new Size(235, 27);
             passwordTextBox.TabIndex = 30;
             // 
+            // confirmarPasswordTextBox
+            // 
+            confirmarPasswordTextBox.Location = new Point(302, 332);
+            confirmarPasswordTextBox.Margin = new Padding(2);
+            confirmarPasswordTextBox.Name = "confirmarPasswordTextBox";
+            confirmarPasswordTextBox.PasswordChar = '*';
+            confirmarPasswordTextBox.Size = new Size(235, 27);
+            confirmarPasswordTextBox.TabIndex = 32;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(147, 332);
+            label1.Margin = new Padding(2, 0, 2, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(151, 20);
+            label1.TabIndex = 31;
+            label1.Text = "Confirmar contraseña";
+            // 
             // ClienteDetalle
             // 
             AcceptButton = aceptarButton;
@@ -191,6 +212,8 @@
             AutoScaleMode = AutoScaleMode.Font;
             CancelButton = cancelarButton;
             ClientSize = new Size(800, 450);
+            Controls.Add(confirmarPasswordTextBox);
+            Controls.Add(label1);
             Controls.Add(passwordTextBox);
             Controls.Add(telefonoTextBox);
             Controls.Add(passwordLabel);
@@ -233,5 +256,7 @@
         private ErrorProvider errorProvider;
         private TextBox passwordTextBox;
         private TextBox telefonoTextBox;
+        private TextBox confirmarPasswordTextBox;
+        private Label label1;
     }
 }

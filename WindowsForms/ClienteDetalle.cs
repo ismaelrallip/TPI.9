@@ -63,7 +63,7 @@ namespace WindowsForms
                     Cliente.Apellido = apellidoTextBox.Text.Trim();
                     Cliente.Email = emailTextBox.Text.Trim();
                     Cliente.Telefono = telefonoTextBox.Text.Trim();
-                    Cliente.Password = passwordTextBox.Text; // Se envía tal cual lo que está en pantalla
+                    Cliente.Password = passwordTextBox.Text; 
 
                     if (Mode == FormMode.Update)
                     {
@@ -101,7 +101,8 @@ namespace WindowsForms
             apellidoTextBox.Text = Cliente.Apellido;
             emailTextBox.Text = Cliente.Email;
             telefonoTextBox.Text = Cliente.Telefono;
-            passwordTextBox.Text = Cliente.Password ?? string.Empty; // Muestra la clave real que vino del backend
+            passwordTextBox.Text = Cliente.Password ?? string.Empty;
+            confirmarPasswordTextBox.Text = Cliente.Password ?? string.Empty;
         }
 
         private void SetFormMode(FormMode value)
@@ -110,7 +111,8 @@ namespace WindowsForms
             idLabel.Visible = mode == FormMode.Update;
             idTextBox.Visible = mode == FormMode.Update;
             Text = mode == FormMode.Add ? "Agregar cliente" : "Actualizar cliente";
-            passwordTextBox.UseSystemPasswordChar = false; // Siempre visible en texto plano
+            passwordTextBox.UseSystemPasswordChar = false;
+            confirmarPasswordTextBox.UseSystemPasswordChar = false;
         }
 
         private bool ValidateCliente()
@@ -122,6 +124,7 @@ namespace WindowsForms
             errorProvider.SetError(emailTextBox, string.Empty);
             errorProvider.SetError(telefonoTextBox, string.Empty);
             errorProvider.SetError(passwordTextBox, string.Empty);
+            errorProvider.SetError(confirmarPasswordTextBox, string.Empty); // Limpia error del nuevo campo
 
             if (nombreTextBox.Text.Trim().Length < 2 || nombreTextBox.Text.Trim().Length > 50)
             {
@@ -158,6 +161,11 @@ namespace WindowsForms
                 isValid = false;
                 errorProvider.SetError(passwordTextBox, "La contraseña debe tener al menos 6 caracteres.");
             }
+            else if (passwordTextBox.Text != confirmarPasswordTextBox.Text) 
+            {
+                isValid = false;
+                errorProvider.SetError(confirmarPasswordTextBox, "Las contraseñas no coinciden.");
+            }
 
             return isValid;
         }
@@ -178,6 +186,7 @@ namespace WindowsForms
             emailTextBox.Enabled = false;
             telefonoTextBox.Enabled = false;
             passwordTextBox.Enabled = false;
+            confirmarPasswordTextBox.Enabled = false; 
         }
 
         private void HabilitarControles()
@@ -189,6 +198,7 @@ namespace WindowsForms
             emailTextBox.Enabled = true;
             telefonoTextBox.Enabled = true;
             passwordTextBox.Enabled = true;
+            confirmarPasswordTextBox.Enabled = true;
         }
     }
 }
