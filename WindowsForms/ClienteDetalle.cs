@@ -7,18 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using System.Text.RegularExpressions;
-using DTOs;
-using API.Clients;
-
 using System.Text.RegularExpressions;
 using DTOs;
 using API.Clients;
 
 namespace WindowsForms
 {
-    // FormMode se define una sola vez acá y la reutiliza también DeliveryDetalle.
     public enum FormMode
     {
         Add,
@@ -27,9 +21,6 @@ namespace WindowsForms
 
     public partial class ClienteDetalle : Form
     {
-        private const string PasswordPlaceholder = "12345678"; // valor "de mentira", nunca se manda al backend
-        private bool passwordPlaceholderActive;
-
         private ClienteDTO cliente;
         private FormMode mode;
 
@@ -72,13 +63,7 @@ namespace WindowsForms
                     Cliente.Apellido = apellidoTextBox.Text.Trim();
                     Cliente.Email = emailTextBox.Text.Trim();
                     Cliente.Telefono = telefonoTextBox.Text.Trim();
-
-                    if (Mode == FormMode.Add || !passwordPlaceholderActive)
-                    {
-                        Cliente.Password = passwordTextBox.Text;
-                    }
-                    // Si es Update y quedó el relleno sin tocar, Cliente.Password conserva
-                    // el valor original que trajo el GetAsync() — no se pisa la contraseña.
+                    Cliente.Password = passwordTextBox.Text; 
 
                     if (Mode == FormMode.Update)
                     {
@@ -116,17 +101,8 @@ namespace WindowsForms
             apellidoTextBox.Text = Cliente.Apellido;
             emailTextBox.Text = Cliente.Email;
             telefonoTextBox.Text = Cliente.Telefono;
-
-            if (mode == FormMode.Update)
-            {
-                passwordTextBox.Text = PasswordPlaceholder;
-                passwordPlaceholderActive = true;
-            }
-            else
-            {
-                passwordTextBox.Text = string.Empty;
-                passwordPlaceholderActive = false;
-            }
+            passwordTextBox.Text = Cliente.Password ?? string.Empty;
+            confirmarPasswordTextBox.Text = Cliente.Password ?? string.Empty;
         }
 
         private void SetFormMode(FormMode value)
@@ -135,38 +111,8 @@ namespace WindowsForms
             idLabel.Visible = mode == FormMode.Update;
             idTextBox.Visible = mode == FormMode.Update;
             Text = mode == FormMode.Add ? "Agregar cliente" : "Actualizar cliente";
-            // En alta: texto plano, para que vea lo que está tipeando.
-            // En edición: enmascarado, porque lo que se ve es el relleno falso, no algo que esté escribiendo activamente.
-            passwordTextBox.UseSystemPasswordChar = mode == FormMode.Update;
-        }
-
-        private void passwordTextBox_Enter(object sender, EventArgs e)
-        {
-            //  borra el relleno y desenmascara para que vea lo que escribe.
-            if (passwordPlaceholderActive)
-            {
-                passwordTextBox.Clear();
-                passwordTextBox.UseSystemPasswordChar = false;
-            }
-        }
-
-        private void passwordTextBox_Leave(object sender, EventArgs e)
-        {
-            // Si se va sin escribir nada, vuelve a mostrar el relleno enmascarado.
-            if (mode == FormMode.Update && passwordTextBox.Text.Length == 0)
-            {
-                passwordTextBox.Text = PasswordPlaceholder;
-                passwordPlaceholderActive = true;
-                passwordTextBox.UseSystemPasswordChar = true;
-            }
-        }
-
-        private void passwordTextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (passwordTextBox.Text != PasswordPlaceholder)
-            {
-                passwordPlaceholderActive = false;
-            }
+            passwordTextBox.UseSystemPasswordChar = false;
+            confirmarPasswordTextBox.UseSystemPasswordChar = false;
         }
 
         private bool ValidateCliente()
@@ -178,6 +124,7 @@ namespace WindowsForms
             errorProvider.SetError(emailTextBox, string.Empty);
             errorProvider.SetError(telefonoTextBox, string.Empty);
             errorProvider.SetError(passwordTextBox, string.Empty);
+            errorProvider.SetError(confirmarPasswordTextBox, string.Empty); // Limpia error del nuevo campo
 
             if (nombreTextBox.Text.Trim().Length < 2 || nombreTextBox.Text.Trim().Length > 50)
             {
@@ -209,15 +156,15 @@ namespace WindowsForms
                 errorProvider.SetError(telefonoTextBox, "El teléfono debe tener más de 8 dígitos y contener solo números.");
             }
 
-            if (mode == FormMode.Add && passwordTextBox.Text.Length < 6)
+            if (passwordTextBox.Text.Length < 6)
             {
                 isValid = false;
-                errorProvider.SetError(passwordTextBox, "La contraseña es obligatoria y debe tener al menos 6 caracteres.");
+                errorProvider.SetError(passwordTextBox, "La contraseña debe tener al menos 6 caracteres.");
             }
-            else if (mode == FormMode.Update && !passwordPlaceholderActive && passwordTextBox.Text.Length < 6)
+            else if (passwordTextBox.Text != confirmarPasswordTextBox.Text) 
             {
                 isValid = false;
-                errorProvider.SetError(passwordTextBox, "Si va a cambiar la contraseña, debe tener al menos 6 caracteres.");
+                errorProvider.SetError(confirmarPasswordTextBox, "Las contraseñas no coinciden.");
             }
 
             return isValid;
@@ -239,6 +186,7 @@ namespace WindowsForms
             emailTextBox.Enabled = false;
             telefonoTextBox.Enabled = false;
             passwordTextBox.Enabled = false;
+            confirmarPasswordTextBox.Enabled = false; 
         }
 
         private void HabilitarControles()
@@ -250,6 +198,7 @@ namespace WindowsForms
             emailTextBox.Enabled = true;
             telefonoTextBox.Enabled = true;
             passwordTextBox.Enabled = true;
+            confirmarPasswordTextBox.Enabled = true;
         }
     }
 }
