@@ -28,23 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
-            buttonAddIngrediente = new Button();
+            buttonAddHamburguesa = new Button();
             textBoxDescripcion = new TextBox();
             textBoxNombre = new TextBox();
             textBoxPrecio = new TextBox();
             checkedListBoxIngredientes = new CheckedListBox();
             SuspendLayout();
             // 
-            // buttonAddIngrediente
+            // buttonAddHamburguesa
             // 
-            buttonAddIngrediente.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonAddIngrediente.Location = new Point(337, 530);
-            buttonAddIngrediente.Name = "buttonAddIngrediente";
-            buttonAddIngrediente.Size = new Size(144, 53);
-            buttonAddIngrediente.TabIndex = 8;
-            buttonAddIngrediente.Text = "AGREGAR";
-            buttonAddIngrediente.UseVisualStyleBackColor = true;
-            buttonAddIngrediente.Click += buttonAddIngrediente_Click;
+            buttonAddHamburguesa.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
+            buttonAddHamburguesa.Location = new Point(337, 530);
+            buttonAddHamburguesa.Name = "buttonAddHamburguesa";
+            buttonAddHamburguesa.Size = new Size(144, 53);
+            buttonAddHamburguesa.TabIndex = 8;
+            buttonAddHamburguesa.Text = "AGREGAR";
+            buttonAddHamburguesa.UseVisualStyleBackColor = true;
+            buttonAddHamburguesa.Click += buttonAddHamburguesa_Click;
             // 
             // textBoxDescripcion
             // 
@@ -88,7 +88,7 @@
             ClientSize = new Size(553, 646);
             Controls.Add(checkedListBoxIngredientes);
             Controls.Add(textBoxPrecio);
-            Controls.Add(buttonAddIngrediente);
+            Controls.Add(buttonAddHamburguesa);
             Controls.Add(textBoxDescripcion);
             Controls.Add(textBoxNombre);
             Name = "AgregarHamburguesaForm";
@@ -100,7 +100,7 @@
 
         #endregion
 
-        private Button buttonAddIngrediente;
+        private Button buttonAddHamburguesa;
         private TextBox textBoxDescripcion;
         private TextBox textBoxNombre;
         private TextBox textBoxPrecio;

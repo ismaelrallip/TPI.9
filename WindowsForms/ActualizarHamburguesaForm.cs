@@ -30,7 +30,13 @@ namespace WindowsForms
 
             textBoxNombre.Text = _hamburguesa.Nombre;
             textBoxDescripcion.Text = _hamburguesa.Descripcion;
-            textBoxPrecio.Text = _hamburguesa.Precio.Monto.ToString();
+
+
+            if (_hamburguesa.Precios.Last() != null)
+            {
+                textBoxPrecio.Text = (_hamburguesa.Precios.Last()).Monto.ToString();
+            }
+            
 
             checkedListBoxIngredientes.DisplayMember = "Nombre";
             checkedListBoxIngredientes.Items.Clear();
@@ -65,17 +71,19 @@ namespace WindowsForms
             nombre = textBoxNombre.Text;
             descripcion = textBoxDescripcion.Text;
             // precio
-            if (_hamburguesa.Precio.Monto != decimal.Parse(textBoxPrecio.Text))
+            if ((_hamburguesa.Precios.Last()).Monto != decimal.Parse(textBoxPrecio.Text))
             {
                 precio = decimal.Parse(textBoxPrecio.Text);
                 fechaDesde = DateTime.Now;
+                Precio _precio = new Precio(fechaDesde, precio);
+
+                hambuCambiada.Precios.Add(_precio);
             }
             else
             {
-                precio = _hamburguesa.Precio.Monto;
-                fechaDesde = _hamburguesa.Precio.FechaDesde;
+                hambuCambiada.Precios = _hamburguesa.Precios;
+
             }
-            Precio _precio = new Precio(fechaDesde, precio);
             //
             ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems
                                                     .Cast<Ingrediente>()
@@ -92,7 +100,6 @@ namespace WindowsForms
             hambuCambiada.Id = idRecibida;
             hambuCambiada.Nombre = nombre;
             hambuCambiada.Descripcion = descripcion;
-            hambuCambiada.Precio = _precio;
             hambuCambiada.Ingredientes = ingredientesSeleccionados;
         }
 

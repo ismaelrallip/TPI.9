@@ -29,7 +29,7 @@ namespace WindowsForms
             }
         }
 
-        private async void buttonAddIngrediente_Click(object sender, EventArgs e)
+        private async void buttonAddHamburguesa_Click(object sender, EventArgs e)
         {
             try 
             {
@@ -54,7 +54,7 @@ namespace WindowsForms
                 nuevaHamburguesa.Id = 0;
                 nuevaHamburguesa.Nombre = nombre;
                 nuevaHamburguesa.Descripcion = descripcion;
-                nuevaHamburguesa.Precio = _precio;
+                nuevaHamburguesa.Precios.Add(_precio);
                 nuevaHamburguesa.Ingredientes = ingredientes;
 
                 await HamburguesaApiClient.AddAsync(nuevaHamburguesa);

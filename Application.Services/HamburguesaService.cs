@@ -1,19 +1,12 @@
 ﻿using Data;
 using Domain.Model;
 using DTOs;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
     public class HamburguesaService : IHamburguesaService
     {
         private readonly IHamburguesaRepository hamburguesaRepository;
-        private readonly TPIContext _context;
 
         public HamburguesaService(IHamburguesaRepository hamburguesaRepository)
         {
@@ -22,11 +15,9 @@ namespace Application.Services
 
         public async Task<HamburguesaDTO> AddAsync(HamburguesaDTO dto)
         {
-            List<Ingrediente> ingredientes = dto.Ingredientes.Select(i => _context.Ingredientes.Find(i.Id))
-                                                    .Where(i => i != null)
-                                                    .ToList();
-            Hamburguesa hamburguesa = new Hamburguesa(0, dto.Nombre, dto.Descripcion, dto.Precio, ingredientes);
+            Hamburguesa hamburguesa = new Hamburguesa(0, dto.Nombre, dto.Descripcion,dto.Precios, dto.Ingredientes);
             await hamburguesaRepository.AddAsync(hamburguesa);
+
             dto.Id = hamburguesa.Id;
             return dto;
         }
@@ -46,7 +37,7 @@ namespace Application.Services
                 Id = hamburguesa.Id,
                 Nombre = hamburguesa.Nombre,
                 Descripcion = hamburguesa.Descripcion,
-                Precio = hamburguesa.Precio,
+                Precios = hamburguesa.Precios,
                 Ingredientes = hamburguesa.Ingredientes
             };
         }
@@ -59,7 +50,7 @@ namespace Application.Services
                 Id = hamburguesa.Id,
                 Nombre = hamburguesa.Nombre,
                 Descripcion = hamburguesa.Descripcion,
-                Precio = hamburguesa.Precio,
+                Precios = hamburguesa.Precios,
                 Ingredientes = hamburguesa.Ingredientes
             }).ToList();
         }
@@ -69,7 +60,7 @@ namespace Application.Services
             var existing = await hamburguesaRepository.GetByIdAsync(dto.Id);
             if (existing == null) return false;
 
-            Hamburguesa hamburguesa = new Hamburguesa(dto.Id, dto.Nombre, dto.Descripcion, dto.Precio, dto.Ingredientes);
+            Hamburguesa hamburguesa = new Hamburguesa(dto.Id, dto.Nombre, dto.Descripcion, dto.Precios, dto.Ingredientes);
             return await hamburguesaRepository.UpdateAsync(hamburguesa);
         }
     }

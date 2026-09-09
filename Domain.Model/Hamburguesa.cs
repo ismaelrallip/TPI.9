@@ -11,18 +11,18 @@ namespace Domain.Model
         public int Id { get; private set; }
         public string Nombre { get; private set; }
         public string Descripcion { get; private set; }
-        public Precio Precio { get; private set; }
+        public List<Precio>? Precios { get; private set; }
         public List<Ingrediente> Ingredientes { get; private set; }
         // se agrega constructor vacío para EF Core
         private Hamburguesa()
         {
         }
-        public Hamburguesa(int id, string nombre, string descripcion, Precio precio, List<Ingrediente> ingredientes)
+        public Hamburguesa(int id, string nombre, string descripcion, List<Precio> precios,List<Ingrediente> ingredientes)
         {
             SetId(id);
             SetNombre(nombre);
             SetDescripcion(descripcion);
-            SetPrecio(precio);
+            SetPrecios(precios);
             SetIngredientes(ingredientes);
         }
         public void SetId(int id)
@@ -43,17 +43,25 @@ namespace Domain.Model
                 throw new ArgumentException("La descripción es obligatoria y debe tener entre 2 y 200 caracteres.", nameof(descripcion));
             Descripcion = descripcion;
         }
-        public void SetPrecio(Precio precio)
+        public void SetPrecios(List<Precio> precios)
         {
-            if (precio.Monto < 0)
-                throw new ArgumentException("El precio debe ser mayor o igual a 0.", nameof(precio));
-            Precio = precio;
+            if (precios == null || precios.Count == 0)
+                throw new ArgumentException("La hamburguesa debe tener al menos un precio.", nameof(precios));
+            Precios = precios;
         }
         public void SetIngredientes(List<Ingrediente> ingredientes)
         {
             if (ingredientes == null || ingredientes.Count == 0)
                 throw new ArgumentException("La hamburguesa debe tener al menos un ingrediente.", nameof(ingredientes));
             Ingredientes = ingredientes;
+        }
+
+        // Agregar precio a la lista de precios
+        public void AddPrecio(Precio precio)
+        {
+            if (precio.Monto < 0)
+                throw new ArgumentException("El precio debe ser mayor o igual a 0.", nameof(precio));
+            Precios.Add(precio);
         }
     }
 }

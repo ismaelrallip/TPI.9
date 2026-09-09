@@ -27,7 +27,9 @@ namespace WindowsForms
             {
                 var hamburguesas = await HamburguesaApiClient.GetAllAsync();
                 _hamburguesas = hamburguesas;
-                dataGridViewHamburguesas.DataSource = hamburguesas.ToList();
+               
+                dataGridViewHamburguesas.DataSource = null;
+                dataGridViewHamburguesas.DataSource = _hamburguesas;
             }
             catch (Exception ex)
             {
