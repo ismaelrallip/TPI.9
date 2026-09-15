@@ -89,6 +89,26 @@ namespace WebAPI
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi();
+
+            app.MapGet("/clientes/criteria", async (string texto, IClienteService clienteService) =>
+            {
+                var criteria = new ClienteCriteriaDTO { Texto = texto };
+                var clientes = await clienteService.GetByCriteriaAsync(criteria);
+                return Results.Ok(clientes);
+            })
+            .WithName("GetClientesByCriteria")
+            .Produces<List<ClienteDTO>>(StatusCodes.Status200OK)
+            .WithOpenApi();
+
+            app.MapGet("/deliveries/criteria", async (string texto, IDeliveryService deliveryService) =>
+            {
+                var criteria = new DeliveryCriteriaDTO { Texto = texto };
+                var deliveries = await deliveryService.GetByCriteriaAsync(criteria);
+                return Results.Ok(deliveries);
+            })
+            .WithName("GetDeliveriesByCriteria")
+            .Produces<List<DeliveryDTO>>(StatusCodes.Status200OK)
+            .WithOpenApi();
         }
     }
 }

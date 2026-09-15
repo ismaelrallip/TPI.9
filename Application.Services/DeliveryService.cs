@@ -91,5 +91,19 @@ namespace Application.Services
             Delivery delivery = new Delivery(dto.IdDelivery, dto.Nombre, dto.Apellido, dto.Telefono, dto.Dni);
             return await deliveryRepository.UpdateAsync(delivery);
         }
+        public async Task<IEnumerable<DeliveryDTO>> GetByCriteriaAsync(DeliveryCriteriaDTO criteria)
+        {
+            var domainCriteria = new DeliveryCriteria(criteria.Texto);
+            var deliveries = await deliveryRepository.GetByCriteriaAsync(domainCriteria);
+
+            return deliveries.Select(delivery => new DeliveryDTO
+            {
+                IdDelivery = delivery.IdDelivery,
+                Nombre = delivery.Nombre,
+                Apellido = delivery.Apellido,
+                Telefono = delivery.Telefono,
+                Dni = delivery.Dni
+            }).ToList();
+        }
     }
 }

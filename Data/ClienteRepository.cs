@@ -1,5 +1,7 @@
 ﻿using Domain.Model;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace Data
 {
@@ -75,6 +77,47 @@ namespace Data
                 query = query.Where(c => c.Id != excludeId.Value);
             }
             return await query.AnyAsync();
+        }
+        public async Task<IEnumerable<Cliente>> GetByCriteriaAsync(ClienteCriteria criteria)
+        {
+                const string sql = @"
+            SELECT Id, Nombre, Apellido, Email, Telefono, Password
+            FROM Clientes
+            WHERE Nombre LIKE @SearchTerm
+               OR Apellido LIKE @SearchTerm
+               OR Email LIKE @SearchTerm
+            ORDER BY Nombre, Apellido";
+
+            var clientes = new List<Cliente>();
+            string? connectionString = context.Database.GetConnectionString();
+            string searchPattern = $"%{criteria.Texto}%";
+
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@SearchTerm", searchPattern);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var cliente = new Cliente(
+                    reader.GetInt32(reader.GetOrdinal("Id")),
+                    reader.GetString(reader.GetOrdinal("Nombre")),
+                    reader.GetString(reader.GetOrdinal("Apellido")),
+                    reader.GetString(reader.GetOrdinal("Email")),
+                    reader.GetString(reader.GetOrdinal("Telefono")),
+                    reader.GetString(reader.GetOrdinal("Password"))
+                );
+                clientes.Add(cliente);
+            }
+
+            return clientes;
+        }
+        public async Task<Cliente?> GetByEmailAsync(string email)
+        {
+            return await context.Clientes
+                .FirstOrDefaultAsync(c => c.Email.ToLower() == email.ToLower());
         }
     }
 }

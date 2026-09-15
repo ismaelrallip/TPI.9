@@ -1,89 +1,88 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Application.Services;
+using DTOs;
+using API.Clients;
 
 namespace WindowsForms
 {
     public partial class LoginForm : Form
     {
-        private readonly IClienteService clienteService;
-        private TextBox txtUser;
-        private TextBox txtPass;
-        private Button btnLogin;
-        private Button btnCancel;
-        private Label lblUser;
-        private Label lblPass;
+        // Datos de la sesión iniciada. Válido solo si DialogResult == OK.
+        public LoginResponse? Sesion { get; private set; }
 
-        public LoginForm(IClienteService clienteService)
+        public LoginForm()
         {
-            this.clienteService = clienteService;
             InitializeComponent();
         }
 
-        private void InitializeComponent()
+        private async void loginButton_Click(object sender, EventArgs e)
         {
-            this.Text = "Login - Sistema Hamburguesería";
-            this.Width = 350;
-            this.Height = 220;
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
+            errorProvider.Clear();
 
-            lblUser = new Label() { Text = "Usuario / Email:", Left = 20, Top = 20, Width = 90 };
-            txtUser = new TextBox() { Left = 120, Top = 20, Width = 170 };
+            var username = usernameTextBox.Text.Trim();
+            var password = passwordTextBox.Text;
 
-            lblPass = new Label() { Text = "Contraseña:", Left = 20, Top = 60, Width = 90 };
-            txtPass = new TextBox() { Left = 120, Top = 60, Width = 170, PasswordChar = '*' };
-
-            btnLogin = new Button() { Text = "Ingresar", Left = 120, Top = 110, Width = 80 };
-            btnCancel = new Button() { Text = "Cancelar", Left = 210, Top = 110, Width = 80 };
-
-            btnLogin.Click += BtnLogin_Click;
-            btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-            this.Controls.Add(lblUser);
-            this.Controls.Add(txtUser);
-            this.Controls.Add(lblPass);
-            this.Controls.Add(txtPass);
-            this.Controls.Add(btnLogin);
-            this.Controls.Add(btnCancel);
-        }
-
-        private async void BtnLogin_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(txtUser.Text) || string.IsNullOrWhiteSpace(txtPass.Text))
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("Por favor ingrese usuario y contraseña.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Debe completar usuario y contraseña.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Credenciales por defecto para acceso rápido en Entrega 2
-            if (txtUser.Text.Trim().Equals("admin", StringComparison.OrdinalIgnoreCase) && txtPass.Text == "admin")
-            {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-                return;
-            }
-
+            SetLoading(true);
             try
             {
-                var clientes = await clienteService.GetAllAsync();
-                var cliente = clientes.FirstOrDefault(c => c.Email.Equals(txtUser.Text.Trim(), StringComparison.OrdinalIgnoreCase) && c.Password == txtPass.Text);
+                var sesion = await AuthApiClient.LoginAsync(username, password);
+                if (sesion == null)
+                {
+                    MessageBox.Show("Usuario o contraseña incorrectos.", "Acceso denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    passwordTextBox.Clear();
+                    passwordTextBox.Focus();
+                    return;
+                }
 
-                if (cliente != null)
-                {
-                    this.DialogResult = DialogResult.OK;
-                    this.Close();
-                }
-                else
-                {
-                    MessageBox.Show("Usuario o contraseña incorrectos.", "Error de Autenticación", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                Sesion = sesion;
+                DialogResult = DialogResult.OK;
+                Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al validar login: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"No se pudo iniciar sesión.\n\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            finally
+            {
+                SetLoading(false);
+            }
+        }
+
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
+        }
+
+        private void passwordTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                loginButton_Click(sender, EventArgs.Empty);
+                e.Handled = true;
+            }
+        }
+
+        private void SetLoading(bool loading)
+        {
+            loginButton.Enabled = !loading;
+            cancelButton.Enabled = !loading;
+            usernameTextBox.Enabled = !loading;
+            passwordTextBox.Enabled = !loading;
+            loginButton.Text = loading ? "Verificando..." : "Iniciar sesión";
         }
     }
 }

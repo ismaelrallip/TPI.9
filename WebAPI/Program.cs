@@ -29,6 +29,7 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 
+builder.Services.AddScoped<IAuthService, AuthService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -50,5 +51,6 @@ if (!app.Environment.IsDevelopment())
 // Map endpoints
 app.MapClienteEndpoints();
 app.MapDeliveryEndpoints();
+app.MapAuthEndpoints();
 
 app.Run();
