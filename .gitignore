@@ -10,3 +10,4 @@ obj/
 **/obj/
 user/
 **/*.user
+*.csproj.user
