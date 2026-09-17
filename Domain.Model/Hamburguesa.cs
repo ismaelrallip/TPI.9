@@ -13,6 +13,7 @@ namespace Domain.Model
         public string Descripcion { get; private set; }
         public decimal Precio { get; private set; }
         public List<Ingrediente> Ingredientes { get; private set; }
+        public Hamburguesa() { }
         public Hamburguesa(int id, string nombre, string descripcion, decimal precio, List<Ingrediente> ingredientes)
         {
             SetId(id);

@@ -12,7 +12,7 @@ namespace Domain.Model
         public string Nombre { get; set; }
         public string Descripcion { get; set; }
         public int Stock { get; set; }
-
+        public Ingrediente() { }
         public Ingrediente(int id, string nombre, string descripcion, int stock)
         {
             SetId(id);
