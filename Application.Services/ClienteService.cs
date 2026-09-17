@@ -32,6 +32,7 @@ namespace Application.Services
 
             await clienteRepository.AddAsync(cliente);
             dto.Id = cliente.Id;
+            dto.Password = string.Empty;
             return dto;
         }
 
@@ -52,7 +53,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = string.Empty
             };
         }
 
@@ -66,7 +67,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = string.Empty
             }).ToList();
         }
 
@@ -101,7 +102,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = string.Empty
             }).ToList();
         }
     }
