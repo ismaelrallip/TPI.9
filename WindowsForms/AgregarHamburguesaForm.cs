@@ -20,17 +20,28 @@ namespace WindowsForms
 
         private async Task CargarIngredientes()
         {
-            checkedListBoxIngredientes.DisplayMember = "Nombre";
             checkedListBoxIngredientes.Items.Clear();
-            var ingredientes = await IngredienteApiClient.GetAllAsync();
+
+            IEnumerable<IngredienteDTO> ingredientes = await IngredienteApiClient.GetAllAsync();
             if (ingredientes != null)
             {
                 checkedListBoxIngredientes.Items.AddRange(ingredientes.ToArray());
+                checkedListBoxIngredientes.DisplayMember = "Nombre";
+                checkedListBoxIngredientes.ValueMember = "Id";
             }
         }
 
         private async void buttonAddHamburguesa_Click(object sender, EventArgs e)
         {
+            if(string.IsNullOrWhiteSpace(textBoxNombre.Text) ||
+               string.IsNullOrWhiteSpace(textBoxDescripcion.Text) ||
+               string.IsNullOrWhiteSpace(textBoxPrecio.Text) ||
+               checkedListBoxIngredientes.CheckedItems.Count == 0)
+            {
+                MessageBox.Show("Por favor, complete todos los campos y seleccione al menos un ingrediente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             try 
             {
                 string nombre = textBoxNombre.Text;
@@ -50,14 +61,18 @@ namespace WindowsForms
                             dto.Stock
                             )).ToList();
 
+                List<Precio> precios = new List<Precio>();
+                precios.Add(_precio);
+
                 HamburguesaDTO nuevaHamburguesa = new HamburguesaDTO();
                 nuevaHamburguesa.Id = 0;
                 nuevaHamburguesa.Nombre = nombre;
                 nuevaHamburguesa.Descripcion = descripcion;
-                nuevaHamburguesa.Precios.Add(_precio);
+                nuevaHamburguesa.Precios = precios;
                 nuevaHamburguesa.Ingredientes = ingredientes;
 
                 await HamburguesaApiClient.AddAsync(nuevaHamburguesa);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (FormatException)

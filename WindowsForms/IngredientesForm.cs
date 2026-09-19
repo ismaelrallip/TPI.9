@@ -67,7 +67,7 @@ namespace WindowsForms
             ActualizarIngrediente(id);
         }
 
-        private void AgregarIngrediente() 
+        private async void AgregarIngrediente() 
         {
             using (var formModal = new AgregarIngredienteForm())
             {
@@ -76,11 +76,11 @@ namespace WindowsForms
                 {
                     // Si guardó con éxito, recarga el gridView
                     textBoxBuscarIngredientes.Text = string.Empty;
-                    LoadIngredientes();
+                    await LoadIngredientes();
                 }
             }
         }
-        private void ActualizarIngrediente(int id) 
+        private async void ActualizarIngrediente(int id) 
         {
             using (var formModal = new ActualizarIngredienteForm(id))
             {
@@ -89,9 +89,10 @@ namespace WindowsForms
                 {
                     // Si guardó con éxito, recarga el gridView
                     textBoxBuscarIngredientes.Text = string.Empty;
-                    LoadIngredientes();
+                    await LoadIngredientes();
                 }
             }
+            
         }
     }
 }

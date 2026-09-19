@@ -8,7 +8,7 @@ namespace WindowsForms
     public partial class HamburguesaForm : Form
     {
 
-        private IEnumerable<HamburguesaDTO> _hamburguesas;
+        private IEnumerable<HamburguesaDTO> burgas;
 
         public HamburguesaForm()
         {
@@ -25,11 +25,29 @@ namespace WindowsForms
         {
             try
             {
-                var hamburguesas = await HamburguesaApiClient.GetAllAsync();
-                _hamburguesas = hamburguesas;
-               
+                burgas = await HamburguesaApiClient.GetAllAsync();
+
+                var datosParaGrid = burgas.Select(h =>
+                {
+                    // Buscamos el precio con la fecha más reciente
+                    var ultimoPrecio = h.Precios?
+                        .OrderByDescending(p => p.FechaDesde)
+                        .FirstOrDefault();
+
+                    return new
+                    {
+                        h.Id,
+                        h.Nombre,
+                        h.Descripcion,
+                        // Si no hay precios o la lista es null, asigna 0m
+                        Precio = ultimoPrecio?.Monto ?? 0m,
+                        // Opcional: si querés mostrar cuándo se actualizó ese precio
+                        FechaPrecio = ultimoPrecio?.FechaDesde.ToString("dd/MM/yyyy") ?? "Sin registrar"
+                    };
+                }).ToList();
+
                 dataGridViewHamburguesas.DataSource = null;
-                dataGridViewHamburguesas.DataSource = _hamburguesas;
+                dataGridViewHamburguesas.DataSource = datosParaGrid;
             }
             catch (Exception ex)
             {
@@ -40,18 +58,23 @@ namespace WindowsForms
         private void textBoxBuscarHamburguesa_TextChanged(object sender, EventArgs e)
         {
             string filtro = textBoxBuscarHamburguesa.Text;
-            if (_hamburguesas != null)
+            if (burgas != null)
             {
                 if (!string.IsNullOrWhiteSpace(filtro))
                 {
-                    _hamburguesas = _hamburguesas.Where(i => i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
+                    burgas = burgas.Where(i => i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
                                                           i.Descripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase));
                 }
-                dataGridViewHamburguesas.DataSource = _hamburguesas.ToList();
+                dataGridViewHamburguesas.DataSource = burgas.ToList();
             }
         }
 
         private void buttonAddHamburguesa_Click(object sender, EventArgs e)
+        {
+            CrearHamburguesa();
+        }
+
+        private async void CrearHamburguesa()
         {
             using (var formModal = new AgregarHamburguesaForm())
             {
@@ -60,7 +83,7 @@ namespace WindowsForms
                 {
                     // Si guardó con éxito, recarga el gridView
                     textBoxBuscarHamburguesa.Text = string.Empty;
-                    LoadHamburguesas();
+                    await LoadHamburguesas();
                 }
             }
         }
@@ -76,7 +99,7 @@ namespace WindowsForms
             ActualizarHamburguesa(id);
         }
 
-        private void ActualizarHamburguesa(int id)
+        private async void ActualizarHamburguesa(int id)
         {
             using (var formModal = new ActualizarHamburguesaForm(id))
             {
@@ -85,7 +108,7 @@ namespace WindowsForms
                 {
                     // Si guardó con éxito, recarga el gridView
                     textBoxBuscarHamburguesa.Text = string.Empty;
-                    LoadHamburguesas();
+                    await LoadHamburguesas();
                 }
             }
         }

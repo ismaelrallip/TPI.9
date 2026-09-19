@@ -14,9 +14,7 @@ namespace Domain.Model
         public List<Precio>? Precios { get; private set; }
         public List<Ingrediente> Ingredientes { get; private set; }
         // se agrega constructor vacío para EF Core
-        private Hamburguesa()
-        {
-        }
+        public Hamburguesa() { }
         public Hamburguesa(int id, string nombre, string descripcion, List<Precio> precios,List<Ingrediente> ingredientes)
         {
             SetId(id);

@@ -14,7 +14,10 @@ namespace Data
 
         public async Task<IEnumerable<Hamburguesa>> GetAllAsync()
         {
-            return await context.Hamburguesas.ToListAsync();
+            return await context.Hamburguesas
+                            .Include(h => h.Precios)
+                            .Include(h => h.Ingredientes)
+                            .ToListAsync();
         }
 
         public async Task<Hamburguesa?> GetByIdAsync(int id)
@@ -24,6 +27,17 @@ namespace Data
 
         public async Task AddAsync(Hamburguesa hamburguesa)
         {
+            var ids = hamburguesa.Ingredientes?.Select(i => i.Id).Where(id => id > 0).ToList() ?? new List<int>();
+            var ingredientesExistentes = await context.Ingredientes
+                                              .Where(i => ids.Contains(i.Id))
+                                              .ToListAsync();
+
+            if (ingredientesExistentes.Count != ids.Count)
+                throw new ArgumentException("Uno o más ingredientes no existen.");
+
+            // Reemplazar la colección por las entidades rastreadas
+            hamburguesa.SetIngredientes(ingredientesExistentes);
+
             await context.Hamburguesas.AddAsync(hamburguesa);
             await context.SaveChangesAsync();
         }

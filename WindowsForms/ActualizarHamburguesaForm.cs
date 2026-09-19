@@ -27,6 +27,7 @@ namespace WindowsForms
         private async void ActualizarHamburguesaForm_Load(object sender, EventArgs e)
         {
             _hamburguesa = await HamburguesaApiClient.GetAsync(idRecibida);
+            
 
             textBoxNombre.Text = _hamburguesa.Nombre;
             textBoxDescripcion.Text = _hamburguesa.Descripcion;
@@ -36,16 +37,53 @@ namespace WindowsForms
             {
                 textBoxPrecio.Text = (_hamburguesa.Precios.Last()).Monto.ToString();
             }
-            
 
-            checkedListBoxIngredientes.DisplayMember = "Nombre";
+            await CargarIngredientes();
+            await MarcarIngredientesDeHamburguesa(_hamburguesa);
+        }
+        private async Task CargarIngredientes()
+        {
             checkedListBoxIngredientes.Items.Clear();
 
-            if (_hamburguesa.Ingredientes != null)
+            IEnumerable<IngredienteDTO> ingredientes = await IngredienteApiClient.GetAllAsync();
+            if (ingredientes != null)
             {
-                checkedListBoxIngredientes.Items.AddRange(_hamburguesa.Ingredientes.ToArray());
+                checkedListBoxIngredientes.Items.AddRange(ingredientes.ToArray());
+                checkedListBoxIngredientes.DisplayMember = "Nombre";
+                checkedListBoxIngredientes.ValueMember = "Id";
             }
         }
+
+        private async Task MarcarIngredientesDeHamburguesa(HamburguesaDTO burga)
+        {
+            // 1. Desmarcamos todos los elementos previamente seleccionados
+            for (int i = 0; i < checkedListBoxIngredientes.Items.Count; i++)
+            {
+                checkedListBoxIngredientes.SetItemChecked(i, false);
+            }
+
+            if (burga?.Ingredientes == null || !burga.Ingredientes.Any())
+                return;
+
+            // 2. Extraemos los Ids de los ingredientes de la hamburguesa en un HashSet para búsqueda rápida O(1)
+            var idsIngredientesHamburguesa = burga.Ingredientes
+                                                .Select(i => i.Id)
+                                                .ToHashSet();
+
+            // 3. Recorremos los elementos cargados en el CheckedListBox
+            for (int i = 0; i < checkedListBoxIngredientes.Items.Count; i++)
+            {
+                // Casteamos el item a IngredienteDTO (o Ingrediente según corresponda)
+                if (checkedListBoxIngredientes.Items[i] is IngredienteDTO ing)
+                {
+                    if (idsIngredientesHamburguesa.Contains(ing.Id))
+                    {
+                        checkedListBoxIngredientes.SetItemChecked(i, true);
+                    }
+                }
+            }
+        }
+
 
         private void buttonUpdateHamburguesa_Click(object sender, EventArgs e)
         {
@@ -58,6 +96,7 @@ namespace WindowsForms
             {
                 SeleccionarDatos();
                 await HamburguesaApiClient.UpdateAsync(hambuCambiada);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
@@ -113,6 +152,7 @@ namespace WindowsForms
             try
             {
                 await HamburguesaApiClient.DeleteAsync(idRecibida);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)

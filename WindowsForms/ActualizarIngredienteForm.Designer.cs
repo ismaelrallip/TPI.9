@@ -85,6 +85,7 @@
             buttonDeleteIngrediente.TabIndex = 19;
             buttonDeleteIngrediente.Text = "ELIMINAR";
             buttonDeleteIngrediente.UseVisualStyleBackColor = false;
+            buttonDeleteIngrediente.Click += buttonDeleteIngrediente_Click;
             // 
             // ActualizarIngredienteForm
             // 

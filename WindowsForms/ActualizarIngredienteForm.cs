@@ -49,6 +49,7 @@ namespace WindowsForms
             try
             {
                 await IngredienteApiClient.UpdateAsync(ingredienteCambiado);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
@@ -62,11 +63,12 @@ namespace WindowsForms
             EliminarIngrediente();
         }
 
-        private async void EliminarIngrediente() 
+        private async void EliminarIngrediente()
         {
             try
             {
                 await IngredienteApiClient.DeleteAsync(_ingrediente.Id);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
