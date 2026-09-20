@@ -57,16 +57,36 @@ namespace WindowsForms
 
         private void textBoxBuscarHamburguesa_TextChanged(object sender, EventArgs e)
         {
-            string filtro = textBoxBuscarHamburguesa.Text;
-            if (burgas != null)
+            if (burgas == null) return;
+
+            string filtro = textBoxBuscarHamburguesa.Text?.Trim() ?? string.Empty;
+
+            // 1. Filtrar sobre la lista original SIN reasignar 'burgas'
+            var burgasFiltradas = string.IsNullOrWhiteSpace(filtro)
+                ? burgas
+                : burgas.Where(i => (i.Nombre != null && i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase)) ||
+                                    (i.Descripcion != null && i.Descripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase)));
+
+            // 2. Proyectar las columnas exactamente igual que en LoadHamburguesas
+            var datosParaGrid = burgasFiltradas.Select(h =>
             {
-                if (!string.IsNullOrWhiteSpace(filtro))
+                var ultimoPrecio = h.Precios?
+                    .OrderByDescending(p => p.FechaDesde)
+                    .FirstOrDefault();
+
+                return new
                 {
-                    burgas = burgas.Where(i => i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
-                                                          i.Descripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase));
-                }
-                dataGridViewHamburguesas.DataSource = burgas.ToList();
-            }
+                    h.Id,
+                    h.Nombre,
+                    h.Descripcion,
+                    Precio = ultimoPrecio?.Monto ?? 0m,
+                    FechaPrecio = ultimoPrecio?.FechaDesde.ToString("dd/MM/yyyy") ?? "Sin registrar"
+                };
+            }).ToList();
+
+            // 3. Refrescar el DataGridView
+            dataGridViewHamburguesas.DataSource = null;
+            dataGridViewHamburguesas.DataSource = datosParaGrid;
         }
 
         private void buttonAddHamburguesa_Click(object sender, EventArgs e)

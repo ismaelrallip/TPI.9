@@ -36,6 +36,7 @@
             // 
             // dataGridViewHamburguesas
             // 
+            dataGridViewHamburguesas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewHamburguesas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewHamburguesas.Location = new Point(45, 186);
             dataGridViewHamburguesas.MultiSelect = false;

@@ -36,6 +36,7 @@
             // 
             // dataGridViewIngredientes
             // 
+            dataGridViewIngredientes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewIngredientes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewIngredientes.Location = new Point(75, 254);
             dataGridViewIngredientes.MultiSelect = false;

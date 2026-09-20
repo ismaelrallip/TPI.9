@@ -125,8 +125,9 @@ namespace WindowsForms
             }
             //
             ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems
-                                                    .Cast<Ingrediente>()
-                                                    .ToList();
+                                                            .Cast<IngredienteDTO>()
+                                                            .Select(dto => new Ingrediente(dto.Id, dto.Nombre, dto.Descripcion, dto.Stock))
+                                                            .ToList();
 
             // Validar que el nombre no esté vacío
             if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrEmpty(descripcion) || precio > 0)

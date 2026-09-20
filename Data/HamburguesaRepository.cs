@@ -22,7 +22,10 @@ namespace Data
 
         public async Task<Hamburguesa?> GetByIdAsync(int id)
         {
-            return await context.Hamburguesas.FindAsync(id);
+            return await context.Hamburguesas
+                                .Include(h => h.Precios)
+                                .Include(h => h.Ingredientes)
+                                .FirstOrDefaultAsync(h => h.Id == id);
         }
 
         public async Task AddAsync(Hamburguesa hamburguesa)

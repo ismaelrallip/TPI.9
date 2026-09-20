@@ -23,16 +23,20 @@ namespace WindowsForms
 
         private void textBoxBuscarIngredientes_TextChanged(object sender, EventArgs e)
         {
-            string filtro = textBoxBuscarIngredientes.Text;
-            if (_ingredientes != null)
-            {
-                if (!string.IsNullOrWhiteSpace(filtro))
-                {
-                    _ingredientes = _ingredientes.Where(i => i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
-                                                          i.Descripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase));
-                }
-                dataGridViewIngredientes.DataSource = _ingredientes.ToList();
-            }
+            if (_ingredientes == null) return;
+
+            string filtro = textBoxBuscarIngredientes.Text?.Trim() ?? string.Empty;
+
+            // 1. Si no hay filtro, mostramos la lista completa original
+            // 2. Si hay filtro, filtramos sobre _ingredientes SIN sobrescribirlo
+            var ingredientesFiltrados = string.IsNullOrWhiteSpace(filtro)
+                ? _ingredientes
+                : _ingredientes.Where(i => (i.Nombre != null && i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase)) ||
+                                          (i.Descripcion != null && i.Descripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase)));
+
+            // 3. Asignar el resultado al DataGridView
+            dataGridViewIngredientes.DataSource = null;
+            dataGridViewIngredientes.DataSource = ingredientesFiltrados.ToList();
         }
 
         private void buttonAddIngrediente_Click(object sender, EventArgs e)
