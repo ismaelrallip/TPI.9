@@ -26,6 +26,9 @@ namespace WindowsForms
 
         private async void ActualizarHamburguesaForm_Load(object sender, EventArgs e)
         {
+            buttonUpdateHamburguesa.Enabled = false;
+            buttonDeleteHamburguesa.Enabled = false;
+
             _hamburguesa = await HamburguesaApiClient.GetAsync(idRecibida);
             
 
@@ -40,6 +43,9 @@ namespace WindowsForms
 
             await CargarIngredientes();
             await MarcarIngredientesDeHamburguesa(_hamburguesa);
+
+            buttonUpdateHamburguesa.Enabled = true;
+            buttonDeleteHamburguesa.Enabled = true;
         }
         private async Task CargarIngredientes()
         {

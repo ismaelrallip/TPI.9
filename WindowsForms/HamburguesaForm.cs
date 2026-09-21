@@ -1,7 +1,8 @@
-﻿using Domain.Model;
-using API.Clients;
+﻿using API.Clients;
+using Domain.Model;
 using DTOs;
 using System.Data;
+using System.Windows.Forms;
 
 namespace WindowsForms
 {
@@ -17,6 +18,7 @@ namespace WindowsForms
 
         private void HamburguesaForm_Load(object sender, EventArgs e)
         {
+            buttonUpdateHamburguesa.Enabled = false;
             LoadHamburguesas();
         }
 
@@ -25,6 +27,9 @@ namespace WindowsForms
         {
             try
             {
+                buttonUpdateHamburguesa.Enabled = false;
+                buttonVerResumen.Enabled = false;
+
                 burgas = await HamburguesaApiClient.GetAllAsync();
 
                 var datosParaGrid = burgas.Select(h =>
@@ -48,6 +53,9 @@ namespace WindowsForms
 
                 dataGridViewHamburguesas.DataSource = null;
                 dataGridViewHamburguesas.DataSource = datosParaGrid;
+
+                buttonUpdateHamburguesa.Enabled = true;
+                buttonVerResumen.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -71,8 +79,8 @@ namespace WindowsForms
             var datosParaGrid = burgasFiltradas.Select(h =>
             {
                 var ultimoPrecio = h.Precios?
-                    .OrderByDescending(p => p.FechaDesde)
-                    .FirstOrDefault();
+                                    .OrderByDescending(p => p.FechaDesde)
+                                    .FirstOrDefault();
 
                 return new
                 {
@@ -107,21 +115,63 @@ namespace WindowsForms
                 }
             }
         }
-        private void dataGridViewHamburguesas_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+
+        private void buttonUpdateHamburguesa_Click(object sender, EventArgs e)
         {
-            if (e.RowIndex < 0)
-                return;
+            // 1. Validar que exista al menos una fila seleccionada o una celda activa
+            if (dataGridViewHamburguesas.CurrentRow != null && dataGridViewHamburguesas.CurrentRow.Index >= 0)
+            {
+                // 2. Obtener la celda "Id" (o el índice de columna correspondiente)
+                var celdaId = dataGridViewHamburguesas.CurrentRow.Cells["Id"].Value;
 
-            DataGridViewRow fila = dataGridViewHamburguesas.Rows[e.RowIndex];
-
-            int id = Convert.ToInt32(fila.Cells["Id"].Value);
-
-            ActualizarHamburguesa(id);
+                // 3. Validar que la celda no esté vacía o nula
+                if (celdaId != null && int.TryParse(celdaId.ToString(), out int idSeleccionado))
+                {
+                    ActualizarHamburguesa(idSeleccionado);
+                }
+                else
+                {
+                    MessageBox.Show("La fila seleccionada no contiene un ID válido.");
+                }
+            }
         }
 
         private async void ActualizarHamburguesa(int id)
         {
             using (var formModal = new ActualizarHamburguesaForm(id))
+            {
+                // ShowDialog() lo abre como popup modal
+                if (formModal.ShowDialog() == DialogResult.OK)
+                {
+                    // Si guardó con éxito, recarga el gridView
+                    textBoxBuscarHamburguesa.Text = string.Empty;
+                    await LoadHamburguesas();
+                }
+            }
+        }
+
+        private void buttonVerResumen_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewHamburguesas.CurrentRow != null && dataGridViewHamburguesas.CurrentRow.Index >= 0)
+            {
+                // 2. Obtener la celda "Id" (o el índice de columna correspondiente)
+                var celdaId = dataGridViewHamburguesas.CurrentRow.Cells["Id"].Value;
+
+                // 3. Validar que la celda no esté vacía o nula
+                if (celdaId != null && int.TryParse(celdaId.ToString(), out int idSeleccionado))
+                {
+                    VerResumen(idSeleccionado);
+                }
+                else
+                {
+                    MessageBox.Show("La fila seleccionada no contiene un ID válido.");
+                }
+            }
+        }
+
+        private async void VerResumen(int id)
+        {
+            using (var formModal = new ResumenHamburguesaForm(id))
             {
                 // ShowDialog() lo abre como popup modal
                 if (formModal.ShowDialog() == DialogResult.OK)

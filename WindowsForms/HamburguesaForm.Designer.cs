@@ -31,6 +31,8 @@
             dataGridViewHamburguesas = new DataGridView();
             buttonAddHamburguesa = new Button();
             textBoxBuscarHamburguesa = new TextBox();
+            buttonUpdateHamburguesa = new Button();
+            buttonVerResumen = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridViewHamburguesas).BeginInit();
             SuspendLayout();
             // 
@@ -38,24 +40,23 @@
             // 
             dataGridViewHamburguesas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewHamburguesas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewHamburguesas.Location = new Point(36, 149);
-            dataGridViewHamburguesas.Margin = new Padding(2, 2, 2, 2);
+            dataGridViewHamburguesas.Location = new Point(64, 146);
+            dataGridViewHamburguesas.Margin = new Padding(2);
             dataGridViewHamburguesas.MultiSelect = false;
             dataGridViewHamburguesas.Name = "dataGridViewHamburguesas";
             dataGridViewHamburguesas.ReadOnly = true;
             dataGridViewHamburguesas.RowHeadersWidth = 62;
             dataGridViewHamburguesas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewHamburguesas.Size = new Size(794, 485);
+            dataGridViewHamburguesas.Size = new Size(1072, 570);
             dataGridViewHamburguesas.TabIndex = 1;
-            dataGridViewHamburguesas.CellContentDoubleClick += dataGridViewHamburguesas_CellContentDoubleClick;
             // 
             // buttonAddHamburguesa
             // 
-            buttonAddHamburguesa.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonAddHamburguesa.Location = new Point(714, 61);
-            buttonAddHamburguesa.Margin = new Padding(2, 2, 2, 2);
+            buttonAddHamburguesa.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            buttonAddHamburguesa.Location = new Point(1021, 775);
+            buttonAddHamburguesa.Margin = new Padding(2);
             buttonAddHamburguesa.Name = "buttonAddHamburguesa";
-            buttonAddHamburguesa.Size = new Size(115, 42);
+            buttonAddHamburguesa.Size = new Size(115, 36);
             buttonAddHamburguesa.TabIndex = 4;
             buttonAddHamburguesa.Text = "AGREGAR";
             buttonAddHamburguesa.UseVisualStyleBackColor = true;
@@ -63,24 +64,50 @@
             // 
             // textBoxBuscarHamburguesa
             // 
-            textBoxBuscarHamburguesa.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBoxBuscarHamburguesa.Location = new Point(36, 72);
-            textBoxBuscarHamburguesa.Margin = new Padding(2, 2, 2, 2);
+            textBoxBuscarHamburguesa.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            textBoxBuscarHamburguesa.Location = new Point(89, 50);
+            textBoxBuscarHamburguesa.Margin = new Padding(2);
             textBoxBuscarHamburguesa.Name = "textBoxBuscarHamburguesa";
             textBoxBuscarHamburguesa.PlaceholderText = "Hamburguesa...";
-            textBoxBuscarHamburguesa.Size = new Size(399, 34);
+            textBoxBuscarHamburguesa.Size = new Size(328, 31);
             textBoxBuscarHamburguesa.TabIndex = 3;
             textBoxBuscarHamburguesa.TextChanged += textBoxBuscarHamburguesa_TextChanged;
             // 
+            // buttonUpdateHamburguesa
+            // 
+            buttonUpdateHamburguesa.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            buttonUpdateHamburguesa.Location = new Point(877, 775);
+            buttonUpdateHamburguesa.Margin = new Padding(2);
+            buttonUpdateHamburguesa.Name = "buttonUpdateHamburguesa";
+            buttonUpdateHamburguesa.Size = new Size(128, 36);
+            buttonUpdateHamburguesa.TabIndex = 5;
+            buttonUpdateHamburguesa.Text = "MODIFICAR";
+            buttonUpdateHamburguesa.UseVisualStyleBackColor = true;
+            buttonUpdateHamburguesa.Click += buttonUpdateHamburguesa_Click;
+            // 
+            // buttonVerResumen
+            // 
+            buttonVerResumen.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            buttonVerResumen.Location = new Point(702, 775);
+            buttonVerResumen.Margin = new Padding(2);
+            buttonVerResumen.Name = "buttonVerResumen";
+            buttonVerResumen.Size = new Size(154, 36);
+            buttonVerResumen.TabIndex = 6;
+            buttonVerResumen.Text = "VER RESUMEN";
+            buttonVerResumen.UseVisualStyleBackColor = true;
+            buttonVerResumen.Click += buttonVerResumen_Click;
+            // 
             // HamburguesaForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1006, 721);
+            ClientSize = new Size(1258, 901);
+            Controls.Add(buttonVerResumen);
+            Controls.Add(buttonUpdateHamburguesa);
             Controls.Add(buttonAddHamburguesa);
             Controls.Add(textBoxBuscarHamburguesa);
             Controls.Add(dataGridViewHamburguesas);
-            Margin = new Padding(2, 2, 2, 2);
+            Margin = new Padding(2);
             Name = "HamburguesaForm";
             Text = "HamburguesaForm";
             Load += HamburguesaForm_Load;
@@ -94,5 +121,7 @@
         private DataGridView dataGridViewHamburguesas;
         private Button buttonAddHamburguesa;
         private TextBox textBoxBuscarHamburguesa;
+        private Button buttonUpdateHamburguesa;
+        private Button buttonVerResumen;
     }
 }

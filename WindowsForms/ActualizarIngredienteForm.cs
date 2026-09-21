@@ -16,11 +16,17 @@ namespace WindowsForms
 
         private async void ActualizarIngredienteForm_Load(object sender, EventArgs e)
         {
+            buttonUpdateIngrediente.Enabled = false;
+            buttonDeleteIngrediente.Enabled = false;
+
             _ingrediente = await IngredienteApiClient.GetAsync(idRecibida);
 
             textBoxNombre.Text = _ingrediente.Nombre;
             textBoxDescripcion.Text = _ingrediente.Descripcion;
             numericUpDownStock.Value = _ingrediente.Stock;
+
+            buttonUpdateIngrediente.Enabled = true;
+            buttonDeleteIngrediente.Enabled = true;
 
         }
 

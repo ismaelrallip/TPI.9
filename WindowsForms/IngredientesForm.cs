@@ -49,9 +49,15 @@ namespace WindowsForms
         {
             try
             {
+                buttonUpdateIngrediente.Enabled = false;
+                buttonVerResumen.Enabled = false;
+
                 var ingredientes = await IngredienteApiClient.GetAllAsync();
                 _ingredientes = ingredientes;
                 dataGridViewIngredientes.DataSource = ingredientes.ToList();
+
+                buttonUpdateIngrediente.Enabled = true;
+                buttonVerResumen.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -59,19 +65,27 @@ namespace WindowsForms
             }
         }
 
-        private void dataGridViewIngredientes_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void buttonUpdateHamburguesa_Click(object sender, EventArgs e)
         {
-            if (e.RowIndex < 0)
-                return;
+            // 1. Validar que exista al menos una fila seleccionada o una celda activa
+            if (dataGridViewIngredientes.CurrentRow != null && dataGridViewIngredientes.CurrentRow.Index >= 0)
+            {
+                // 2. Obtener la celda "Id" (o el índice de columna correspondiente)
+                var celdaId = dataGridViewIngredientes.CurrentRow.Cells["Id"].Value;
 
-            DataGridViewRow fila = dataGridViewIngredientes.Rows[e.RowIndex];
-
-            int id = Convert.ToInt32(fila.Cells["Id"].Value);
-
-            ActualizarIngrediente(id);
+                // 3. Validar que la celda no esté vacía o nula
+                if (celdaId != null && int.TryParse(celdaId.ToString(), out int idSeleccionado))
+                {
+                    ActualizarIngrediente(idSeleccionado);
+                }
+                else
+                {
+                    MessageBox.Show("La fila seleccionada no contiene un ID válido.");
+                }
+            }
         }
 
-        private async void AgregarIngrediente() 
+        private async void AgregarIngrediente()
         {
             using (var formModal = new AgregarIngredienteForm())
             {
@@ -84,7 +98,7 @@ namespace WindowsForms
                 }
             }
         }
-        private async void ActualizarIngrediente(int id) 
+        private async void ActualizarIngrediente(int id)
         {
             using (var formModal = new ActualizarIngredienteForm(id))
             {
@@ -96,7 +110,9 @@ namespace WindowsForms
                     await LoadIngredientes();
                 }
             }
-            
+
         }
+
+        
     }
 }
