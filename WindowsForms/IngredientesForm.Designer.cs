@@ -38,32 +38,35 @@
             // 
             dataGridViewIngredientes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewIngredientes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewIngredientes.Location = new Point(75, 254);
+            dataGridViewIngredientes.Location = new Point(60, 203);
+            dataGridViewIngredientes.Margin = new Padding(2, 2, 2, 2);
             dataGridViewIngredientes.MultiSelect = false;
             dataGridViewIngredientes.Name = "dataGridViewIngredientes";
             dataGridViewIngredientes.ReadOnly = true;
             dataGridViewIngredientes.RowHeadersWidth = 62;
             dataGridViewIngredientes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewIngredientes.Size = new Size(992, 441);
+            dataGridViewIngredientes.Size = new Size(794, 415);
             dataGridViewIngredientes.TabIndex = 0;
             dataGridViewIngredientes.CellContentDoubleClick += dataGridViewIngredientes_CellContentDoubleClick;
             // 
             // textBoxBuscarIngredientes
             // 
             textBoxBuscarIngredientes.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBoxBuscarIngredientes.Location = new Point(75, 102);
+            textBoxBuscarIngredientes.Location = new Point(60, 82);
+            textBoxBuscarIngredientes.Margin = new Padding(2, 2, 2, 2);
             textBoxBuscarIngredientes.Name = "textBoxBuscarIngredientes";
             textBoxBuscarIngredientes.PlaceholderText = "Ingrediente...";
-            textBoxBuscarIngredientes.Size = new Size(498, 39);
+            textBoxBuscarIngredientes.Size = new Size(399, 34);
             textBoxBuscarIngredientes.TabIndex = 1;
             textBoxBuscarIngredientes.TextChanged += textBoxBuscarIngredientes_TextChanged;
             // 
             // buttonAddIngrediente
             // 
             buttonAddIngrediente.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonAddIngrediente.Location = new Point(923, 88);
+            buttonAddIngrediente.Location = new Point(738, 70);
+            buttonAddIngrediente.Margin = new Padding(2, 2, 2, 2);
             buttonAddIngrediente.Name = "buttonAddIngrediente";
-            buttonAddIngrediente.Size = new Size(144, 53);
+            buttonAddIngrediente.Size = new Size(115, 42);
             buttonAddIngrediente.TabIndex = 2;
             buttonAddIngrediente.Text = "AGREGAR";
             buttonAddIngrediente.UseVisualStyleBackColor = true;
@@ -71,12 +74,13 @@
             // 
             // IngredientesForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1168, 830);
+            ClientSize = new Size(1006, 721);
             Controls.Add(buttonAddIngrediente);
             Controls.Add(textBoxBuscarIngredientes);
             Controls.Add(dataGridViewIngredientes);
+            Margin = new Padding(2, 2, 2, 2);
             Name = "IngredientesForm";
             Text = "Ingredientes";
             Load += IngredientesForm_Load;

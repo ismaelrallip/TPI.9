@@ -2,11 +2,31 @@
 # Este archivo .gitignore ha sido creado automáticamente por Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
-/.github
+# Visual Studio / IDE
+.vs/
+.vscode/
+.idea/
+
+# Visual Studio user files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+**/*.user
+*.csproj.user
+
+# Build outputs
 bin/
 obj/
 **/bin/
 **/obj/
-user/
-**/*.user
+publish/
+
+# Logs, db, etc.
+*.log
+*.sqlite
+*.db
+
+# OS
+Thumbs.db
+.DS_Store

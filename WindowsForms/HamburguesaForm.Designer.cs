@@ -38,22 +38,24 @@
             // 
             dataGridViewHamburguesas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewHamburguesas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewHamburguesas.Location = new Point(45, 186);
+            dataGridViewHamburguesas.Location = new Point(36, 149);
+            dataGridViewHamburguesas.Margin = new Padding(2, 2, 2, 2);
             dataGridViewHamburguesas.MultiSelect = false;
             dataGridViewHamburguesas.Name = "dataGridViewHamburguesas";
             dataGridViewHamburguesas.ReadOnly = true;
             dataGridViewHamburguesas.RowHeadersWidth = 62;
             dataGridViewHamburguesas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewHamburguesas.Size = new Size(992, 441);
+            dataGridViewHamburguesas.Size = new Size(794, 485);
             dataGridViewHamburguesas.TabIndex = 1;
             dataGridViewHamburguesas.CellContentDoubleClick += dataGridViewHamburguesas_CellContentDoubleClick;
             // 
             // buttonAddHamburguesa
             // 
             buttonAddHamburguesa.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonAddHamburguesa.Location = new Point(893, 76);
+            buttonAddHamburguesa.Location = new Point(714, 61);
+            buttonAddHamburguesa.Margin = new Padding(2, 2, 2, 2);
             buttonAddHamburguesa.Name = "buttonAddHamburguesa";
-            buttonAddHamburguesa.Size = new Size(144, 53);
+            buttonAddHamburguesa.Size = new Size(115, 42);
             buttonAddHamburguesa.TabIndex = 4;
             buttonAddHamburguesa.Text = "AGREGAR";
             buttonAddHamburguesa.UseVisualStyleBackColor = true;
@@ -62,21 +64,23 @@
             // textBoxBuscarHamburguesa
             // 
             textBoxBuscarHamburguesa.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBoxBuscarHamburguesa.Location = new Point(45, 90);
+            textBoxBuscarHamburguesa.Location = new Point(36, 72);
+            textBoxBuscarHamburguesa.Margin = new Padding(2, 2, 2, 2);
             textBoxBuscarHamburguesa.Name = "textBoxBuscarHamburguesa";
             textBoxBuscarHamburguesa.PlaceholderText = "Hamburguesa...";
-            textBoxBuscarHamburguesa.Size = new Size(498, 39);
+            textBoxBuscarHamburguesa.Size = new Size(399, 34);
             textBoxBuscarHamburguesa.TabIndex = 3;
             textBoxBuscarHamburguesa.TextChanged += textBoxBuscarHamburguesa_TextChanged;
             // 
             // HamburguesaForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1131, 675);
+            ClientSize = new Size(1006, 721);
             Controls.Add(buttonAddHamburguesa);
             Controls.Add(textBoxBuscarHamburguesa);
             Controls.Add(dataGridViewHamburguesas);
+            Margin = new Padding(2, 2, 2, 2);
             Name = "HamburguesaForm";
             Text = "HamburguesaForm";
             Load += HamburguesaForm_Load;

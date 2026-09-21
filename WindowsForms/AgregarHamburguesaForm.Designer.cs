@@ -38,9 +38,10 @@
             // buttonAddHamburguesa
             // 
             buttonAddHamburguesa.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonAddHamburguesa.Location = new Point(337, 530);
+            buttonAddHamburguesa.Location = new Point(557, 370);
+            buttonAddHamburguesa.Margin = new Padding(2, 2, 2, 2);
             buttonAddHamburguesa.Name = "buttonAddHamburguesa";
-            buttonAddHamburguesa.Size = new Size(144, 53);
+            buttonAddHamburguesa.Size = new Size(115, 42);
             buttonAddHamburguesa.TabIndex = 8;
             buttonAddHamburguesa.Text = "AGREGAR";
             buttonAddHamburguesa.UseVisualStyleBackColor = true;
@@ -49,49 +50,56 @@
             // textBoxDescripcion
             // 
             textBoxDescripcion.Font = new Font("Segoe UI", 12F);
-            textBoxDescripcion.Location = new Point(38, 147);
+            textBoxDescripcion.Location = new Point(30, 118);
+            textBoxDescripcion.Margin = new Padding(2, 2, 2, 2);
             textBoxDescripcion.Name = "textBoxDescripcion";
             textBoxDescripcion.PlaceholderText = "Descripcion...";
-            textBoxDescripcion.Size = new Size(259, 39);
+            textBoxDescripcion.Size = new Size(208, 34);
             textBoxDescripcion.TabIndex = 7;
             // 
             // textBoxNombre
             // 
             textBoxNombre.Font = new Font("Segoe UI", 12F);
-            textBoxNombre.Location = new Point(38, 56);
+            textBoxNombre.Location = new Point(30, 45);
+            textBoxNombre.Margin = new Padding(2, 2, 2, 2);
             textBoxNombre.Name = "textBoxNombre";
             textBoxNombre.PlaceholderText = "Nombre...";
-            textBoxNombre.Size = new Size(259, 39);
+            textBoxNombre.Size = new Size(208, 34);
             textBoxNombre.TabIndex = 6;
             // 
             // textBoxPrecio
             // 
             textBoxPrecio.Font = new Font("Segoe UI", 12F);
-            textBoxPrecio.Location = new Point(38, 230);
+            textBoxPrecio.Location = new Point(30, 184);
+            textBoxPrecio.Margin = new Padding(2, 2, 2, 2);
             textBoxPrecio.Name = "textBoxPrecio";
             textBoxPrecio.PlaceholderText = "Precio...";
-            textBoxPrecio.Size = new Size(259, 39);
+            textBoxPrecio.Size = new Size(208, 34);
             textBoxPrecio.TabIndex = 9;
             // 
             // checkedListBoxIngredientes
             // 
             checkedListBoxIngredientes.FormattingEnabled = true;
-            checkedListBoxIngredientes.Location = new Point(38, 317);
+            checkedListBoxIngredientes.Location = new Point(30, 254);
+            checkedListBoxIngredientes.Margin = new Padding(2, 2, 2, 2);
             checkedListBoxIngredientes.Name = "checkedListBoxIngredientes";
-            checkedListBoxIngredientes.Size = new Size(259, 200);
+            checkedListBoxIngredientes.Size = new Size(430, 158);
             checkedListBoxIngredientes.TabIndex = 10;
             // 
             // AgregarHamburguesaForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(553, 646);
+            ClientSize = new Size(702, 433);
             Controls.Add(checkedListBoxIngredientes);
             Controls.Add(textBoxPrecio);
             Controls.Add(buttonAddHamburguesa);
             Controls.Add(textBoxDescripcion);
             Controls.Add(textBoxNombre);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(2, 2, 2, 2);
             Name = "AgregarHamburguesaForm";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "AgregarHamburguesaForm";
             Load += AgregarHamburguesaForm_Load;
             ResumeLayout(false);

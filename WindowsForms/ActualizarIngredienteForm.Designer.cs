@@ -39,9 +39,10 @@
             // buttonUpdateIngrediente
             // 
             buttonUpdateIngrediente.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonUpdateIngrediente.Location = new Point(247, 444);
+            buttonUpdateIngrediente.Location = new Point(506, 355);
+            buttonUpdateIngrediente.Margin = new Padding(2, 2, 2, 2);
             buttonUpdateIngrediente.Name = "buttonUpdateIngrediente";
-            buttonUpdateIngrediente.Size = new Size(195, 53);
+            buttonUpdateIngrediente.Size = new Size(156, 42);
             buttonUpdateIngrediente.TabIndex = 9;
             buttonUpdateIngrediente.Text = "ACTUALIZAR";
             buttonUpdateIngrediente.UseVisualStyleBackColor = true;
@@ -50,28 +51,31 @@
             // numericUpDownStock
             // 
             numericUpDownStock.Font = new Font("Segoe UI", 12F);
-            numericUpDownStock.Location = new Point(30, 245);
+            numericUpDownStock.Location = new Point(24, 196);
+            numericUpDownStock.Margin = new Padding(2, 2, 2, 2);
             numericUpDownStock.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
             numericUpDownStock.Name = "numericUpDownStock";
-            numericUpDownStock.Size = new Size(259, 39);
+            numericUpDownStock.Size = new Size(207, 34);
             numericUpDownStock.TabIndex = 8;
             // 
             // textBoxDescripcion
             // 
             textBoxDescripcion.Font = new Font("Segoe UI", 12F);
-            textBoxDescripcion.Location = new Point(30, 134);
+            textBoxDescripcion.Location = new Point(24, 107);
+            textBoxDescripcion.Margin = new Padding(2, 2, 2, 2);
             textBoxDescripcion.Name = "textBoxDescripcion";
             textBoxDescripcion.PlaceholderText = "Descripcion...";
-            textBoxDescripcion.Size = new Size(259, 39);
+            textBoxDescripcion.Size = new Size(208, 34);
             textBoxDescripcion.TabIndex = 7;
             // 
             // textBoxNombre
             // 
             textBoxNombre.Font = new Font("Segoe UI", 12F);
-            textBoxNombre.Location = new Point(30, 43);
+            textBoxNombre.Location = new Point(24, 34);
+            textBoxNombre.Margin = new Padding(2, 2, 2, 2);
             textBoxNombre.Name = "textBoxNombre";
             textBoxNombre.PlaceholderText = "Nombre...";
-            textBoxNombre.Size = new Size(259, 39);
+            textBoxNombre.Size = new Size(208, 34);
             textBoxNombre.TabIndex = 6;
             // 
             // buttonDeleteIngrediente
@@ -79,9 +83,10 @@
             buttonDeleteIngrediente.BackColor = Color.Red;
             buttonDeleteIngrediente.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
             buttonDeleteIngrediente.ForeColor = SystemColors.ButtonHighlight;
-            buttonDeleteIngrediente.Location = new Point(30, 444);
+            buttonDeleteIngrediente.Location = new Point(24, 355);
+            buttonDeleteIngrediente.Margin = new Padding(2, 2, 2, 2);
             buttonDeleteIngrediente.Name = "buttonDeleteIngrediente";
-            buttonDeleteIngrediente.Size = new Size(149, 53);
+            buttonDeleteIngrediente.Size = new Size(119, 42);
             buttonDeleteIngrediente.TabIndex = 19;
             buttonDeleteIngrediente.Text = "ELIMINAR";
             buttonDeleteIngrediente.UseVisualStyleBackColor = false;
@@ -89,15 +94,18 @@
             // 
             // ActualizarIngredienteForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(454, 528);
+            ClientSize = new Size(702, 433);
             Controls.Add(buttonDeleteIngrediente);
             Controls.Add(buttonUpdateIngrediente);
             Controls.Add(numericUpDownStock);
             Controls.Add(textBoxDescripcion);
             Controls.Add(textBoxNombre);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(2, 2, 2, 2);
             Name = "ActualizarIngredienteForm";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "ActualizarIngredienteForm";
             Load += ActualizarIngredienteForm_Load;
             ((System.ComponentModel.ISupportInitialize)numericUpDownStock).EndInit();

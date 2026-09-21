@@ -74,6 +74,7 @@ namespace WebAPI
             .Produces(StatusCodes.Status400BadRequest)
             .WithOpenApi();
 
+
             app.MapDelete("/clientes/{id}", async (int id, IClienteService clienteService) =>
             {
                 var deleted = await clienteService.DeleteAsync(id);

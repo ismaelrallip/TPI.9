@@ -10,7 +10,8 @@ namespace Application.Services
 {
     public class AuthService : IAuthService
     {
-        
+        //Hay un solo administrador, por lo que sus credenciales están hardcodeadas.
+
         private const string AdminUsername = "admin";
         private const string AdminPassword = "admin";
 
@@ -36,6 +37,10 @@ namespace Application.Services
             }
 
             // Cliente
+
+            // Busca el cliente en la base de datos por email
+
+
             var cliente = await clienteRepository.GetByEmailAsync(request.Username.Trim());
             if (cliente == null || cliente.Password != request.Password)
             {
