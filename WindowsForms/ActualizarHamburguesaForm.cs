@@ -130,7 +130,7 @@ namespace WindowsForms
                                                             .ToList();
 
             // Validar que el nombre no esté vacío
-            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrEmpty(descripcion) || precio > 0)
+            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrEmpty(descripcion) || precio < 0)
             {
                 MessageBox.Show("Nombre o Descripcion no validos o el precio no puede ser negativo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
