@@ -40,10 +40,10 @@
             // actualizarButton
             // 
             actualizarButton.Enabled = false;
-            actualizarButton.Location = new Point(602, 381);
-            actualizarButton.Margin = new Padding(2);
+            actualizarButton.Location = new Point(687, 614);
+            actualizarButton.Margin = new Padding(2, 3, 2, 3);
             actualizarButton.Name = "actualizarButton";
-            actualizarButton.Size = new Size(80, 22);
+            actualizarButton.Size = new Size(91, 29);
             actualizarButton.TabIndex = 16;
             actualizarButton.Text = "Actualizar";
             actualizarButton.UseVisualStyleBackColor = true;
@@ -51,20 +51,20 @@
             // eliminarButton
             // 
             eliminarButton.Enabled = false;
-            eliminarButton.Location = new Point(509, 381);
-            eliminarButton.Margin = new Padding(2);
+            eliminarButton.Location = new Point(580, 614);
+            eliminarButton.Margin = new Padding(2, 3, 2, 3);
             eliminarButton.Name = "eliminarButton";
-            eliminarButton.Size = new Size(80, 22);
+            eliminarButton.Size = new Size(91, 29);
             eliminarButton.TabIndex = 15;
             eliminarButton.Text = "Eliminar";
             eliminarButton.UseVisualStyleBackColor = true;
             // 
             // agregarButton
             // 
-            agregarButton.Location = new Point(695, 381);
-            agregarButton.Margin = new Padding(2);
+            agregarButton.Location = new Point(796, 614);
+            agregarButton.Margin = new Padding(2, 3, 2, 3);
             agregarButton.Name = "agregarButton";
-            agregarButton.Size = new Size(80, 22);
+            agregarButton.Size = new Size(91, 29);
             agregarButton.TabIndex = 14;
             agregarButton.Text = "Agregar";
             agregarButton.UseVisualStyleBackColor = true;
@@ -76,23 +76,23 @@
             PrecioDeliveryDataGridView.AllowUserToDeleteRows = false;
             PrecioDeliveryDataGridView.AllowUserToOrderColumns = true;
             PrecioDeliveryDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            PrecioDeliveryDataGridView.Location = new Point(25, 106);
-            PrecioDeliveryDataGridView.Margin = new Padding(2);
+            PrecioDeliveryDataGridView.Location = new Point(29, 141);
+            PrecioDeliveryDataGridView.Margin = new Padding(2, 3, 2, 3);
             PrecioDeliveryDataGridView.MultiSelect = false;
             PrecioDeliveryDataGridView.Name = "PrecioDeliveryDataGridView";
             PrecioDeliveryDataGridView.ReadOnly = true;
             PrecioDeliveryDataGridView.RowHeadersWidth = 82;
             PrecioDeliveryDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            PrecioDeliveryDataGridView.Size = new Size(751, 244);
+            PrecioDeliveryDataGridView.Size = new Size(858, 436);
             PrecioDeliveryDataGridView.TabIndex = 13;
             PrecioDeliveryDataGridView.SelectionChanged += PrecioDeliveryDataGridView_SelectionChanged;
             // 
             // buscarButton
             // 
-            buscarButton.Location = new Point(285, 50);
-            buscarButton.Margin = new Padding(2);
+            buscarButton.Location = new Point(326, 67);
+            buscarButton.Margin = new Padding(2, 3, 2, 3);
             buscarButton.Name = "buscarButton";
-            buscarButton.Size = new Size(65, 18);
+            buscarButton.Size = new Size(74, 24);
             buscarButton.TabIndex = 12;
             buscarButton.Text = "Buscar";
             buscarButton.UseVisualStyleBackColor = true;
@@ -100,23 +100,25 @@
             // 
             // dateTimePickerDesde
             // 
-            dateTimePickerDesde.Location = new Point(55, 50);
+            dateTimePickerDesde.Location = new Point(63, 67);
+            dateTimePickerDesde.Margin = new Padding(3, 4, 3, 4);
             dateTimePickerDesde.Name = "dateTimePickerDesde";
-            dateTimePickerDesde.Size = new Size(200, 23);
+            dateTimePickerDesde.Size = new Size(228, 27);
             dateTimePickerDesde.TabIndex = 17;
             dateTimePickerDesde.Value = new DateTime(2026, 9, 6, 0, 0, 0, 0);
             // 
             // PrecioDeliveryHistorico
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1006, 721);
             Controls.Add(dateTimePickerDesde);
             Controls.Add(actualizarButton);
             Controls.Add(eliminarButton);
             Controls.Add(agregarButton);
             Controls.Add(PrecioDeliveryDataGridView);
             Controls.Add(buscarButton);
+            Margin = new Padding(3, 4, 3, 4);
             Name = "PrecioDeliveryHistorico";
             Text = "PrecioDeliveryHistorico";
             Load += PrecioDeliveryHistorico_Load;

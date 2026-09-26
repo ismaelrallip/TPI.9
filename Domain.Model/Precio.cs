@@ -11,6 +11,8 @@ namespace Domain.Model
         public DateTime FechaDesde { get; private set; }
         public decimal Monto { get; private set; }
 
+        // se agrega constructor vacío para EF Core
+        private Precio() { }
         public Precio(DateTime fechaDesde, decimal monto) 
         {
             SetFecha(fechaDesde);

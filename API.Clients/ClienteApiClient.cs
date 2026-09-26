@@ -106,5 +106,6 @@ namespace API.Clients
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al buscar clientes.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al buscar clientes.", ex); }
         }
+        
     }
 }

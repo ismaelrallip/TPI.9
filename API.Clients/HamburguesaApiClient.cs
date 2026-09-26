@@ -44,7 +44,6 @@ namespace API.Clients
 
         public static async Task AddAsync(HamburguesaDTO dto)
         {
-
             try
             {
                 using var client = await CreateHttpClientAsync();

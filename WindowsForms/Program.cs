@@ -1,3 +1,6 @@
+using System;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace WindowsForms
 {
@@ -27,20 +30,33 @@ namespace WindowsForms
                 {
                     try
                     {
-                        System.Windows.Forms.Application.Run(new HomeAdministrador());
+                        // Crear instancia y mantener referencia para leer la bandera después
+                        var home = new HomeAdministrador();
+                        System.Windows.Forms.Application.Run(home);
+
+                        // Si el home pidió logout, continuamos el while para volver al login;
+                        // si no (usuario cerró la ventana para salir), terminamos la app.
+                        if (home.LogoutRequested)
+                        {
+                            // continuar el bucle: volver al login
+                            continue;
+                        }
+                        else
+                        {
+                            return; // cerrar la app
+                        }
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Error en la aplicación: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
                     }
-                    return; // Por ahora, al cerrar HomeAdministrador se termina la app (sin logout todavía).
                 }
                 else
                 {
                     // Todavía no armamos la pantalla del Cliente.
                     MessageBox.Show("La pantalla para Clientes todavía no está disponible.", "Aviso",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    
                 }
             }
         }

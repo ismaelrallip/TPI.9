@@ -39,9 +39,10 @@
             // buttonUpdateHamburguesa
             // 
             buttonUpdateHamburguesa.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonUpdateHamburguesa.Location = new Point(294, 532);
+            buttonUpdateHamburguesa.Location = new Point(258, 478);
+            buttonUpdateHamburguesa.Margin = new Padding(2);
             buttonUpdateHamburguesa.Name = "buttonUpdateHamburguesa";
-            buttonUpdateHamburguesa.Size = new Size(195, 53);
+            buttonUpdateHamburguesa.Size = new Size(195, 52);
             buttonUpdateHamburguesa.TabIndex = 13;
             buttonUpdateHamburguesa.Text = "ACTUALIZAR";
             buttonUpdateHamburguesa.UseVisualStyleBackColor = true;
@@ -50,15 +51,17 @@
             // checkedListBoxIngredientes
             // 
             checkedListBoxIngredientes.FormattingEnabled = true;
-            checkedListBoxIngredientes.Location = new Point(37, 285);
+            checkedListBoxIngredientes.Location = new Point(38, 285);
+            checkedListBoxIngredientes.Margin = new Padding(2);
             checkedListBoxIngredientes.Name = "checkedListBoxIngredientes";
-            checkedListBoxIngredientes.Size = new Size(259, 200);
+            checkedListBoxIngredientes.Size = new Size(415, 172);
             checkedListBoxIngredientes.TabIndex = 17;
             // 
             // textBoxPrecio
             // 
             textBoxPrecio.Font = new Font("Segoe UI", 12F);
-            textBoxPrecio.Location = new Point(37, 198);
+            textBoxPrecio.Location = new Point(38, 198);
+            textBoxPrecio.Margin = new Padding(2);
             textBoxPrecio.Name = "textBoxPrecio";
             textBoxPrecio.PlaceholderText = "Precio...";
             textBoxPrecio.Size = new Size(259, 39);
@@ -67,7 +70,8 @@
             // textBoxDescripcion
             // 
             textBoxDescripcion.Font = new Font("Segoe UI", 12F);
-            textBoxDescripcion.Location = new Point(37, 115);
+            textBoxDescripcion.Location = new Point(38, 115);
+            textBoxDescripcion.Margin = new Padding(2);
             textBoxDescripcion.Name = "textBoxDescripcion";
             textBoxDescripcion.PlaceholderText = "Descripcion...";
             textBoxDescripcion.Size = new Size(259, 39);
@@ -76,7 +80,8 @@
             // textBoxNombre
             // 
             textBoxNombre.Font = new Font("Segoe UI", 12F);
-            textBoxNombre.Location = new Point(37, 24);
+            textBoxNombre.Location = new Point(38, 24);
+            textBoxNombre.Margin = new Padding(2);
             textBoxNombre.Name = "textBoxNombre";
             textBoxNombre.PlaceholderText = "Nombre...";
             textBoxNombre.Size = new Size(259, 39);
@@ -87,9 +92,10 @@
             buttonDeleteHamburguesa.BackColor = Color.Red;
             buttonDeleteHamburguesa.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
             buttonDeleteHamburguesa.ForeColor = SystemColors.ButtonHighlight;
-            buttonDeleteHamburguesa.Location = new Point(37, 532);
+            buttonDeleteHamburguesa.Location = new Point(27, 478);
+            buttonDeleteHamburguesa.Margin = new Padding(2);
             buttonDeleteHamburguesa.Name = "buttonDeleteHamburguesa";
-            buttonDeleteHamburguesa.Size = new Size(149, 53);
+            buttonDeleteHamburguesa.Size = new Size(149, 52);
             buttonDeleteHamburguesa.TabIndex = 18;
             buttonDeleteHamburguesa.Text = "ELIMINAR";
             buttonDeleteHamburguesa.UseVisualStyleBackColor = false;
@@ -99,14 +105,17 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(511, 608);
+            ClientSize = new Size(492, 541);
             Controls.Add(buttonDeleteHamburguesa);
             Controls.Add(checkedListBoxIngredientes);
             Controls.Add(textBoxPrecio);
             Controls.Add(textBoxDescripcion);
             Controls.Add(textBoxNombre);
             Controls.Add(buttonUpdateHamburguesa);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(2);
             Name = "ActualizarHamburguesaForm";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "ActualizarHamburguesaForm";
             Load += ActualizarHamburguesaForm_Load;
             ResumeLayout(false);

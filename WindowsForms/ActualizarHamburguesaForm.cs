@@ -8,7 +8,8 @@ namespace WindowsForms
 {
     public partial class ActualizarHamburguesaForm : Form
     {
-        private Hamburguesa _hamburguesa;
+        private HamburguesaDTO _hamburguesa;
+        private int idRecibida;
         private string nombre;
         private string descripcion;
         private decimal precio;
@@ -17,26 +18,78 @@ namespace WindowsForms
 
         private HamburguesaDTO hambuCambiada = new HamburguesaDTO();
 
-        public ActualizarHamburguesaForm(Hamburguesa hamburguesa)
+        public ActualizarHamburguesaForm(int id)
         {
-            this._hamburguesa = hamburguesa;
+            this.idRecibida = id;
             InitializeComponent();
         }
 
-        private void ActualizarHamburguesaForm_Load(object sender, EventArgs e)
+        private async void ActualizarHamburguesaForm_Load(object sender, EventArgs e)
         {
+            buttonUpdateHamburguesa.Enabled = false;
+            buttonDeleteHamburguesa.Enabled = false;
+
+            _hamburguesa = await HamburguesaApiClient.GetAsync(idRecibida);
+            
+
             textBoxNombre.Text = _hamburguesa.Nombre;
             textBoxDescripcion.Text = _hamburguesa.Descripcion;
-            textBoxPrecio.Text = _hamburguesa.Precio.Monto.ToString();
 
-            checkedListBoxIngredientes.DisplayMember = "Nombre";
+
+            if (_hamburguesa.Precios.Last() != null)
+            {
+                textBoxPrecio.Text = (_hamburguesa.Precios.Last()).Monto.ToString();
+            }
+
+            await CargarIngredientes();
+            await MarcarIngredientesDeHamburguesa(_hamburguesa);
+
+            buttonUpdateHamburguesa.Enabled = true;
+            buttonDeleteHamburguesa.Enabled = true;
+        }
+        private async Task CargarIngredientes()
+        {
             checkedListBoxIngredientes.Items.Clear();
 
-            if (_hamburguesa.Ingredientes != null)
+            IEnumerable<IngredienteDTO> ingredientes = await IngredienteApiClient.GetAllAsync();
+            if (ingredientes != null)
             {
-                checkedListBoxIngredientes.Items.AddRange(_hamburguesa.Ingredientes.ToArray());
+                checkedListBoxIngredientes.Items.AddRange(ingredientes.ToArray());
+                checkedListBoxIngredientes.DisplayMember = "Nombre";
+                checkedListBoxIngredientes.ValueMember = "Id";
             }
         }
+
+        private async Task MarcarIngredientesDeHamburguesa(HamburguesaDTO burga)
+        {
+            // 1. Desmarcamos todos los elementos previamente seleccionados
+            for (int i = 0; i < checkedListBoxIngredientes.Items.Count; i++)
+            {
+                checkedListBoxIngredientes.SetItemChecked(i, false);
+            }
+
+            if (burga?.Ingredientes == null || !burga.Ingredientes.Any())
+                return;
+
+            // 2. Extraemos los Ids de los ingredientes de la hamburguesa en un HashSet para búsqueda rápida O(1)
+            var idsIngredientesHamburguesa = burga.Ingredientes
+                                                .Select(i => i.Id)
+                                                .ToHashSet();
+
+            // 3. Recorremos los elementos cargados en el CheckedListBox
+            for (int i = 0; i < checkedListBoxIngredientes.Items.Count; i++)
+            {
+                // Casteamos el item a IngredienteDTO (o Ingrediente según corresponda)
+                if (checkedListBoxIngredientes.Items[i] is IngredienteDTO ing)
+                {
+                    if (idsIngredientesHamburguesa.Contains(ing.Id))
+                    {
+                        checkedListBoxIngredientes.SetItemChecked(i, true);
+                    }
+                }
+            }
+        }
+
 
         private void buttonUpdateHamburguesa_Click(object sender, EventArgs e)
         {
@@ -49,6 +102,7 @@ namespace WindowsForms
             {
                 SeleccionarDatos();
                 await HamburguesaApiClient.UpdateAsync(hambuCambiada);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
@@ -62,33 +116,36 @@ namespace WindowsForms
             nombre = textBoxNombre.Text;
             descripcion = textBoxDescripcion.Text;
             // precio
-            if (_hamburguesa.Precio.Monto != decimal.Parse(textBoxPrecio.Text))
+            if ((_hamburguesa.Precios.Last()).Monto != decimal.Parse(textBoxPrecio.Text))
             {
                 precio = decimal.Parse(textBoxPrecio.Text);
                 fechaDesde = DateTime.Now;
+                Precio _precio = new Precio(fechaDesde, precio);
+
+                hambuCambiada.Precios.Add(_precio);
             }
             else
             {
-                precio = _hamburguesa.Precio.Monto;
-                fechaDesde = _hamburguesa.Precio.FechaDesde;
+                hambuCambiada.Precios = _hamburguesa.Precios;
+
             }
-            Precio _precio = new Precio(fechaDesde, precio);
             //
             ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems
-                                                    .Cast<Ingrediente>()
-                                                    .ToList();
+                                                            .Cast<IngredienteDTO>()
+                                                            .Select(dto => new Ingrediente(dto.Id, dto.Nombre, dto.Descripcion, dto.Stock))
+                                                            .ToList();
 
             // Validar que el nombre no esté vacío
-            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrEmpty(descripcion) || precio > 0)
+            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrEmpty(descripcion) || precio < 0)
             {
                 MessageBox.Show("Nombre o Descripcion no validos o el precio no puede ser negativo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             // Crear un ingredientea actualizado
+            hambuCambiada.Id = idRecibida;
             hambuCambiada.Nombre = nombre;
             hambuCambiada.Descripcion = descripcion;
-            hambuCambiada.Precio = _precio;
             hambuCambiada.Ingredientes = ingredientesSeleccionados;
         }
 
@@ -101,7 +158,8 @@ namespace WindowsForms
         {
             try
             {
-                await HamburguesaApiClient.DeleteAsync(_hamburguesa.Id);
+                await HamburguesaApiClient.DeleteAsync(idRecibida);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)

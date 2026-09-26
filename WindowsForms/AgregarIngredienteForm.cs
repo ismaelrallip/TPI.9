@@ -34,6 +34,7 @@ namespace WindowsForms
             try
             {
                 await IngredienteApiClient.AddAsync(nuevoIngrediente);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)

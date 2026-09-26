@@ -6,18 +6,27 @@ namespace WindowsForms
 {
     public partial class ActualizarIngredienteForm : Form
     {
-        private Ingrediente _ingrediente;
-        public ActualizarIngredienteForm(Ingrediente ingrediente)
+        private IngredienteDTO _ingrediente;
+        private int idRecibida;
+        public ActualizarIngredienteForm(int id)
         {
-            this._ingrediente = ingrediente;
+            idRecibida = id;
             InitializeComponent();
         }
 
-        private void ActualizarIngredienteForm_Load(object sender, EventArgs e)
+        private async void ActualizarIngredienteForm_Load(object sender, EventArgs e)
         {
+            buttonUpdateIngrediente.Enabled = false;
+            buttonDeleteIngrediente.Enabled = false;
+
+            _ingrediente = await IngredienteApiClient.GetAsync(idRecibida);
+
             textBoxNombre.Text = _ingrediente.Nombre;
             textBoxDescripcion.Text = _ingrediente.Descripcion;
             numericUpDownStock.Value = _ingrediente.Stock;
+
+            buttonUpdateIngrediente.Enabled = true;
+            buttonDeleteIngrediente.Enabled = true;
 
         }
 
@@ -36,6 +45,7 @@ namespace WindowsForms
 
             // Crear un ingredientea actualizado
             IngredienteDTO ingredienteCambiado = new IngredienteDTO();
+            ingredienteCambiado.Id = _ingrediente.Id;
             ingredienteCambiado.Nombre = nombre;
             ingredienteCambiado.Descripcion = descripcion;
             ingredienteCambiado.Stock = stock;
@@ -45,6 +55,7 @@ namespace WindowsForms
             try
             {
                 await IngredienteApiClient.UpdateAsync(ingredienteCambiado);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
@@ -58,11 +69,12 @@ namespace WindowsForms
             EliminarIngrediente();
         }
 
-        private async void EliminarIngrediente() 
+        private async void EliminarIngrediente()
         {
             try
             {
                 await IngredienteApiClient.DeleteAsync(_ingrediente.Id);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)

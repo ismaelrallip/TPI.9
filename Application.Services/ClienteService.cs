@@ -32,6 +32,7 @@ namespace Application.Services
 
             await clienteRepository.AddAsync(cliente);
             dto.Id = cliente.Id;
+            dto.Password = null; //  no devuelve la contraseña después de crear
             return dto;
         }
 
@@ -52,7 +53,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = null // no expone contraseña
             };
         }
 
@@ -66,7 +67,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = null // no expone contraseña
             }).ToList();
         }
 
@@ -86,8 +87,21 @@ namespace Application.Services
             if (existing == null) return false;
 
             // Las validaciones de formato saltarán aquí dentro al construirlo
-            Cliente cliente = new Cliente(dto.Id, dto.Nombre, dto.Apellido, dto.Email, dto.Telefono, dto.Password);
-            return await clienteRepository.UpdateAsync(cliente);
+           
+            // Actualizar solo los campos editables
+            existing.SetNombre(dto.Nombre);
+            existing.SetApellido(dto.Apellido);
+            existing.SetEmail(dto.Email);
+            existing.SetTelefono(dto.Telefono);
+
+            // Si se proporcionó contraseña (no nula ni vacía), actualizarla; si no, dejar la actual.
+            if (!string.IsNullOrEmpty(dto.Password))
+            {
+                existing.SetPassword(dto.Password);
+            }
+
+            // Persistir cambios
+            return await clienteRepository.UpdateAsync(existing);
         }
         public async Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(ClienteCriteriaDTO criteria)
         {
@@ -101,7 +115,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = null // no expone contraseña
             }).ToList();
         }
     }

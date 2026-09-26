@@ -40,7 +40,7 @@
             // actualizarButton
             // 
             actualizarButton.Enabled = false;
-            actualizarButton.Location = new Point(697, 460);
+            actualizarButton.Location = new Point(692, 617);
             actualizarButton.Margin = new Padding(2);
             actualizarButton.Name = "actualizarButton";
             actualizarButton.Size = new Size(92, 29);
@@ -52,7 +52,7 @@
             // eliminarButton
             // 
             eliminarButton.Enabled = false;
-            eliminarButton.Location = new Point(591, 460);
+            eliminarButton.Location = new Point(587, 617);
             eliminarButton.Margin = new Padding(2);
             eliminarButton.Name = "eliminarButton";
             eliminarButton.Size = new Size(92, 29);
@@ -63,7 +63,7 @@
             // 
             // agregarButton
             // 
-            agregarButton.Location = new Point(803, 460);
+            agregarButton.Location = new Point(803, 617);
             agregarButton.Margin = new Padding(2);
             agregarButton.Name = "agregarButton";
             agregarButton.Size = new Size(92, 29);
@@ -85,7 +85,7 @@
             deliveriesDataGridView.ReadOnly = true;
             deliveriesDataGridView.RowHeadersWidth = 82;
             deliveriesDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            deliveriesDataGridView.Size = new Size(858, 325);
+            deliveriesDataGridView.Size = new Size(858, 479);
             deliveriesDataGridView.TabIndex = 13;
             deliveriesDataGridView.SelectionChanged += deliveriesDataGridView_SelectionChanged;
             // 
@@ -113,7 +113,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(932, 505);
+            ClientSize = new Size(1006, 721);
             Controls.Add(actualizarButton);
             Controls.Add(eliminarButton);
             Controls.Add(agregarButton);

@@ -169,7 +169,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             CancelButton = cancelarButton;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(702, 433);
             Controls.Add(dniTextBox);
             Controls.Add(telefonoTextBox);
             Controls.Add(dniLabel);

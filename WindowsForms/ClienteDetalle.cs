@@ -63,14 +63,21 @@ namespace WindowsForms
                     Cliente.Apellido = apellidoTextBox.Text.Trim();
                     Cliente.Email = emailTextBox.Text.Trim();
                     Cliente.Telefono = telefonoTextBox.Text.Trim();
-                    Cliente.Password = passwordTextBox.Text; 
 
                     if (Mode == FormMode.Update)
                     {
+                        // Si en modo Update no se ingresó contraseña, no la cambiamos.
+                        if (!string.IsNullOrEmpty(passwordTextBox.Text))
+                        {
+                            Cliente.Password = passwordTextBox.Text;
+                        }
+
                         await ClienteApiClient.UpdateAsync(Cliente);
                     }
                     else
                     {
+                        // Add: contraseña obligatoria (validada por ValidateCliente)
+                        Cliente.Password = passwordTextBox.Text;
                         await ClienteApiClient.AddAsync(Cliente);
                     }
 
@@ -99,8 +106,8 @@ namespace WindowsForms
             apellidoTextBox.Text = Cliente.Apellido;
             emailTextBox.Text = Cliente.Email;
             telefonoTextBox.Text = Cliente.Telefono;
-            passwordTextBox.Text = Cliente.Password ?? string.Empty;
-            confirmarPasswordTextBox.Text = Cliente.Password ?? string.Empty;
+            passwordTextBox.Text = string.Empty;
+            confirmarPasswordTextBox.Text = string.Empty;
         }
 
         private void SetFormMode(FormMode value)
@@ -109,8 +116,8 @@ namespace WindowsForms
             idLabel.Visible = mode == FormMode.Update;
             idTextBox.Visible = mode == FormMode.Update;
             Text = mode == FormMode.Add ? "Agregar cliente" : "Actualizar cliente";
-            passwordTextBox.UseSystemPasswordChar = false;
-            confirmarPasswordTextBox.UseSystemPasswordChar = false;
+            passwordTextBox.UseSystemPasswordChar = true;
+            confirmarPasswordTextBox.UseSystemPasswordChar = true;
         }
 
         private bool ValidateCliente()
@@ -122,7 +129,7 @@ namespace WindowsForms
             errorProvider.SetError(emailTextBox, string.Empty);
             errorProvider.SetError(telefonoTextBox, string.Empty);
             errorProvider.SetError(passwordTextBox, string.Empty);
-            errorProvider.SetError(confirmarPasswordTextBox, string.Empty); // Limpia error del nuevo campo
+            errorProvider.SetError(confirmarPasswordTextBox, string.Empty);
 
             if (nombreTextBox.Text.Trim().Length < 2 || nombreTextBox.Text.Trim().Length > 50)
             {
@@ -154,15 +161,38 @@ namespace WindowsForms
                 errorProvider.SetError(telefonoTextBox, "El teléfono debe tener más de 8 dígitos y contener solo números.");
             }
 
-            if (passwordTextBox.Text.Length < 6)
+            // Contraseña:
+            // - En Add: obligatoria y debe coincidir con confirmación.
+            // - En Update: validar solamente si el admin ingresó algo en cualquiera de los campos de password.
+            if (Mode == FormMode.Add)
             {
-                isValid = false;
-                errorProvider.SetError(passwordTextBox, "La contraseña debe tener al menos 6 caracteres.");
+                if (passwordTextBox.Text.Length < 6)
+                {
+                    isValid = false;
+                    errorProvider.SetError(passwordTextBox, "La contraseña debe tener al menos 6 caracteres.");
+                }
+                else if (passwordTextBox.Text != confirmarPasswordTextBox.Text)
+                {
+                    isValid = false;
+                    errorProvider.SetError(confirmarPasswordTextBox, "Las contraseñas no coinciden.");
+                }
             }
-            else if (passwordTextBox.Text != confirmarPasswordTextBox.Text) 
+            else // Update
             {
-                isValid = false;
-                errorProvider.SetError(confirmarPasswordTextBox, "Las contraseñas no coinciden.");
+                bool anyPwdEntered = !string.IsNullOrEmpty(passwordTextBox.Text) || !string.IsNullOrEmpty(confirmarPasswordTextBox.Text);
+                if (anyPwdEntered)
+                {
+                    if (passwordTextBox.Text.Length < 6)
+                    {
+                        isValid = false;
+                        errorProvider.SetError(passwordTextBox, "La contraseña debe tener al menos 6 caracteres.");
+                    }
+                    else if (passwordTextBox.Text != confirmarPasswordTextBox.Text)
+                    {
+                        isValid = false;
+                        errorProvider.SetError(confirmarPasswordTextBox, "Las contraseñas no coinciden.");
+                    }
+                }
             }
 
             return isValid;
