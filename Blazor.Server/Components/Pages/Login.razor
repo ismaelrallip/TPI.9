@@ -1,0 +1,78 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject API.Clients.IAuthService AuthService
+
+<PageTitle>Iniciar Sesión</PageTitle>
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card shadow p-4" style="max-width: 400px; width: 100%;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold">Hamburguesería</h3>
+            <p class="text-muted">Panel de Administración</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(mensajeError))
+        {
+            <div class="alert alert-danger py-2" role="alert">
+                @mensajeError
+            </div>
+        }
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Usuario</label>
+            <input type="text" class="form-control" @bind="username" placeholder="Ingresá tu usuario" />
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Contraseña</label>
+            <input type="password" class="form-control" @bind="password" placeholder="Ingresá tu contraseña" />
+        </div>
+
+        <button class="btn btn-primary w-100 py-2 fw-bold" @onclick="IniciarSesion" disabled="@cargando">
+            @if (cargando)
+            {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <span>Ingresando...</span>
+            }
+            else
+            {
+                <span>INGRESAR</span>
+            }
+        </button>
+    </div>
+</div>
+
+@code {
+    private string username = "admin";
+    private string password = "admin";
+    private string? mensajeError;
+    private bool cargando;
+
+    private async Task IniciarSesion()
+    {
+        cargando = true;
+        mensajeError = null;
+
+        try
+        {
+            var exito = await AuthService.LoginAsync(username, password);
+            if (exito)
+            {
+                Navigation.NavigateTo("/hamburguesas");
+            }
+            else
+            {
+                mensajeError = "Usuario o contraseña incorrectos.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al conectar con la API: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

@@ -1,0 +1,174 @@
+﻿@page "/hamburguesas"
+@rendermode InteractiveServer
+
+<PageTitle>Gestión de Hamburguesas</PageTitle>
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4">Gestión de Hamburguesas</h3>
+
+    <!-- Barra de búsqueda superior -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text"
+                   class="form-control"
+                   placeholder="Buscar por nombre o descripción..."
+                   @bind="textoBusqueda"
+                   @bind:event="oninput" />
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger" role="alert">
+            @mensajeError
+        </div>
+    }
+
+    <!-- Grilla tipo DataGridView -->
+    <div class="border rounded bg-white shadow-sm mb-3" style="max-height: 450px; overflow-y: auto;">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-dark position-sticky top-0">
+                <tr>
+                    <th style="width: 50px;"></th>
+                    <th style="width: 80px;">Id</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th style="width: 140px;">Precio</th>
+                    <th style="width: 140px;">Fecha Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (cargando)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-2">Cargando hamburguesas...</span>
+                        </td>
+                    </tr>
+                }
+                else if (!HamburguesasFiltradas.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            No se encontraron registros.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var burger in HamburguesasFiltradas)
+                    {
+                        var seleccionado = hamburguesaSeleccionada?.Id == burger.Id;
+                        var ultimoPrecio = burger.Precios?.LastOrDefault();
+
+                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")"
+                            style="cursor: pointer;"
+                            @onclick="() => SeleccionarHamburguesa(burger)">
+                            <td class="text-center">
+                                @if (seleccionado)
+                                {
+                                    <span>▶</span>
+                                }
+                            </td>
+                            <td>@burger.Id</td>
+                            <td>@burger.Nombre</td>
+                            <td>@burger.Descripcion</td>
+                            <td>@(ultimoPrecio != null ? $"${ultimoPrecio.Monto:N2}" : "-")</td>
+                            <td>@(ultimoPrecio?.FechaDesde != null ? ultimoPrecio.FechaDesde.ToString("dd/MM/yyyy") : "-")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Botones de Acción inferiores -->
+    <div class="d-flex justify-content-center gap-2">
+        <button class="btn btn-outline-secondary px-4 fw-bold"
+                disabled="@(hamburguesaSeleccionada == null)"
+                @onclick="AbrirModalResumen">
+            VER RESUMEN
+        </button>
+
+        <button class="btn btn-outline-warning px-4 fw-bold"
+                disabled="@(hamburguesaSeleccionada == null)"
+                @onclick="AbrirModalModificar">
+            MODIFICAR
+        </button>
+
+        <button class="btn btn-primary px-4 fw-bold"
+                @onclick="AbrirModalAgregar">
+            AGREGAR
+        </button>
+    </div>
+</div>
+
+@code {
+    private List<HamburguesaDTO> listaHamburguesas = new();
+    private HamburguesaDTO? hamburguesaSeleccionada;
+    private string textoBusqueda = string.Empty;
+    private bool cargando = true;
+    private string? mensajeError;
+
+    // Filtro en tiempo real por Nombre o Descripción
+    private IEnumerable<HamburguesaDTO> HamburguesasFiltradas =>
+        string.IsNullOrWhiteSpace(textoBusqueda)
+            ? listaHamburguesas
+            : listaHamburguesas.Where(h =>
+                (!string.IsNullOrEmpty(h.Nombre) && h.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(h.Descripcion) && h.Descripcion.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarHamburguesas();
+    }
+
+    private async Task CargarHamburguesas()
+    {
+        cargando = true;
+        mensajeError = null;
+        try
+        {
+            var resultado = await HamburguesaApiClient.GetAllAsync();
+            listaHamburguesas = resultado.ToList();
+            hamburguesaSeleccionada = null; // Reset de selección al recargar
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar los datos: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void SeleccionarHamburguesa(HamburguesaDTO burger)
+    {
+        // Si hace clic en la misma se deselecciona, sino queda seleccionada
+        if (hamburguesaSeleccionada?.Id == burger.Id)
+        {
+            hamburguesaSeleccionada = null;
+        }
+        else
+        {
+            hamburguesaSeleccionada = burger;
+        }
+    }
+
+    private void AbrirModalResumen()
+    {
+        // Próximo paso: conectar modal de Resumen
+    }
+
+    private void AbrirModalModificar()
+    {
+        // Próximo paso: conectar modal de Modificar / Eliminar
+    }
+
+    private void AbrirModalAgregar()
+    {
+        // Próximo paso: conectar modal de Agregar
+    }
+}
