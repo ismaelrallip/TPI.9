@@ -53,7 +53,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = null // no expone contraseña
             };
         }
 
@@ -67,7 +67,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = null // no expone contraseña
             }).ToList();
         }
 
@@ -115,7 +115,7 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = cliente.Password
+                Password = null // no expone contraseña
             }).ToList();
         }
     }

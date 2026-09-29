@@ -61,5 +61,8 @@ if (!app.Environment.IsDevelopment())
 app.MapClienteEndpoints();
 app.MapDeliveryEndpoints();
 app.MapAuthEndpoints();
+app.MapHamburguesaEndpoints();
+app.MapIngredienteEndpoints();
+app.MapPrecioDeliveryEndpoints();
 
 app.Run();
