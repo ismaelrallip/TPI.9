@@ -11,6 +11,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.GetAsync("clientes/" + id);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -30,6 +31,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.GetAsync("clientes");
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -48,6 +50,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.PostAsJsonAsync("clientes", dto);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -64,6 +67,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.PutAsJsonAsync("clientes", dto);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -80,6 +84,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.DeleteAsync("clientes/" + id);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -95,6 +100,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.GetAsync($"clientes/criteria?texto={Uri.EscapeDataString(texto)}");
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -106,6 +112,6 @@ namespace API.Clients
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al buscar clientes.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al buscar clientes.", ex); }
         }
-        
+
     }
 }

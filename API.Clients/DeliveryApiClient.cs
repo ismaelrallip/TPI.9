@@ -11,6 +11,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.GetAsync("deliveries/" + id);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -30,6 +31,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.GetAsync("deliveries");
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -48,6 +50,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.PostAsJsonAsync("deliveries", dto);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -64,6 +67,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.PutAsJsonAsync("deliveries", dto);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -80,6 +84,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 HttpResponseMessage response = await client.DeleteAsync("deliveries/" + id);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -95,6 +100,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 HttpResponseMessage response = await client.GetAsync($"deliveries/criteria?texto={Uri.EscapeDataString(texto)}");
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();

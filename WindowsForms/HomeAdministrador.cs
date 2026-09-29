@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using API.Clients;
 
 namespace WindowsForms
 {
@@ -17,7 +18,24 @@ namespace WindowsForms
         public HomeAdministrador()
         {
             InitializeComponent();
-            this.IsMdiContainer = true; 
+            this.IsMdiContainer = true;
+
+            if (AuthServiceProvider.Current != null)
+                AuthServiceProvider.Current.AuthenticationStateChanged += AuthenticationStateChanged;
+        }
+
+        private void AuthenticationStateChanged(bool isAuthenticated)
+        {
+            if (!isAuthenticated && !IsDisposed)
+                BeginInvoke(RequestLogout);
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (AuthServiceProvider.Current != null)
+                AuthServiceProvider.Current.AuthenticationStateChanged -= AuthenticationStateChanged;
+
+            base.OnFormClosed(e);
         }
 
 
@@ -67,10 +85,11 @@ namespace WindowsForms
             form.Show();
         }
 
-        private void cerrarSesionToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void cerrarSesionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var r = MessageBox.Show("¿Cerrar sesión?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (r == DialogResult.Yes) RequestLogout();
+            if (r == DialogResult.Yes && AuthServiceProvider.Current != null)
+                await AuthServiceProvider.Current.LogoutAsync();
         }
 
     }

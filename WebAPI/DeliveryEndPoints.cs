@@ -22,6 +22,7 @@ namespace WebAPI
             .WithName("GetDelivery")
             .Produces<DeliveryDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapGet("/deliveries", async (IDeliveryService deliveryService) =>
@@ -32,6 +33,7 @@ namespace WebAPI
             })
             .WithName("GetAllDeliveries")
             .Produces<List<DeliveryDTO>>(StatusCodes.Status200OK)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapPost("/deliveries", async (DeliveryDTO dto, IDeliveryService deliveryService) =>
@@ -50,6 +52,7 @@ namespace WebAPI
             .WithName("AddDelivery")
             .Produces<DeliveryDTO>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapPut("/deliveries", async (DeliveryDTO dto, IDeliveryService deliveryService) =>
@@ -73,6 +76,7 @@ namespace WebAPI
             .WithName("UpdateDelivery")
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapDelete("/deliveries/{id}", async (int id, IDeliveryService deliveryService) =>
@@ -89,6 +93,7 @@ namespace WebAPI
             .WithName("DeleteDelivery")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
         }
     }

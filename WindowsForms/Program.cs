@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using System.Windows.Forms;
+using API.Auth.WindowsForms;
+using API.Clients;
 
 namespace WindowsForms
 {
@@ -10,6 +12,7 @@ namespace WindowsForms
         static void Main()
         {
             ApplicationConfiguration.Initialize();
+            AuthServiceProvider.Register(new WindowsFormsAuthService());
             System.Windows.Forms.Application.ThreadException += Application_ThreadException;
             System.Windows.Forms.Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
 
@@ -21,24 +24,30 @@ namespace WindowsForms
             while (true)
             {
                 using var loginForm = new LoginForm();
-                if (loginForm.ShowDialog() != DialogResult.OK || loginForm.Sesion == null)
+                if (loginForm.ShowDialog() != DialogResult.OK)
                 {
-                    return; // Canceló el login: cierra la app.
+                    return; // Cancela el login: cierra la app.
                 }
 
-                if (loginForm.Sesion.Role == "Administrador")
+                var session = AuthServiceProvider.Current?.CurrentSession;
+                if (session == null)
+                {
+                    MessageBox.Show("No se pudo recuperar la sesiÃ³n autenticada.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (session.Role == "Administrador")
                 {
                     try
                     {
-                        // Crear instancia y mantener referencia para leer la bandera después
+                        
                         var home = new HomeAdministrador();
                         System.Windows.Forms.Application.Run(home);
 
-                        // Si el home pidió logout, continuamos el while para volver al login;
-                        // si no (usuario cerró la ventana para salir), terminamos la app.
+                        
                         if (home.LogoutRequested)
                         {
-                            // continuar el bucle: volver al login
+                            
                             continue;
                         }
                         else
@@ -48,14 +57,14 @@ namespace WindowsForms
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error en la aplicación: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Error en la aplicacion: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                 }
                 else
                 {
-                    // Todavía no armamos la pantalla del Cliente.
-                    MessageBox.Show("La pantalla para Clientes todavía no está disponible.", "Aviso",
+                    // Todavia no armamos la pantalla del Cliente.
+                    MessageBox.Show("La pantalla para Clientes todavia no esta disponible.", "Aviso",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }

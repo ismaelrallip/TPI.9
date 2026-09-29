@@ -15,7 +15,7 @@ namespace API.Clients
         {
             try
             {
-                using var client = await CreateHttpClientAsync();
+                using var client = CreatePublicHttpClient();
                 var response = await client.PostAsJsonAsync("login", new LoginRequest { Username = username, Password = password });
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -34,5 +34,6 @@ namespace API.Clients
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API para iniciar sesión.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al iniciar sesión.", ex); }
         }
+
     }
 }

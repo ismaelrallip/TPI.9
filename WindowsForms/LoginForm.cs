@@ -38,8 +38,8 @@ namespace WindowsForms
             SetLoading(true);
             try
             {
-                var sesion = await AuthApiClient.LoginAsync(username, password);
-                if (sesion == null)
+                var authService = AuthServiceProvider.Current;
+                if (authService == null || !await authService.LoginAsync(username, password))
                 {
                     MessageBox.Show("Usuario o contraseña incorrectos.", "Acceso denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     passwordTextBox.Clear();
@@ -47,7 +47,6 @@ namespace WindowsForms
                     return;
                 }
 
-                Sesion = sesion;
                 DialogResult = DialogResult.OK;
                 Close();
             }

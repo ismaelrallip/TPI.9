@@ -15,7 +15,8 @@ namespace API.Clients
             try
             {
                 using var client = await CreateHttpClientAsync();
-                var response = await client.GetAsync("precioDelivery/" + id);
+                var response = await client.GetAsync("precios-delivery/" + id);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -34,7 +35,8 @@ namespace API.Clients
             try
             {
                 using var client = await CreateHttpClientAsync();
-                var response = await client.GetAsync("precioDelivery");
+                var response = await client.GetAsync("precios-delivery");
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -53,7 +55,8 @@ namespace API.Clients
             try
             {
                 using var client = await CreateHttpClientAsync();
-                var response = await client.PostAsJsonAsync("precioDelivery", dto);
+                var response = await client.PostAsJsonAsync("precios-delivery", dto);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -69,7 +72,8 @@ namespace API.Clients
             try
             {
                 using var client = await CreateHttpClientAsync();
-                var response = await client.PutAsJsonAsync("precioDelivery", dto);
+                var response = await client.PutAsJsonAsync("precios-delivery", dto);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -85,7 +89,8 @@ namespace API.Clients
             try
             {
                 using var client = await CreateHttpClientAsync();
-                HttpResponseMessage response = await client.DeleteAsync("precioDelivery/" + id);
+                HttpResponseMessage response = await client.DeleteAsync("precios-delivery/" + id);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();

@@ -19,6 +19,11 @@ namespace Application.Services
 
         public async Task<ClienteDTO> AddAsync(ClienteDTO dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Password))
+            {
+                throw new ArgumentException("La contraseña es obligatoria al crear un cliente.", nameof(dto.Password));
+            }
+
             if (await clienteRepository.EmailExistsAsync(dto.Email))
             {
                 throw new ArgumentException($"Ya existe un cliente con el Email '{dto.Email}'.");
@@ -28,7 +33,7 @@ namespace Application.Services
                 throw new ArgumentException($"Ya existe un cliente con el Teléfono '{dto.Telefono}'.");
             }
 
-            Cliente cliente = new Cliente(0, dto.Nombre, dto.Apellido, dto.Email, dto.Telefono, dto.Password);
+            Cliente cliente = new Cliente(0, dto.Nombre, dto.Apellido, dto.Email, dto.Telefono, PasswordHasher.Hash(dto.Password!));
 
             await clienteRepository.AddAsync(cliente);
             dto.Id = cliente.Id;
@@ -87,7 +92,7 @@ namespace Application.Services
             if (existing == null) return false;
 
             // Las validaciones de formato saltarán aquí dentro al construirlo
-           
+
             // Actualizar solo los campos editables
             existing.SetNombre(dto.Nombre);
             existing.SetApellido(dto.Apellido);
@@ -97,7 +102,7 @@ namespace Application.Services
             // Si se proporcionó contraseña (no nula ni vacía), actualizarla; si no, dejar la actual.
             if (!string.IsNullOrEmpty(dto.Password))
             {
-                existing.SetPassword(dto.Password);
+                existing.SetPassword(PasswordHasher.Hash(dto.Password));
             }
 
             // Persistir cambios

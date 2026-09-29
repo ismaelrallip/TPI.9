@@ -11,6 +11,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.GetAsync("ingredientes/" + id);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -30,6 +31,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.GetAsync("ingredientes");
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -49,6 +51,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.PostAsJsonAsync("ingredientes", dto);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -65,6 +68,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 var response = await client.PutAsJsonAsync("ingredientes", dto);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -81,6 +85,7 @@ namespace API.Clients
             {
                 using var client = await CreateHttpClientAsync();
                 HttpResponseMessage response = await client.DeleteAsync("ingredientes/" + id);
+                await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();

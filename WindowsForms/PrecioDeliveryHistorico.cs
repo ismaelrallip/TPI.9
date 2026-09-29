@@ -99,7 +99,7 @@ namespace WindowsForms
             try
             {
                 DeshabilitarControles();
-                await ClienteApiClient.DeleteAsync(seleccionado.Id);
+                await PrecioDeliveryApiClient.DeleteAsync(seleccionado.Id);
                 await CargarPrecioDeliveryAsync(dateTimePickerDesde.Value);
             }
             catch (Exception ex)

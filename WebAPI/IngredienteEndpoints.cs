@@ -7,7 +7,9 @@ namespace WebAPI
     {
         public static void MapIngredienteEndpoints(this IEndpointRouteBuilder app)
         {
-            var group = app.MapGroup("/ingredientes").WithTags("Ingredientes");
+            var group = app.MapGroup("/ingredientes")
+                .WithTags("Ingredientes")
+                .RequireAuthorization("AdminOnly");
 
             group.MapGet("/", async (IIngredienteService svc) =>
                 Results.Ok(await svc.GetAllAsync()))
@@ -37,6 +39,7 @@ namespace WebAPI
             .WithName("AddIngrediente")
             .Produces<IngredienteDTO>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             group.MapPut("/", async (IngredienteDTO dto, IIngredienteService svc) =>
@@ -55,6 +58,7 @@ namespace WebAPI
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             group.MapDelete("/{id:int}", async (int id, IIngredienteService svc) =>
@@ -65,6 +69,7 @@ namespace WebAPI
             .WithName("DeleteIngrediente")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
         }
     }

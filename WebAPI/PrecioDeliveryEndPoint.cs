@@ -20,6 +20,7 @@ namespace WebAPI
             .WithName("GetPrecioDelivery")
             .Produces<PrecioDeliveryDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapGet("/precios-delivery", async (IPrecioDeliveryService precioDeliveryService) =>
@@ -30,6 +31,7 @@ namespace WebAPI
             })
             .WithName("GetAllPreciosDelivery")
             .Produces<List<PrecioDeliveryDTO>>(StatusCodes.Status200OK)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapPost("/precios-delivery", async (PrecioDeliveryDTO dto, IPrecioDeliveryService precioDeliveryService) =>
@@ -47,6 +49,7 @@ namespace WebAPI
             .WithName("AddPrecioDelivery")
             .Produces<PrecioDeliveryDTO>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapPut("/precios-delivery", async (PrecioDeliveryDTO dto, IPrecioDeliveryService precioDeliveryService) =>
@@ -69,6 +72,7 @@ namespace WebAPI
             .WithName("UpdatePrecioDelivery")
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapDelete("/precios-delivery/{id}", async (int id, IPrecioDeliveryService precioDeliveryService) =>
@@ -85,6 +89,7 @@ namespace WebAPI
             .WithName("DeletePrecioDelivery")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
         }
     }
