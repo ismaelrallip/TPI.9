@@ -1,0 +1,323 @@
+﻿@page "/ingredientes"
+@rendermode InteractiveServer
+
+<PageTitle>Gestión de Ingredientes</PageTitle>
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4">Gestión de Ingredientes</h3>
+
+    <!-- Barra de búsqueda superior -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" 
+                   class="form-control" 
+                   placeholder="Ingrediente..." 
+                   @bind="textoBusqueda" 
+                   @bind:event="oninput" />
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger" role="alert">
+            @mensajeError
+        </div>
+    }
+
+    <!-- Grilla tipo DataGridView -->
+    <div class="border rounded bg-white shadow-sm mb-3" style="max-height: 450px; overflow-y: auto;">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-dark position-sticky top-0">
+                <tr>
+                    <th style="width: 50px;"></th>
+                    <th style="width: 80px;">Id</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th style="width: 120px;">Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (cargando)
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-2">Cargando...</span>
+                        </td>
+                    </tr>
+                }
+                else if (!IngredientesFiltrados.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            No se encontraron registros.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var ing in IngredientesFiltrados)
+                    {
+                        var seleccionado = ingredienteSeleccionado?.Id == ing.Id;
+
+                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")" 
+                            style="cursor: pointer;" 
+                            @onclick="() => SeleccionarIngrediente(ing)">
+                            <td class="text-center">
+                                @if (seleccionado)
+                                {
+                                    <span>▶</span>
+                                }
+                            </td>
+                            <td>@ing.Id</td>
+                            <td>@ing.Nombre</td>
+                            <td>@ing.Descripcion</td>
+                            <td>@ing.Stock</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Botones de Acción (sin Ver Resumen) -->
+    <div class="d-flex justify-content-center gap-2">
+        <button class="btn btn-outline-warning px-4 fw-bold" 
+                disabled="@(ingredienteSeleccionado == null)"
+                @onclick="AbrirModalModificar">
+            MODIFICAR
+        </button>
+
+        <button class="btn btn-primary px-4 fw-bold" 
+                @onclick="AbrirModalAgregar">
+            AGREGAR
+        </button>
+    </div>
+</div>
+
+@* ==========================================
+   MODAL: AGREGAR / ACTUALIZAR / ELIMINAR
+   ========================================== *@
+@if (mostrarModalFormulario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esEdicion ? "ActualizarIngredienteForm" : "AgregarIngredienteForm")</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModales"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(errorModal))
+                    {
+                        <div class="alert alert-danger py-2">@errorModal</div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre</label>
+                        <input type="text" class="form-control" @bind="formNombre" placeholder="Nombre..." />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción</label>
+                        <input type="text" class="form-control" @bind="formDescripcion" placeholder="Descripcion..." />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Stock:</label>
+                        <input type="number" min="0" class="form-control" @bind="formStock" />
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    @if (esEdicion)
+                    {
+                        <button type="button" class="btn btn-danger fw-bold" @onclick="EliminarIngrediente" disabled="@guardando">
+                            ELIMINAR
+                        </button>
+                    }
+                    else
+                    {
+                        <div></div>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardando">
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarIngrediente" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            @(esEdicion ? "ACTUALIZAR" : "AGREGAR")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<IngredienteDTO> listaIngredientes = new();
+    private IngredienteDTO? ingredienteSeleccionado;
+    private string textoBusqueda = string.Empty;
+    private bool cargando = true;
+    private string? mensajeError;
+
+    // Control de Modales
+    private bool mostrarModalFormulario;
+    private bool esEdicion;
+    private bool guardando;
+    private string? errorModal;
+
+    // Campos del formulario
+    private string formNombre = string.Empty;
+    private string formDescripcion = string.Empty;
+    private int formStock;
+
+    // Filtro reactivo en tiempo real
+    private IEnumerable<IngredienteDTO> IngredientesFiltrados =>
+        string.IsNullOrWhiteSpace(textoBusqueda)
+            ? listaIngredientes
+            : listaIngredientes.Where(i =>
+                (!string.IsNullOrEmpty(i.Nombre) && i.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(i.Descripcion) && i.Descripcion.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarIngredientes();
+    }
+
+    private async Task CargarIngredientes()
+    {
+        cargando = true;
+        mensajeError = null;
+        try
+        {
+            var resultado = await IngredienteApiClient.GetAllAsync();
+            listaIngredientes = resultado.ToList();
+            ingredienteSeleccionado = null;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar los ingredientes: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void SeleccionarIngrediente(IngredienteDTO ingrediente)
+    {
+        ingredienteSeleccionado = (ingredienteSeleccionado?.Id == ingrediente.Id) ? null : ingrediente;
+    }
+
+    private void AbrirModalAgregar()
+    {
+        esEdicion = false;
+        formNombre = string.Empty;
+        formDescripcion = string.Empty;
+        formStock = 0;
+        errorModal = null;
+        mostrarModalFormulario = true;
+    }
+
+    private void AbrirModalModificar()
+    {
+        if (ingredienteSeleccionado == null) return;
+
+        esEdicion = true;
+        formNombre = ingredienteSeleccionado.Nombre;
+        formDescripcion = ingredienteSeleccionado.Descripcion;
+        formStock = ingredienteSeleccionado.Stock;
+        errorModal = null;
+        mostrarModalFormulario = true;
+    }
+
+    private void CerrarModales()
+    {
+        mostrarModalFormulario = false;
+        errorModal = null;
+    }
+
+    private async Task GuardarIngrediente()
+    {
+        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formDescripcion))
+        {
+            errorModal = "El nombre y la descripción son obligatorios.";
+            return;
+        }
+
+        if (formStock < 0)
+        {
+            errorModal = "El stock debe ser mayor o igual a 0.";
+            return;
+        }
+
+        guardando = true;
+        errorModal = null;
+
+        try
+        {
+            if (esEdicion && ingredienteSeleccionado != null)
+            {
+                var dto = new IngredienteDTO
+                {
+                    Id = ingredienteSeleccionado.Id,
+                    Nombre = formNombre,
+                    Descripcion = formDescripcion,
+                    Stock = formStock
+                };
+
+                await IngredienteApiClient.UpdateAsync(dto);
+            }
+            else
+            {
+                var dto = new IngredienteDTO
+                {
+                    Nombre = formNombre,
+                    Descripcion = formDescripcion,
+                    Stock = formStock
+                };
+
+                await IngredienteApiClient.AddAsync(dto);
+            }
+
+            CerrarModales();
+            await CargarIngredientes();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al guardar el ingrediente: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private async Task EliminarIngrediente()
+    {
+        if (ingredienteSeleccionado == null) return;
+
+        guardando = true;
+        errorModal = null;
+
+        try
+        {
+            await IngredienteApiClient.DeleteAsync(ingredienteSeleccionado.Id);
+            CerrarModales();
+            await CargarIngredientes();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al eliminar el ingrediente: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

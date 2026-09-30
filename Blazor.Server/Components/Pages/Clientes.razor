@@ -1,0 +1,418 @@
+﻿@page "/clientes"
+@rendermode InteractiveServer
+
+<PageTitle>Gestión de Clientes</PageTitle>
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4">Gestión de Clientes</h3>
+
+    <!-- Barra de búsqueda superior -->
+    <div class="row mb-3">
+        <div class="col-md-5 d-flex gap-2">
+            <input type="text"
+                   class="form-control"
+                   placeholder="Buscar por nombre, apellido o email..."
+                   @bind="textoBusqueda"
+                   @bind:event="oninput" />
+            <button class="btn btn-outline-secondary" @onclick="CargarClientes">Buscar</button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger" role="alert">
+            @mensajeError
+        </div>
+    }
+
+    <!-- Grilla tipo DataGridView -->
+    <div class="border rounded bg-white shadow-sm mb-3" style="max-height: 450px; overflow-y: auto;">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-dark position-sticky top-0">
+                <tr>
+                    <th style="width: 50px;"></th>
+                    <th style="width: 80px;">Id</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (cargando)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-2">Cargando...</span>
+                        </td>
+                    </tr>
+                }
+                else if (!ClientesFiltrados.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            No se encontraron registros.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var c in ClientesFiltrados)
+                    {
+                        var seleccionado = clienteSeleccionado?.Id == c.Id;
+
+                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")"
+                            style="cursor: pointer;"
+                            @onclick="() => SeleccionarCliente(c)">
+                            <td class="text-center">
+                                @if (seleccionado)
+                                {
+                                    <span>▶</span>
+                                }
+                            </td>
+                            <td>@c.Id</td>
+                            <td>@c.Nombre</td>
+                            <td>@c.Apellido</td>
+                            <td>@c.Email</td>
+                            <td>@c.Telefono</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="d-flex justify-content-center gap-2">
+        <button class="btn btn-outline-danger px-4 fw-bold"
+                disabled="@(clienteSeleccionado == null)"
+                @onclick="AbrirModalConfirmarEliminar">
+            Eliminar
+        </button>
+
+        <button class="btn btn-outline-warning px-4 fw-bold"
+                disabled="@(clienteSeleccionado == null)"
+                @onclick="AbrirModalModificar">
+            Actualizar
+        </button>
+
+        <button class="btn btn-primary px-4 fw-bold"
+                @onclick="AbrirModalAgregar">
+            Agregar
+        </button>
+    </div>
+</div>
+
+@* ==========================================
+   MODAL 1: AGREGAR / ACTUALIZAR CLIENTE
+   ========================================== *@
+@if (mostrarModalFormulario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esEdicion ? "Actualizar cliente" : "Agregar cliente")</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModales"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(errorModal))
+                    {
+                        <div class="alert alert-danger py-2">@errorModal</div>
+                    }
+
+                    @if (esEdicion)
+                    {
+                        <div class="mb-3 row">
+                            <label class="col-sm-4 col-form-label fw-bold">Id</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="@clienteSeleccionado?.Id" disabled />
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-4 col-form-label fw-bold">Nombre</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" @bind="formNombre" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-4 col-form-label fw-bold">Apellido</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" @bind="formApellido" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-4 col-form-label fw-bold">Email</label>
+                        <div class="col-sm-8">
+                            <input type="email" class="form-control" @bind="formEmail" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-4 col-form-label fw-bold">Teléfono</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" @bind="formTelefono" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-4 col-form-label fw-bold">Contraseña</label>
+                        <div class="col-sm-8">
+                            <input type="password" class="form-control" @bind="formPassword" placeholder="@(esEdicion ? "Dejar en blanco para no cambiar" : "")" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-4 col-form-label fw-bold">Confirmar contraseña</label>
+                        <div class="col-sm-8">
+                            <input type="password" class="form-control" @bind="formConfirmarPassword" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardando">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarCliente" disabled="@guardando">
+                        @if (guardando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Aceptar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* ==========================================
+   MODAL 2: CONFIRMAR ELIMINACIÓN
+   ========================================== *@
+@if (mostrarModalEliminar && clienteSeleccionado != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModales"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="display-6 text-primary mb-2">?</div>
+                    <p class="mb-0">¿Eliminar a @clienteSeleccionado.Nombre @clienteSeleccionado.Apellido?</p>
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <button type="button" class="btn btn-primary px-3" @onclick="EliminarClienteConfirmado" disabled="@guardando">
+                        @if (guardando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Sí
+                    </button>
+                    <button type="button" class="btn btn-secondary px-3" @onclick="CerrarModales" disabled="@guardando">
+                        No
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<ClienteDTO> listaClientes = new();
+    private ClienteDTO? clienteSeleccionado;
+    private string textoBusqueda = string.Empty;
+    private bool cargando = true;
+    private string? mensajeError;
+
+    // Modales
+    private bool mostrarModalFormulario;
+    private bool mostrarModalEliminar;
+    private bool esEdicion;
+    private bool guardando;
+    private string? errorModal;
+
+    // Campos formulario
+    private string formNombre = string.Empty;
+    private string formApellido = string.Empty;
+    private string formEmail = string.Empty;
+    private string formTelefono = string.Empty;
+    private string formPassword = string.Empty;
+    private string formConfirmarPassword = string.Empty;
+
+    // Filtro reactivo local
+    private IEnumerable<ClienteDTO> ClientesFiltrados =>
+        string.IsNullOrWhiteSpace(textoBusqueda)
+            ? listaClientes
+            : listaClientes.Where(c =>
+                (!string.IsNullOrEmpty(c.Nombre) && c.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(c.Apellido) && c.Apellido.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(c.Telefono) && c.Telefono.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarClientes();
+    }
+
+    private async Task CargarClientes()
+    {
+        cargando = true;
+        mensajeError = null;
+        try
+        {
+            var resultado = await ClienteApiClient.GetAllAsync();
+            listaClientes = resultado.ToList();
+            clienteSeleccionado = null;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar los clientes: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void SeleccionarCliente(ClienteDTO cliente)
+    {
+        clienteSeleccionado = (clienteSeleccionado?.Id == cliente.Id) ? null : cliente;
+    }
+
+    private void AbrirModalAgregar()
+    {
+        esEdicion = false;
+        formNombre = string.Empty;
+        formApellido = string.Empty;
+        formEmail = string.Empty;
+        formTelefono = string.Empty;
+        formPassword = string.Empty;
+        formConfirmarPassword = string.Empty;
+        errorModal = null;
+        mostrarModalFormulario = true;
+    }
+
+    private void AbrirModalModificar()
+    {
+        if (clienteSeleccionado == null) return;
+
+        esEdicion = true;
+        formNombre = clienteSeleccionado.Nombre;
+        formApellido = clienteSeleccionado.Apellido;
+        formEmail = clienteSeleccionado.Email;
+        formTelefono = clienteSeleccionado.Telefono;
+        formPassword = string.Empty;
+        formConfirmarPassword = string.Empty;
+        errorModal = null;
+        mostrarModalFormulario = true;
+    }
+
+    private void AbrirModalConfirmarEliminar()
+    {
+        if (clienteSeleccionado == null) return;
+        mostrarModalEliminar = true;
+    }
+
+    private void CerrarModales()
+    {
+        mostrarModalFormulario = false;
+        mostrarModalEliminar = false;
+        errorModal = null;
+    }
+
+    private async Task GuardarCliente()
+    {
+        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formApellido) || string.IsNullOrWhiteSpace(formEmail))
+        {
+            errorModal = "Nombre, apellido y email son requeridos.";
+            return;
+        }
+
+        if (!esEdicion && string.IsNullOrWhiteSpace(formPassword))
+        {
+            errorModal = "La contraseña es requerida para dar de alta un nuevo cliente.";
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(formPassword) && formPassword != formConfirmarPassword)
+        {
+            errorModal = "Las contraseñas no coinciden.";
+            return;
+        }
+
+        guardando = true;
+        errorModal = null;
+
+        try
+        {
+            if (esEdicion && clienteSeleccionado != null)
+            {
+                var dto = new ClienteDTO
+                {
+                    Id = clienteSeleccionado.Id,
+                    Nombre = formNombre,
+                    Apellido = formApellido,
+                    Email = formEmail,
+                    Telefono = formTelefono,
+                    Password = string.IsNullOrEmpty(formPassword) ? clienteSeleccionado.Password : formPassword
+                };
+
+                await ClienteApiClient.UpdateAsync(dto);
+            }
+            else
+            {
+                var dto = new ClienteDTO
+                {
+                    Nombre = formNombre,
+                    Apellido = formApellido,
+                    Email = formEmail,
+                    Telefono = formTelefono,
+                    Password = formPassword
+                };
+
+                await ClienteApiClient.AddAsync(dto);
+            }
+
+            CerrarModales();
+            await CargarClientes();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al guardar cliente: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private async Task EliminarClienteConfirmado()
+    {
+        if (clienteSeleccionado == null) return;
+
+        guardando = true;
+        errorModal = null;
+
+        try
+        {
+            await ClienteApiClient.DeleteAsync(clienteSeleccionado.Id);
+            CerrarModales();
+            await CargarClientes();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al eliminar cliente: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

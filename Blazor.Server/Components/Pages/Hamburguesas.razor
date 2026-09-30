@@ -11,7 +11,7 @@
         <div class="col-md-4">
             <input type="text"
                    class="form-control"
-                   placeholder="Buscar por nombre o descripción..."
+                   placeholder="Hamburguesa..."
                    @bind="textoBusqueda"
                    @bind:event="oninput" />
         </div>
@@ -34,7 +34,7 @@
                     <th>Nombre</th>
                     <th>Descripción</th>
                     <th style="width: 140px;">Precio</th>
-                    <th style="width: 140px;">Fecha Precio</th>
+                    <th style="width: 160px;">FechaPrecio</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,7 +43,7 @@
                     <tr>
                         <td colspan="6" class="text-center py-4">
                             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                            <span class="ms-2">Cargando hamburguesas...</span>
+                            <span class="ms-2">Cargando...</span>
                         </td>
                     </tr>
                 }
@@ -75,7 +75,7 @@
                             <td>@burger.Nombre</td>
                             <td>@burger.Descripcion</td>
                             <td>@(ultimoPrecio != null ? $"${ultimoPrecio.Monto:N2}" : "-")</td>
-                            <td>@(ultimoPrecio?.FechaDesde != null ? ultimoPrecio.FechaDesde.ToString("dd/MM/yyyy") : "-")</td>
+                            <td>@(ultimoPrecio != null ? ultimoPrecio.FechaDesde.ToString("dd/MM/yyyy") : "-")</td>
                         </tr>
                     }
                 }
@@ -83,7 +83,7 @@
         </table>
     </div>
 
-    <!-- Botones de Acción inferiores -->
+    <!-- Botones de Acción -->
     <div class="d-flex justify-content-center gap-2">
         <button class="btn btn-outline-secondary px-4 fw-bold"
                 disabled="@(hamburguesaSeleccionada == null)"
@@ -104,14 +104,221 @@
     </div>
 </div>
 
+@* ==========================================
+   MODAL 1: AGREGAR / ACTUALIZAR / ELIMINAR
+   ========================================== *@
+@if (mostrarModalFormulario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esEdicion ? "ActualizarHamburguesaForm" : "AgregarHamburguesaForm")</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModales"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(errorModal))
+                    {
+                        <div class="alert alert-danger py-2">@errorModal</div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre</label>
+                        <input type="text" class="form-control" @bind="formNombre" placeholder="Nombre" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción</label>
+                        <input type="text" class="form-control" @bind="formDescripcion" placeholder="Descripción" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Precio</label>
+                        <input type="number" step="0.01" class="form-control" @bind="formPrecio" placeholder="Precio" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Ingredientes</label>
+                        <div class="border rounded p-2 bg-light" style="max-height: 180px; overflow-y: auto;">
+                            @if (todosLosIngredientes.Any())
+                            {
+                                @foreach (var ing in todosLosIngredientes)
+                                {
+                                    var estaCheck = idsIngredientesSeleccionados.Contains(ing.Id);
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               id="chk-@ing.Id"
+                                               checked="@estaCheck"
+                                               @onchange="(e) => ToggleIngrediente(ing.Id, e.Value)">
+                                        <label class="form-check-label" for="chk-@ing.Id">
+                                            @ing.Nombre
+                                        </label>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <small class="text-muted">No hay ingredientes cargados.</small>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    @if (esEdicion)
+                    {
+                        <button type="button" class="btn btn-danger fw-bold" @onclick="EliminarHamburguesa" disabled="@guardando">
+                            ELIMINAR
+                        </button>
+                    }
+                    else
+                    {
+                        <div></div>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardando">
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarHamburguesa" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            @(esEdicion ? "ACTUALIZAR" : "AGREGAR")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* ==========================================
+   MODAL 2: RESUMEN DE LA HAMBURGUESA
+   ========================================== *@
+@if (mostrarModalResumen && hamburguesaSeleccionada != null)
+{
+    var ultimoPrecio = hamburguesaSeleccionada.Precios?.LastOrDefault();
+
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title">ResumenHamburguesaForm</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModales"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 d-flex align-items-center gap-2">
+                            <span class="fw-bold">NOMBRE:</span>
+                            <span class="badge bg-secondary text-wrap fs-6 px-3 py-2">@hamburguesaSeleccionada.Nombre</span>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center gap-2">
+                            <span class="fw-bold">PRECIO ACTUAL:</span>
+                            <span class="badge bg-secondary fs-6 px-3 py-2">
+                                @(ultimoPrecio != null ? $"${ultimoPrecio.Monto:N2}" : "Sin precio")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Tabla Ingredientes -->
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-muted">Ingredientes</h6>
+                            <div class="border rounded bg-white shadow-sm" style="max-height: 250px; overflow-y: auto;">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead class="table-primary position-sticky top-0">
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (hamburguesaSeleccionada.Ingredientes != null && hamburguesaSeleccionada.Ingredientes.Any())
+                                        {
+                                            @foreach (var ing in hamburguesaSeleccionada.Ingredientes)
+                                            {
+                                                <tr>
+                                                    <td>@ing.Nombre</td>
+                                                    <td>@ing.Descripcion</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted py-3">Sin ingredientes</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Tabla Histórico de Precios -->
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold text-muted">Histórico de Precios</h6>
+                            <div class="border rounded bg-white shadow-sm" style="max-height: 250px; overflow-y: auto;">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead class="table-primary position-sticky top-0">
+                                        <tr>
+                                            <th>Monto</th>
+                                            <th>FechaDesde</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (hamburguesaSeleccionada.Precios != null && hamburguesaSeleccionada.Precios.Any())
+                                        {
+                                            @foreach (var p in hamburguesaSeleccionada.Precios.OrderByDescending(x => x.FechaDesde))
+                                            {
+                                                <tr>
+                                                    <td>$@p.Monto.ToString("N2")</td>
+                                                    <td>@p.FechaDesde.ToString("dd/MM/yyyy HH:mm")</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted py-3">Sin histórico</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" @onclick="CerrarModales">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<HamburguesaDTO> listaHamburguesas = new();
+    private List<Domain.Model.Ingrediente> todosLosIngredientes = new();
     private HamburguesaDTO? hamburguesaSeleccionada;
     private string textoBusqueda = string.Empty;
     private bool cargando = true;
     private string? mensajeError;
 
-    // Filtro en tiempo real por Nombre o Descripción
+    // Control de Modales
+    private bool mostrarModalFormulario;
+    private bool mostrarModalResumen;
+    private bool esEdicion;
+    private bool guardando;
+    private string? errorModal;
+
+    // Campos del formulario
+    private string formNombre = string.Empty;
+    private string formDescripcion = string.Empty;
+    private decimal formPrecio;
+    private HashSet<int> idsIngredientesSeleccionados = new();
+
     private IEnumerable<HamburguesaDTO> HamburguesasFiltradas =>
         string.IsNullOrWhiteSpace(textoBusqueda)
             ? listaHamburguesas
@@ -122,6 +329,7 @@
     protected override async Task OnInitializedAsync()
     {
         await CargarHamburguesas();
+        await CargarIngredientesDisponibles();
     }
 
     private async Task CargarHamburguesas()
@@ -132,7 +340,7 @@
         {
             var resultado = await HamburguesaApiClient.GetAllAsync();
             listaHamburguesas = resultado.ToList();
-            hamburguesaSeleccionada = null; // Reset de selección al recargar
+            hamburguesaSeleccionada = null;
         }
         catch (Exception ex)
         {
@@ -144,31 +352,163 @@
         }
     }
 
+    private async Task CargarIngredientesDisponibles()
+    {
+        try
+        {
+            var ingredientesDto = await IngredienteApiClient.GetAllAsync();
+            todosLosIngredientes = ingredientesDto.Select(dto => new Domain.Model.Ingrediente
+            {
+                Id = dto.Id,
+                Nombre = dto.Nombre,
+                Descripcion = dto.Descripcion,
+                Stock = dto.Stock
+            }).ToList();
+        }
+        catch
+        {
+            todosLosIngredientes = new();
+        }
+    }
+
     private void SeleccionarHamburguesa(HamburguesaDTO burger)
     {
-        // Si hace clic en la misma se deselecciona, sino queda seleccionada
-        if (hamburguesaSeleccionada?.Id == burger.Id)
-        {
-            hamburguesaSeleccionada = null;
-        }
-        else
-        {
-            hamburguesaSeleccionada = burger;
-        }
-    }
-
-    private void AbrirModalResumen()
-    {
-        // Próximo paso: conectar modal de Resumen
-    }
-
-    private void AbrirModalModificar()
-    {
-        // Próximo paso: conectar modal de Modificar / Eliminar
+        hamburguesaSeleccionada = (hamburguesaSeleccionada?.Id == burger.Id) ? null : burger;
     }
 
     private void AbrirModalAgregar()
     {
-        // Próximo paso: conectar modal de Agregar
+        esEdicion = false;
+        formNombre = string.Empty;
+        formDescripcion = string.Empty;
+        formPrecio = 0;
+        idsIngredientesSeleccionados.Clear();
+        errorModal = null;
+        mostrarModalFormulario = true;
+    }
+
+    private void AbrirModalModificar()
+    {
+        if (hamburguesaSeleccionada == null) return;
+
+        esEdicion = true;
+        formNombre = hamburguesaSeleccionada.Nombre;
+        formDescripcion = hamburguesaSeleccionada.Descripcion;
+        formPrecio = hamburguesaSeleccionada.Precios?.LastOrDefault()?.Monto ?? 0;
+        idsIngredientesSeleccionados = hamburguesaSeleccionada.Ingredientes?.Select(i => i.Id).ToHashSet() ?? new();
+        errorModal = null;
+        mostrarModalFormulario = true;
+    }
+
+    private void AbrirModalResumen()
+    {
+        if (hamburguesaSeleccionada == null) return;
+        mostrarModalResumen = true;
+    }
+
+    private void CerrarModales()
+    {
+        mostrarModalFormulario = false;
+        mostrarModalResumen = false;
+        errorModal = null;
+    }
+
+    private void ToggleIngrediente(int id, object? isChecked)
+    {
+        if (isChecked is bool check && check)
+        {
+            idsIngredientesSeleccionados.Add(id);
+        }
+        else
+        {
+            idsIngredientesSeleccionados.Remove(id);
+        }
+    }
+
+    private async Task GuardarHamburguesa()
+    {
+        if (string.IsNullOrWhiteSpace(formNombre))
+        {
+            errorModal = "El nombre es obligatorio.";
+            return;
+        }
+
+        guardando = true;
+        errorModal = null;
+
+        try
+        {
+            var ingredientesSeleccionados = todosLosIngredientes
+                .Where(i => idsIngredientesSeleccionados.Contains(i.Id))
+                .ToList();
+
+            if (esEdicion && hamburguesaSeleccionada != null)
+            {
+                var dto = new HamburguesaDTO
+                {
+                    Id = hamburguesaSeleccionada.Id,
+                    Nombre = formNombre,
+                    Descripcion = formDescripcion,
+                    Ingredientes = ingredientesSeleccionados,
+                    Precios = new List<Domain.Model.Precio>(hamburguesaSeleccionada.Precios ?? new())
+                };
+
+                var ultimoPrecio = hamburguesaSeleccionada.Precios?.LastOrDefault()?.Monto ?? 0;
+                if (formPrecio != ultimoPrecio && formPrecio > 0)
+                {
+                    dto.Precios.Add(new Domain.Model.Precio(DateTime.Now, formPrecio));
+                }
+
+                await HamburguesaApiClient.UpdateAsync(dto);
+            }
+            else
+            {
+                var dto = new HamburguesaDTO
+                {
+                    Nombre = formNombre,
+                    Descripcion = formDescripcion,
+                    Ingredientes = ingredientesSeleccionados,
+                    Precios = formPrecio > 0
+                        ? new List<Domain.Model.Precio> { new Domain.Model.Precio(DateTime.Now, formPrecio) }
+                        : new List<Domain.Model.Precio>()
+                };
+
+                await HamburguesaApiClient.AddAsync(dto);
+            }
+
+            CerrarModales();
+            await CargarHamburguesas();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al guardar: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private async Task EliminarHamburguesa()
+    {
+        if (hamburguesaSeleccionada == null) return;
+
+        guardando = true;
+        errorModal = null;
+
+        try
+        {
+            await HamburguesaApiClient.DeleteAsync(hamburguesaSeleccionada.Id);
+            CerrarModales();
+            await CargarHamburguesas();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al eliminar: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
     }
 }
