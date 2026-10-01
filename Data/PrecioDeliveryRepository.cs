@@ -55,5 +55,13 @@ namespace Data
             await context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<PrecioDelivery?> GetByFechaAsync(DateTime fecha)
+        {
+            return await context.PreciosDelivery
+                .Where(p => p.FechaDesde <= fecha)
+                .OrderByDescending(p => p.FechaDesde)
+                .FirstOrDefaultAsync();
+        }
     }
 }

@@ -14,5 +14,6 @@ namespace Data
         Task<PrecioDelivery?> GetAsync(int id);
         Task<IEnumerable<PrecioDelivery>> GetAllAsync();
         Task<bool> UpdateAsync(PrecioDelivery precioDelivery);
+        Task<PrecioDelivery?> GetByFechaAsync(DateTime fecha);
     }
 }

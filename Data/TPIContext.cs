@@ -11,9 +11,13 @@ namespace Data
         public DbSet<Ingrediente> Ingredientes { get; set; }
         public DbSet<Hamburguesa> Hamburguesas { get; set; }
         public DbSet<PrecioDelivery> PreciosDelivery { get; set; }
+        public DbSet<Pedido> Pedidos { get; set; }
+        public DbSet<DetallePedido> DetallesPedido { get; set; }
         public TPIContext(DbContextOptions<TPIContext> options) : base(options)
         {
-            this.Database.EnsureCreated();
+            // Elimina y crea la base de datos al iniciar la aplicación, solo para fines de desarrollo
+            Database.EnsureDeleted();
+            Database.EnsureCreated();
         }
 
         public TPIContext()
@@ -99,6 +103,49 @@ namespace Data
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Monto).IsRequired().HasColumnType("decimal(18,2)");
                 entity.Property(e => e.FechaDesde).IsRequired();
+            });
+
+            modelBuilder.Entity<Pedido>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Fecha).IsRequired();
+                entity.Property(e => e.Comentario).HasMaxLength(200);
+                entity.Property(e => e.Direccion).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Modalidad).IsRequired();
+                entity.Property(e => e.CalificacionPedido);
+                entity.Property(e => e.CalificacionDelivery);
+                entity.Property(e => e.Estado).IsRequired();
+                entity.Property(e => e.ComentarioFinal).HasMaxLength(200);
+                entity.Property(e => e.PrecioTotal).IsRequired().HasColumnType("decimal(18,2)");
+                entity.HasOne(e => e.Cliente)
+                      .WithMany(c => c.Pedidos)
+                      .HasForeignKey(e => e.ClienteId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired();
+                entity.HasOne(e => e.Delivery)
+                      .WithMany(d => d.Pedidos)
+                      .HasForeignKey(e => e.DeliveryId)
+                      .OnDelete(DeleteBehavior.SetNull)
+                      .IsRequired(false);
+            });
+
+            modelBuilder.Entity<DetallePedido>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Cantidad).IsRequired();
+                entity.Property(e => e.PrecioUnitario).IsRequired().HasColumnType("decimal(18,2)");
+                entity.HasOne(e => e.Pedido)
+                      .WithMany(p => p.DetallePedido)
+                      .HasForeignKey(e => e.PedidoId)
+                      .OnDelete(DeleteBehavior.Cascade)
+                      .IsRequired();
+                entity.HasOne(e => e.Hamburguesa)
+                      .WithMany()
+                      .HasForeignKey(e => e.HamburguesaId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired();
             });
         }
     }
