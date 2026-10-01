@@ -61,5 +61,17 @@ namespace Domain.Model
                 throw new ArgumentException("El precio debe ser mayor o igual a 0.", nameof(precio));
             Precios.Add(precio);
         }
+
+        public decimal ObtenerPrecioVigente(DateTime fecha)
+        {
+            // obtener el ultimo precio vigente, precio solo tiene fecha desde, obtener el ultimo
+            var precioVigente = Precios
+                .Where(p => p.FechaDesde <= fecha)
+                .OrderByDescending(p => p.FechaDesde)
+                .FirstOrDefault();
+            if (precioVigente == null)
+                throw new InvalidOperationException("No hay un precio vigente para la fecha especificada.");
+            return precioVigente.Monto;
+        }
     }
 }

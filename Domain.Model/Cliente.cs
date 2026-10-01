@@ -10,6 +10,7 @@ namespace Domain.Model
         public string Email { get; private set; }
         public string Telefono { get; private set; }
         public string Password { get; private set; }
+        public ICollection<Pedido> Pedidos { get; private set; } = new List<Pedido>();
 
         public Cliente(int id, string nombre, string apellido, string email, string telefono, string password)
         {

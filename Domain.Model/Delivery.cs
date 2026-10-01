@@ -15,6 +15,7 @@ namespace Domain.Model
         public string Apellido { get; private set; }
         public string Telefono { get; private set; }
         public int Dni { get; private set; }
+        public ICollection<Pedido> Pedidos { get; private set; } = new List<Pedido>();
 
         public Delivery(int idDelivery, string nombre, string apellido, string telefono, int dni)
         {
