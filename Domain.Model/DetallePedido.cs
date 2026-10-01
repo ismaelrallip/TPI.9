@@ -117,7 +117,7 @@ namespace Domain.Model
 
         public void SetPedido(int pedidoId)
         {
-            if (pedidoId <= 0)
+            if (pedidoId < 0)
             {
                 throw new ArgumentException("El Id del pedido debe ser mayor que cero.");
             }
