@@ -104,6 +104,9 @@ builder.Services.AddScoped<IIngredienteService, IngredienteService>();
 builder.Services.AddScoped<IPrecioDeliveryRepository, PrecioDeliveryRepository>();
 builder.Services.AddScoped<IPrecioDeliveryService, PrecioDeliveryService>();
 
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IPedidoService, PedidoService>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 var app = builder.Build();
 
@@ -133,5 +136,6 @@ app.MapAuthEndpoints();
 app.MapHamburguesaEndpoints();
 app.MapIngredienteEndpoints();
 app.MapPrecioDeliveryEndpoints();
+app.MapPedidoEndpoints();
 
 app.Run();
