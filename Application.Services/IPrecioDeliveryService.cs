@@ -1,4 +1,5 @@
-﻿using DTOs;
+﻿using Domain.Model;
+using DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
