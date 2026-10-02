@@ -56,14 +56,5 @@ namespace Application.Services
             }).ToList();
         }
 
-        public async Task<bool> UpdateAsync(PrecioDeliveryDTO dto)
-        {
-            var existing = await precioDeliveryRepository.GetAsync(dto.Id);
-            if (existing == null) return false;
-
-            PrecioDelivery precioDelivery = new PrecioDelivery(dto.FechaDesde, dto.Monto);
-            precioDelivery.Id = dto.Id;
-            return await precioDeliveryRepository.UpdateAsync(precioDelivery);
-        }
     }
 }

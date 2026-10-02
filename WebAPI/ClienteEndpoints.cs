@@ -8,7 +8,7 @@ namespace WebAPI
     {
         public static void MapClienteEndpoints(this WebApplication app)
         {
-            app.MapGet("/clientes/{id}", async (int id, ClaimsPrincipal user, IClienteService clienteService) =>
+            app.MapGet("/clientes/{id:int}", async (int id, ClaimsPrincipal user, IClienteService clienteService) =>
             {
                 if (!PuedeAdministrarOAccederAlCliente(user, id))
                     return Results.Forbid();

@@ -1,5 +1,6 @@
 ﻿@page "/ingredientes"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrador")]
 
 <PageTitle>Gestión de Ingredientes</PageTitle>
 
@@ -9,10 +10,7 @@
     <!-- Barra de búsqueda superior -->
     <div class="row mb-3">
         <div class="col-md-4">
-            <input type="text" 
-                   class="form-control" 
-                   placeholder="Ingrediente..." 
-                   @bind="textoBusqueda" 
+            <input type="text" class="form-control" placeholder="Ingrediente..." @bind="textoBusqueda"
                    @bind:event="oninput" />
         </div>
     </div>
@@ -60,8 +58,7 @@
                     {
                         var seleccionado = ingredienteSeleccionado?.Id == ing.Id;
 
-                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")" 
-                            style="cursor: pointer;" 
+                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")" style="cursor: pointer;"
                             @onclick="() => SeleccionarIngrediente(ing)">
                             <td class="text-center">
                                 @if (seleccionado)
@@ -82,14 +79,12 @@
 
     <!-- Botones de Acción (sin Ver Resumen) -->
     <div class="d-flex justify-content-center gap-2">
-        <button class="btn btn-outline-warning px-4 fw-bold" 
-                disabled="@(ingredienteSeleccionado == null)"
+        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(ingredienteSeleccionado == null)"
                 @onclick="AbrirModalModificar">
             MODIFICAR
         </button>
 
-        <button class="btn btn-primary px-4 fw-bold" 
-                @onclick="AbrirModalAgregar">
+        <button class="btn btn-primary px-4 fw-bold" @onclick="AbrirModalAgregar">
             AGREGAR
         </button>
     </div>
@@ -131,7 +126,8 @@
                 <div class="modal-footer d-flex justify-content-between">
                     @if (esEdicion)
                     {
-                        <button type="button" class="btn btn-danger fw-bold" @onclick="EliminarIngrediente" disabled="@guardando">
+                        <button type="button" class="btn btn-danger fw-bold" @onclick="EliminarIngrediente"
+                                disabled="@guardando">
                             ELIMINAR
                         </button>
                     }
@@ -144,7 +140,8 @@
                         <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardando">
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarIngrediente" disabled="@guardando">
+                        <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarIngrediente"
+                                disabled="@guardando">
                             @if (guardando)
                             {
                                 <span class="spinner-border spinner-border-sm me-1"></span>

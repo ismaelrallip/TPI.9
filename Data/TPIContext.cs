@@ -16,7 +16,7 @@ namespace Data
         public TPIContext(DbContextOptions<TPIContext> options) : base(options)
         {
             // Elimina y crea la base de datos al iniciar la aplicación, solo para fines de desarrollo
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 

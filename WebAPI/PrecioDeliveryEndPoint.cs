@@ -52,29 +52,6 @@ namespace WebAPI
             .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
-            app.MapPut("/precios-delivery", async (PrecioDeliveryDTO dto, IPrecioDeliveryService precioDeliveryService) =>
-            {
-                try
-                {
-                    var found = await precioDeliveryService.UpdateAsync(dto);
-                    if (!found)
-                    {
-                        return Results.NotFound();
-                    }
-
-                    return Results.NoContent();
-                }
-                catch (ArgumentException ex)
-                {
-                    return Results.BadRequest(new { error = ex.Message });
-                }
-            })
-            .WithName("UpdatePrecioDelivery")
-            .Produces(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status400BadRequest)
-            .RequireAuthorization("AdminOnly")
-            .WithOpenApi();
-
             app.MapDelete("/precios-delivery/{id}", async (int id, IPrecioDeliveryService precioDeliveryService) =>
             {
                 var deleted = await precioDeliveryService.DeleteAsync(id);

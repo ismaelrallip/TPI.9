@@ -1,5 +1,6 @@
 ﻿@page "/hamburguesas"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrador")]
 
 <PageTitle>Gestión de Hamburguesas</PageTitle>
 
@@ -9,10 +10,7 @@
     <!-- Barra de búsqueda superior -->
     <div class="row mb-3">
         <div class="col-md-4">
-            <input type="text"
-                   class="form-control"
-                   placeholder="Hamburguesa..."
-                   @bind="textoBusqueda"
+            <input type="text" class="form-control" placeholder="Hamburguesa..." @bind="textoBusqueda"
                    @bind:event="oninput" />
         </div>
     </div>
@@ -62,8 +60,7 @@
                         var seleccionado = hamburguesaSeleccionada?.Id == burger.Id;
                         var ultimoPrecio = burger.Precios?.LastOrDefault();
 
-                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")"
-                            style="cursor: pointer;"
+                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")" style="cursor: pointer;"
                             @onclick="() => SeleccionarHamburguesa(burger)">
                             <td class="text-center">
                                 @if (seleccionado)
@@ -85,20 +82,17 @@
 
     <!-- Botones de Acción -->
     <div class="d-flex justify-content-center gap-2">
-        <button class="btn btn-outline-secondary px-4 fw-bold"
-                disabled="@(hamburguesaSeleccionada == null)"
+        <button class="btn btn-outline-secondary px-4 fw-bold" disabled="@(hamburguesaSeleccionada == null)"
                 @onclick="AbrirModalResumen">
             VER RESUMEN
         </button>
 
-        <button class="btn btn-outline-warning px-4 fw-bold"
-                disabled="@(hamburguesaSeleccionada == null)"
+        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(hamburguesaSeleccionada == null)"
                 @onclick="AbrirModalModificar">
             MODIFICAR
         </button>
 
-        <button class="btn btn-primary px-4 fw-bold"
-                @onclick="AbrirModalAgregar">
+        <button class="btn btn-primary px-4 fw-bold" @onclick="AbrirModalAgregar">
             AGREGAR
         </button>
     </div>
@@ -146,10 +140,7 @@
                                 {
                                     var estaCheck = idsIngredientesSeleccionados.Contains(ing.Id);
                                     <div class="form-check">
-                                        <input class="form-check-input"
-                                               type="checkbox"
-                                               id="chk-@ing.Id"
-                                               checked="@estaCheck"
+                                        <input class="form-check-input" type="checkbox" id="chk-@ing.Id" checked="@estaCheck"
                                                @onchange="(e) => ToggleIngrediente(ing.Id, e.Value)">
                                         <label class="form-check-label" for="chk-@ing.Id">
                                             @ing.Nombre
@@ -167,7 +158,8 @@
                 <div class="modal-footer d-flex justify-content-between">
                     @if (esEdicion)
                     {
-                        <button type="button" class="btn btn-danger fw-bold" @onclick="EliminarHamburguesa" disabled="@guardando">
+                        <button type="button" class="btn btn-danger fw-bold" @onclick="EliminarHamburguesa"
+                                disabled="@guardando">
                             ELIMINAR
                         </button>
                     }
@@ -180,7 +172,8 @@
                         <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardando">
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarHamburguesa" disabled="@guardando">
+                        <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarHamburguesa"
+                                disabled="@guardando">
                             @if (guardando)
                             {
                                 <span class="spinner-border spinner-border-sm me-1"></span>
@@ -235,7 +228,8 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if (hamburguesaSeleccionada.Ingredientes != null && hamburguesaSeleccionada.Ingredientes.Any())
+                                        @if (hamburguesaSeleccionada.Ingredientes != null &&
+                                    hamburguesaSeleccionada.Ingredientes.Any())
                                         {
                                             @foreach (var ing in hamburguesaSeleccionada.Ingredientes)
                                             {
@@ -268,9 +262,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if (hamburguesaSeleccionada.Precios != null && hamburguesaSeleccionada.Precios.Any())
+                                        @if (hamburguesaSeleccionada.Precios != null &&
+                                    hamburguesaSeleccionada.Precios.Any())
                                         {
-                                            @foreach (var p in hamburguesaSeleccionada.Precios.OrderByDescending(x => x.FechaDesde))
+                                            @foreach (var p in hamburguesaSeleccionada.Precios.OrderByDescending(x =>
+                                    x.FechaDesde))
                                             {
                                                 <tr>
                                                     <td>$@p.Monto.ToString("N2")</td>

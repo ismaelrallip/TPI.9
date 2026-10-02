@@ -14,7 +14,6 @@ namespace Application.Services
         Task<bool> DeleteAsync(int id);
         Task<PrecioDeliveryDTO?> GetAsync(int id);
         Task<IEnumerable<PrecioDeliveryDTO>> GetAllAsync();
-        Task<bool> UpdateAsync(PrecioDeliveryDTO dto);
 
     }
 }

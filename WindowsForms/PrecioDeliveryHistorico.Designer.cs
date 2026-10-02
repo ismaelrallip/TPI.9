@@ -28,8 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            actualizarButton = new Button();
-            eliminarButton = new Button();
             agregarButton = new Button();
             PrecioDeliveryDataGridView = new DataGridView();
             buscarButton = new Button();
@@ -37,27 +35,7 @@
             ((System.ComponentModel.ISupportInitialize)PrecioDeliveryDataGridView).BeginInit();
             SuspendLayout();
             // 
-            // actualizarButton
             // 
-            actualizarButton.Enabled = false;
-            actualizarButton.Location = new Point(687, 614);
-            actualizarButton.Margin = new Padding(2, 3, 2, 3);
-            actualizarButton.Name = "actualizarButton";
-            actualizarButton.Size = new Size(91, 29);
-            actualizarButton.TabIndex = 16;
-            actualizarButton.Text = "Actualizar";
-            actualizarButton.UseVisualStyleBackColor = true;
-            // 
-            // eliminarButton
-            // 
-            eliminarButton.Enabled = false;
-            eliminarButton.Location = new Point(580, 614);
-            eliminarButton.Margin = new Padding(2, 3, 2, 3);
-            eliminarButton.Name = "eliminarButton";
-            eliminarButton.Size = new Size(91, 29);
-            eliminarButton.TabIndex = 15;
-            eliminarButton.Text = "Eliminar";
-            eliminarButton.UseVisualStyleBackColor = true;
             // 
             // agregarButton
             // 
@@ -113,8 +91,6 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1006, 721);
             Controls.Add(dateTimePickerDesde);
-            Controls.Add(actualizarButton);
-            Controls.Add(eliminarButton);
             Controls.Add(agregarButton);
             Controls.Add(PrecioDeliveryDataGridView);
             Controls.Add(buscarButton);
@@ -128,8 +104,6 @@
 
         #endregion
 
-        private Button actualizarButton;
-        private Button eliminarButton;
         private Button agregarButton;
         private DataGridView PrecioDeliveryDataGridView;
         private Button buscarButton;

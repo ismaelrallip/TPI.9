@@ -47,11 +47,14 @@
             // dateTimePicker1
             // 
             dateTimePicker1.Font = new Font("Segoe UI", 12F);
+            dateTimePicker1.CustomFormat = "dd/MM/yyyy HH:mm";
+            dateTimePicker1.Format = DateTimePickerFormat.Custom;
             dateTimePicker1.Location = new Point(14, 91);
             dateTimePicker1.Margin = new Padding(3, 4, 3, 4);
             dateTimePicker1.Name = "dateTimePicker1";
             dateTimePicker1.Size = new Size(342, 34);
             dateTimePicker1.TabIndex = 3;
+            dateTimePicker1.ShowUpDown = true;
             // 
             // button1
             // 

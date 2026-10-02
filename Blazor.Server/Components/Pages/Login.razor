@@ -44,8 +44,8 @@
 </div>
 
 @code {
-    private string username = "admin";
-    private string password = "admin";
+    private string username = string.Empty;
+    private string password = string.Empty;
     private string? mensajeError;
     private bool cargando;
 
@@ -59,6 +59,13 @@
             var exito = await AuthService.LoginAsync(username, password);
             if (exito)
             {
+                if (AuthService.CurrentSession?.Role != "Administrador")
+                {
+                    await AuthService.LogoutAsync();
+                    mensajeError = "La pantalla para Clientes todavia no esta disponible.";
+                    return;
+                }
+
                 Navigation.NavigateTo("/hamburguesas");
             }
             else

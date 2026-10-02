@@ -1,5 +1,6 @@
 ﻿@page "/clientes"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrador")]
 
 <PageTitle>Gestión de Clientes</PageTitle>
 
@@ -9,11 +10,8 @@
     <!-- Barra de búsqueda superior -->
     <div class="row mb-3">
         <div class="col-md-5 d-flex gap-2">
-            <input type="text"
-                   class="form-control"
-                   placeholder="Buscar por nombre, apellido o email..."
-                   @bind="textoBusqueda"
-                   @bind:event="oninput" />
+            <input type="text" class="form-control" placeholder="Buscar por nombre, apellido o email..."
+                   @bind="textoBusqueda" @bind:event="oninput" />
             <button class="btn btn-outline-secondary" @onclick="CargarClientes">Buscar</button>
         </div>
     </div>
@@ -62,8 +60,7 @@
                     {
                         var seleccionado = clienteSeleccionado?.Id == c.Id;
 
-                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")"
-                            style="cursor: pointer;"
+                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")" style="cursor: pointer;"
                             @onclick="() => SeleccionarCliente(c)">
                             <td class="text-center">
                                 @if (seleccionado)
@@ -85,20 +82,17 @@
 
     <!-- Botones de Acción -->
     <div class="d-flex justify-content-center gap-2">
-        <button class="btn btn-outline-danger px-4 fw-bold"
-                disabled="@(clienteSeleccionado == null)"
+        <button class="btn btn-outline-danger px-4 fw-bold" disabled="@(clienteSeleccionado == null)"
                 @onclick="AbrirModalConfirmarEliminar">
             Eliminar
         </button>
 
-        <button class="btn btn-outline-warning px-4 fw-bold"
-                disabled="@(clienteSeleccionado == null)"
+        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(clienteSeleccionado == null)"
                 @onclick="AbrirModalModificar">
             Actualizar
         </button>
 
-        <button class="btn btn-primary px-4 fw-bold"
-                @onclick="AbrirModalAgregar">
+        <button class="btn btn-primary px-4 fw-bold" @onclick="AbrirModalAgregar">
             Agregar
         </button>
     </div>
@@ -163,14 +157,15 @@
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label fw-bold">Contraseña</label>
                         <div class="col-sm-8">
-                            <input type="password" class="form-control" @bind="formPassword" placeholder="@(esEdicion ? "Dejar en blanco para no cambiar" : "")" />
+                            <input type="password" class="form-control" autocomplete="new-password" @bind="formPassword" />
                         </div>
                     </div>
 
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label fw-bold">Confirmar contraseña</label>
                         <div class="col-sm-8">
-                            <input type="password" class="form-control" @bind="formConfirmarPassword" />
+                            <input type="password" class="form-control" autocomplete="new-password"
+                                   @bind="formConfirmarPassword" />
                         </div>
                     </div>
                 </div>
@@ -208,7 +203,8 @@
                     <p class="mb-0">¿Eliminar a @clienteSeleccionado.Nombre @clienteSeleccionado.Apellido?</p>
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-primary px-3" @onclick="EliminarClienteConfirmado" disabled="@guardando">
+                    <button type="button" class="btn btn-primary px-3" @onclick="EliminarClienteConfirmado"
+                            disabled="@guardando">
                         @if (guardando)
                         {
                             <span class="spinner-border spinner-border-sm me-1"></span>
@@ -267,7 +263,9 @@
         mensajeError = null;
         try
         {
-            var resultado = await ClienteApiClient.GetAllAsync();
+            var resultado = string.IsNullOrWhiteSpace(textoBusqueda)
+                ? await ClienteApiClient.GetAllAsync()
+                : await ClienteApiClient.GetByCriteriaAsync(textoBusqueda.Trim());
             listaClientes = resultado.ToList();
             clienteSeleccionado = null;
         }
@@ -329,7 +327,8 @@
 
     private async Task GuardarCliente()
     {
-        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formApellido) || string.IsNullOrWhiteSpace(formEmail))
+        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formApellido) ||
+string.IsNullOrWhiteSpace(formEmail))
         {
             errorModal = "Nombre, apellido y email son requeridos.";
             return;

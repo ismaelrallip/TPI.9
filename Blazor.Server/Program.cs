@@ -1,14 +1,19 @@
 using API.Clients;
 using API.Auth.Blazor.Server;
 using Blazor.Server.Components;
+using Blazor.Server;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Autenticación de la cátedra activa
+builder.Services.AddAuthorizationCore();
+
+// Autenticaciï¿½n de la cï¿½tedra activa
 builder.Services.AddSingleton<IAuthService, BlazorServerAuthService>();
+builder.Services.AddScoped<AuthenticationStateProvider, BlazorAuthenticationStateProvider>();
 
 var app = builder.Build();
 

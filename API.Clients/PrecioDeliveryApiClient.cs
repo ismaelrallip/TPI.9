@@ -67,23 +67,6 @@ namespace API.Clients
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al crear el precio delivery.", ex); }
         }
 
-        public static async Task UpdateAsync(PrecioDeliveryDTO dto)
-        {
-            try
-            {
-                using var client = await CreateHttpClientAsync();
-                var response = await client.PutAsJsonAsync("precios-delivery", dto);
-                await HandleAuthorizationAsync(response);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"Error al actualizar precio delivery {dto.Id}. Status: {response.StatusCode}. Detalle: {content}");
-                }
-            }
-            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al actualizar el precio delivery.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al actualizar el precio delivery.", ex); }
-        }
-
         public static async Task DeleteAsync(int id)
         {
             try

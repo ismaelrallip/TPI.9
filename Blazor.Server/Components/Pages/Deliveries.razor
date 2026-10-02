@@ -1,5 +1,6 @@
 ﻿@page "/deliveries"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrador")]
 
 <PageTitle>Gestión de Deliveries</PageTitle>
 
@@ -9,11 +10,8 @@
     <!-- Barra de búsqueda superior -->
     <div class="row mb-3">
         <div class="col-md-5 d-flex gap-2">
-            <input type="text"
-                   class="form-control"
-                   placeholder="Buscar por nombre, apellido, teléfono o DNI..."
-                   @bind="textoBusqueda"
-                   @bind:event="oninput" />
+            <input type="text" class="form-control" placeholder="Buscar por nombre, apellido, teléfono o DNI..."
+                   @bind="textoBusqueda" @bind:event="oninput" />
             <button class="btn btn-outline-secondary" @onclick="CargarDeliveries">Buscar</button>
         </div>
     </div>
@@ -62,8 +60,7 @@
                     {
                         var seleccionado = deliverySeleccionado?.IdDelivery == d.IdDelivery;
 
-                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")"
-                            style="cursor: pointer;"
+                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")" style="cursor: pointer;"
                             @onclick="() => SeleccionarDelivery(d)">
                             <td class="text-center">
                                 @if (seleccionado)
@@ -85,20 +82,17 @@
 
     <!-- Botones de Acción -->
     <div class="d-flex justify-content-center gap-2">
-        <button class="btn btn-outline-danger px-4 fw-bold"
-                disabled="@(deliverySeleccionado == null)"
+        <button class="btn btn-outline-danger px-4 fw-bold" disabled="@(deliverySeleccionado == null)"
                 @onclick="AbrirModalConfirmarEliminar">
             Eliminar
         </button>
 
-        <button class="btn btn-outline-warning px-4 fw-bold"
-                disabled="@(deliverySeleccionado == null)"
+        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(deliverySeleccionado == null)"
                 @onclick="AbrirModalModificar">
             Actualizar
         </button>
 
-        <button class="btn btn-primary px-4 fw-bold"
-                @onclick="AbrirModalAgregar">
+        <button class="btn btn-primary px-4 fw-bold" @onclick="AbrirModalAgregar">
             Agregar
         </button>
     </div>
@@ -156,7 +150,7 @@
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label fw-bold">DNI</label>
                         <div class="col-sm-8">
-                            <input type="number" class="form-control" @bind="formDni" />
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control" @bind="formDni" />
                         </div>
                     </div>
                 </div>
@@ -194,7 +188,8 @@
                     <p class="mb-0">¿Eliminar a @deliverySeleccionado.Nombre @deliverySeleccionado.Apellido?</p>
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-primary px-3" @onclick="EliminarDeliveryConfirmado" disabled="@guardando">
+                    <button type="button" class="btn btn-primary px-3" @onclick="EliminarDeliveryConfirmado"
+                            disabled="@guardando">
                         @if (guardando)
                         {
                             <span class="spinner-border spinner-border-sm me-1"></span>
@@ -251,7 +246,9 @@
         mensajeError = null;
         try
         {
-            var resultado = await DeliveryApiClient.GetAllAsync();
+            var resultado = string.IsNullOrWhiteSpace(textoBusqueda)
+                ? await DeliveryApiClient.GetAllAsync()
+                : await DeliveryApiClient.GetByCriteriaAsync(textoBusqueda.Trim());
             listaDeliveries = resultado.ToList();
             deliverySeleccionado = null;
         }

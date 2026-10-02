@@ -24,7 +24,8 @@ namespace WindowsForms
 
         private void PrecioDeliveryHistorico_Load(object sender, EventArgs e)
         {
-
+            dateTimePickerDesde.Value = dateTimePickerDesde.MinDate;
+            _ = CargarPrecioDeliveryAsync(dateTimePickerDesde.Value);
         }
         private void ConfigurarColumnas()
         {
@@ -62,62 +63,10 @@ namespace WindowsForms
         private PrecioDeliveryDTO? PrecioDeliverySeleccionado() =>
            PrecioDeliveryDataGridView.SelectedRows.Count == 0 ? null : (PrecioDeliveryDTO)PrecioDeliveryDataGridView.SelectedRows[0].DataBoundItem;
 
-        private async void actualizarButton_Click(object sender, EventArgs e)
-        {
-            var seleccionado = PrecioDeliverySeleccionado();
-            if (seleccionado == null) return;
-
-            try
-            {
-                DeshabilitarControles();
-                var precioDelivery = await PrecioDeliveryApiClient.GetAsync(seleccionado.Id);
-                using var detalle = new AgregarPrecioDeliveryForm();
-                if (detalle.ShowDialog(this) == DialogResult.OK)
-                {
-                    await CargarPrecioDeliveryAsync(dateTimePickerDesde.Value);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al actualizar Precio Delivery: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                HabilitarControles();
-            }
-        }
-
-        private async void eliminarButton_Click(object sender, EventArgs e)
-        {
-            var seleccionado = PrecioDeliverySeleccionado();
-            if (seleccionado == null) return;
-
-            var confirmar = MessageBox.Show($"¿Eliminar {seleccionado.FechaDesde} {seleccionado.Monto}?", "Confirmar",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (confirmar != DialogResult.Yes) return;
-
-            try
-            {
-                DeshabilitarControles();
-                await PrecioDeliveryApiClient.DeleteAsync(seleccionado.Id);
-                await CargarPrecioDeliveryAsync(dateTimePickerDesde.Value);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al eliminar Precio Delivery: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                HabilitarControles();
-            }
-        }
-
         private void DeshabilitarControles()
         {
             buscarButton.Enabled = false;
             agregarButton.Enabled = false;
-            actualizarButton.Enabled = false;
-            eliminarButton.Enabled = false;
             PrecioDeliveryDataGridView.Enabled = false;
         }
 
@@ -126,16 +75,10 @@ namespace WindowsForms
             buscarButton.Enabled = true;
             agregarButton.Enabled = true;
             PrecioDeliveryDataGridView.Enabled = true;
-            var haySeleccion = PrecioDeliverySeleccionado() != null;
-            actualizarButton.Enabled = haySeleccion;
-            eliminarButton.Enabled = haySeleccion;
         }
 
         private void PrecioDeliveryDataGridView_SelectionChanged(object sender, EventArgs e)
         {
-            var haySeleccion = PrecioDeliverySeleccionado() != null;
-            actualizarButton.Enabled = haySeleccion;
-            eliminarButton.Enabled = haySeleccion;
         }
 
         private async void agregarButton_Click(object sender, EventArgs e)

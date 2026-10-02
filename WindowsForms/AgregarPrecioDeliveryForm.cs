@@ -17,6 +17,8 @@ namespace WindowsForms
         public AgregarPrecioDeliveryForm()
         {
             InitializeComponent();
+            dateTimePicker1.Value = DateTime.Now;
+            dateTimePicker1.Enabled = false;
         }
 
         private void AgregarPrecioDelivery_Load(object sender, EventArgs e)
@@ -36,8 +38,13 @@ namespace WindowsForms
 
         private async void agregarPrecioDelivery_Click(object sender, EventArgs e)
         {
-            DateTime fecha = dateTimePicker1.Value;
-            decimal precio = Convert.ToDecimal(textBox1.Text);
+            DateTime fecha = DateTime.Now;
+            if (!decimal.TryParse(textBox1.Text, out var precio) || precio <= 0)
+            {
+                MessageBox.Show("Ingrese un monto numérico mayor que cero.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBox1.Focus();
+                return;
+            }
 
             // Crear un nuevo PrecioDelivery
             PrecioDeliveryDTO nuevoPrecioDelivery = new PrecioDeliveryDTO
@@ -52,6 +59,7 @@ namespace WindowsForms
             try
             {
                 await PrecioDeliveryApiClient.AddAsync(nuevoPrecioDelivery);
+                DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)

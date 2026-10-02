@@ -44,18 +44,6 @@ namespace Data
             return await context.PreciosDelivery.ToListAsync();
         }
 
-        public async Task<bool> UpdateAsync(PrecioDelivery precioDelivery)
-        {
-            var existingPrecioDelivery = await context.PreciosDelivery.FindAsync(precioDelivery.Id);
-            if (existingPrecioDelivery == null)
-                return false;
-            existingPrecioDelivery.SetValor(precioDelivery.Monto);
-            existingPrecioDelivery.SetFecha(precioDelivery.FechaDesde);
-            context.PreciosDelivery.Update(existingPrecioDelivery);
-            await context.SaveChangesAsync();
-            return true;
-        }
-
         public async Task<PrecioDelivery?> GetByFechaAsync(DateTime fecha)
         {
             return await context.PreciosDelivery
@@ -63,5 +51,6 @@ namespace Data
                 .OrderByDescending(p => p.FechaDesde)
                 .FirstOrDefaultAsync();
         }
+
     }
 }

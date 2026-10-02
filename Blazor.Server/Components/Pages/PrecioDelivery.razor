@@ -1,5 +1,6 @@
 ﻿@page "/precio-delivery"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrador")]
 
 <PageTitle>Histórico de Precios de Delivery</PageTitle>
 
@@ -18,9 +19,7 @@
     <!-- Barra de búsqueda / filtro por fecha -->
     <div class="row mb-3 align-items-center">
         <div class="col-md-4 d-flex gap-2">
-            <input type="date"
-                   class="form-control"
-                   @bind="fechaFiltro" />
+            <input type="date" class="form-control" @bind="fechaFiltro" />
             @if (fechaFiltro.HasValue)
             {
                 <button class="btn btn-outline-secondary" @onclick="() => fechaFiltro = null">
@@ -72,8 +71,7 @@
                     {
                         var seleccionado = precioSeleccionado?.Id == p.Id;
 
-                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")"
-                            style="cursor: pointer;"
+                        <tr class="@(seleccionado ? "table-primary fw-bold" : "")" style="cursor: pointer;"
                             @onclick="() => SeleccionarPrecio(p)">
                             <td class="text-center">
                                 @if (seleccionado)
@@ -93,20 +91,7 @@
 
     <!-- Botones de Acción -->
     <div class="d-flex justify-content-center gap-2">
-        <button class="btn btn-outline-danger px-4 fw-bold"
-                disabled="@(precioSeleccionado == null)"
-                @onclick="AbrirModalConfirmarEliminar">
-            Eliminar
-        </button>
-
-        <button class="btn btn-outline-warning px-4 fw-bold"
-                disabled="@(precioSeleccionado == null)"
-                @onclick="AbrirModalModificar">
-            Actualizar
-        </button>
-
-        <button class="btn btn-primary px-4 fw-bold"
-                @onclick="AbrirModalAgregar">
+        <button class="btn btn-primary px-4 fw-bold" @onclick="AbrirModalAgregar">
             Agregar
         </button>
     </div>
@@ -121,7 +106,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow">
                 <div class="modal-header">
-                    <h5 class="modal-title">@(esEdicion ? "Actualizar Precio Delivery" : "Agregar Precio Delivery")</h5>
+                    <h5 class="modal-title">Agregar Precio Delivery</h5>
                     <button type="button" class="btn-close" @onclick="CerrarModales"></button>
                 </div>
                 <div class="modal-body">
@@ -130,27 +115,20 @@
                         <div class="alert alert-danger py-2">@errorModal</div>
                     }
 
-                    @if (esEdicion)
-                    {
-                        <div class="mb-3 row">
-                            <label class="col-sm-4 col-form-label fw-bold">Id</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" value="@precioSeleccionado?.Id" disabled />
-                            </div>
-                        </div>
-                    }
-
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label fw-bold">Fecha Desde</label>
                         <div class="col-sm-8">
-                            <input type="datetime-local" class="form-control" @bind="formFecha" />
+                            <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy HH:mm")"
+                                   readonly />
+                            <small class="text-muted">Se asigna automáticamente al confirmar.</small>
                         </div>
                     </div>
 
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label fw-bold">Monto ($)</label>
                         <div class="col-sm-8">
-                            <input type="number" step="0.01" min="0" class="form-control" @bind="formMonto" placeholder="Monto" />
+                            <input type="number" step="0.01" min="0" class="form-control" @bind="formMonto"
+                                   placeholder="Monto" />
                         </div>
                     </div>
                 </div>
@@ -171,39 +149,6 @@
     </div>
 }
 
-@* ==========================================
-   MODAL 2: CONFIRMAR ELIMINACIÓN
-   ========================================== *@
-@if (mostrarModalEliminar && precioSeleccionado != null)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content shadow">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmar</h5>
-                    <button type="button" class="btn-close" @onclick="CerrarModales"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <div class="display-6 text-primary mb-2">?</div>
-                    <p class="mb-0">¿Eliminar el registro de precio por $@precioSeleccionado.Monto.ToString("N2") del @precioSeleccionado.FechaDesde.ToString("dd/MM/yyyy")?</p>
-                </div>
-                <div class="modal-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-primary px-3" @onclick="EliminarPrecioConfirmado" disabled="@guardando">
-                        @if (guardando)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1"></span>
-                        }
-                        Sí
-                    </button>
-                    <button type="button" class="btn btn-secondary px-3" @onclick="CerrarModales" disabled="@guardando">
-                        No
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
 @code {
     private List<PrecioDeliveryDTO> listaPrecios = new();
     private PrecioDeliveryDTO? precioSeleccionado;
@@ -213,8 +158,6 @@
 
     // Modales
     private bool mostrarModalFormulario;
-    private bool mostrarModalEliminar;
-    private bool esEdicion;
     private bool guardando;
     private string? errorModal;
 
@@ -263,48 +206,23 @@
 
     private void AbrirModalAgregar()
     {
-        esEdicion = false;
         formFecha = DateTime.Now;
         formMonto = ultimoPrecioVigente?.Monto ?? 0;
         errorModal = null;
         mostrarModalFormulario = true;
     }
 
-    private void AbrirModalModificar()
-    {
-        if (precioSeleccionado == null) return;
-
-        esEdicion = true;
-        formFecha = precioSeleccionado.FechaDesde;
-        formMonto = precioSeleccionado.Monto;
-        errorModal = null;
-        mostrarModalFormulario = true;
-    }
-
-    private void AbrirModalConfirmarEliminar()
-    {
-        if (precioSeleccionado == null) return;
-        mostrarModalEliminar = true;
-    }
-
     private void CerrarModales()
     {
         mostrarModalFormulario = false;
-        mostrarModalEliminar = false;
         errorModal = null;
     }
 
     private async Task GuardarPrecio()
     {
-        if (formMonto < 0)
+        if (formMonto <= 0)
         {
-            errorModal = "El monto no puede ser negativo.";
-            return;
-        }
-
-        if (formFecha > DateTime.Now.AddMinutes(5))
-        {
-            errorModal = "La fecha de inicio no puede ser futura.";
+            errorModal = "El monto debe ser mayor que cero.";
             return;
         }
 
@@ -313,27 +231,14 @@
 
         try
         {
-            if (esEdicion && precioSeleccionado != null)
+            formFecha = DateTime.Now;
+            var dto = new PrecioDeliveryDTO
             {
-                var dto = new PrecioDeliveryDTO
-                {
-                    Id = precioSeleccionado.Id,
-                    FechaDesde = formFecha,
-                    Monto = formMonto
-                };
+                FechaDesde = formFecha,
+                Monto = formMonto
+            };
 
-                await PrecioDeliveryApiClient.UpdateAsync(dto);
-            }
-            else
-            {
-                var dto = new PrecioDeliveryDTO
-                {
-                    FechaDesde = formFecha,
-                    Monto = formMonto
-                };
-
-                await PrecioDeliveryApiClient.AddAsync(dto);
-            }
+            await PrecioDeliveryApiClient.AddAsync(dto);
 
             CerrarModales();
             await CargarPrecios();
@@ -348,26 +253,4 @@
         }
     }
 
-    private async Task EliminarPrecioConfirmado()
-    {
-        if (precioSeleccionado == null) return;
-
-        guardando = true;
-        errorModal = null;
-
-        try
-        {
-            await PrecioDeliveryApiClient.DeleteAsync(precioSeleccionado.Id);
-            CerrarModales();
-            await CargarPrecios();
-        }
-        catch (Exception ex)
-        {
-            errorModal = $"Error al eliminar el precio: {ex.Message}";
-        }
-        finally
-        {
-            guardando = false;
-        }
-    }
 }

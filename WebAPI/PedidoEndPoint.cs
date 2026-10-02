@@ -125,10 +125,7 @@ namespace WebAPI
 
             app.MapGet("/pedidos/delivery/{deliveryId:int}", async (int deliveryId, ClaimsPrincipal user, IPedidoService pedidoService) =>
             {
-                bool esAdmin = user.IsInRole("Administrador");
-                bool esDeliveryAutorizado = user.IsInRole("Delivery") && TryGetDeliveryId(user, out var authenticatedDeliveryId) && authenticatedDeliveryId == deliveryId;
-
-                if (!esAdmin && !esDeliveryAutorizado)
+                if (!user.IsInRole("Administrador"))
                 {
                     return Results.Forbid();
                 }
@@ -139,7 +136,7 @@ namespace WebAPI
             .WithName("GetPedidosByDelivery")
             .Produces<List<PedidoDTO>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status403Forbidden)
-            .RequireAuthorization()
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
             app.MapGet("/pedidos/estado/{estado:int}", async (int estado, IPedidoService pedidoService) =>
@@ -149,7 +146,7 @@ namespace WebAPI
             })
             .WithName("GetPedidosByEstado")
             .Produces<List<PedidoDTO>>(StatusCodes.Status200OK)
-            .RequireAuthorization("AdminOrDelivery")
+            .RequireAuthorization("AdminOnly")
             .WithOpenApi();
         }
 
@@ -158,20 +155,12 @@ namespace WebAPI
             return int.TryParse(user.FindFirstValue("clienteId"), out clienteId) && clienteId > 0;
         }
 
-        private static bool TryGetDeliveryId(ClaimsPrincipal user, out int deliveryId)
-        {
-            return int.TryParse(user.FindFirstValue("deliveryId"), out deliveryId) && deliveryId > 0;
-        }
-
         private static bool PuedeAccederAlPedido(ClaimsPrincipal user, PedidoDTO pedido)
         {
             if (user.IsInRole("Administrador")) return true;
 
             if (user.IsInRole("Cliente") && TryGetClienteId(user, out var clienteId))
                 return pedido.ClienteId == clienteId;
-
-            if (user.IsInRole("Delivery") && TryGetDeliveryId(user, out var deliveryId))
-                return pedido.DeliveryId == deliveryId;
 
             return false;
         }

@@ -28,8 +28,8 @@ namespace Domain.Model
         }
         public void SetValor(decimal monto)
         {
-            if (monto < 0)
-                throw new ArgumentOutOfRangeException(nameof(monto), "El monto del delivery no puede ser negativo.");
+            if (monto <= 0)
+                throw new ArgumentOutOfRangeException(nameof(monto), "El monto del delivery debe ser mayor que cero.");
             Monto = monto;
         }
 
