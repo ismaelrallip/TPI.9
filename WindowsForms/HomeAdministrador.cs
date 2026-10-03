@@ -92,5 +92,12 @@ namespace WindowsForms
                 await AuthServiceProvider.Current.LogoutAsync();
         }
 
+        private void pedidosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var form = new PedidosForm();
+            form.MdiParent = this;
+            form.WindowState = FormWindowState.Maximized;
+            form.Show();
+        }
     }
 }
