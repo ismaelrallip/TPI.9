@@ -31,6 +31,16 @@ namespace WebAPI
             .RequireAuthorization()
             .WithOpenApi();
 
+            app.MapGet("/pedidos", async (IPedidoService pedidoService) =>
+            {
+                var dtos = await pedidoService.GetAllAsync();
+                return Results.Ok(dtos);
+            })
+            .WithName("GetAllPedidos")
+            .Produces<IEnumerable<PedidoDTO>>(StatusCodes.Status200OK)
+            .RequireAuthorization("AdminOnly")
+            .WithOpenApi();
+
             app.MapPost("/pedidos", async (PedidoDTO dto, ClaimsPrincipal user, IPedidoService pedidoService) =>
             {
                 bool esAdmin = user.IsInRole("Administrador");
