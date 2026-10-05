@@ -9,8 +9,8 @@ GO -- ==========================================================================
 DELETE FROM DetallesPedido;
 DELETE FROM Pedidos;
 DELETE FROM Precio;
--- Si Entity Framework te creó una tabla intermedia para la relación muchos a muchos, descomenta esto:
--- DELETE FROM HamburguesaIngrediente; 
+DELETE FROM HamburguesaIngrediente;
+-- Tabla intermedia generada por EF Core
 DELETE FROM Hamburguesas;
 DELETE FROM Ingredientes;
 DELETE FROM PreciosDelivery;
@@ -52,7 +52,7 @@ VALUES (
     1500.00
   );
 SET IDENTITY_INSERT PreciosDelivery OFF;
--- 4. Insertamos los Ingredientes (NUEVO)
+-- 4. Insertamos los Ingredientes (ID 901 al 904)
 SET IDENTITY_INSERT Ingredientes ON;
 INSERT INTO Ingredientes (Id, Nombre, Descripcion, Stock)
 VALUES (
@@ -84,17 +84,23 @@ VALUES (
     'Doble medallón, cheddar, bacon'
   );
 SET IDENTITY_INSERT Hamburguesas OFF;
--- 6. Insertamos las relaciones entre Hamburguesas e Ingredientes (Tabla intermedia)
--- Descomenta este bloque si tu BD tiene la tabla intermedia creada por EF Core.
--- INSERT INTO HamburguesaIngrediente (HamburguesasId, IngredientesId)
--- VALUES 
--- (901, 901), -- Cheeseburger tiene Pan
--- (901, 902), -- Cheeseburger tiene Medallón
--- (901, 903), -- Cheeseburger tiene Cheddar
--- (902, 901), -- Doble Bacon tiene Pan
--- (902, 902), -- Doble Bacon tiene Medallón
--- (902, 903), -- Doble Bacon tiene Cheddar
--- (902, 904); -- Doble Bacon tiene Bacon
+-- 6. Insertamos las relaciones entre Hamburguesas e Ingredientes
+-- Usando los nombres generados por convención en EF Core:
+INSERT INTO HamburguesaIngrediente (HamburguesaId, IngredientesId)
+VALUES (901, 901),
+  -- Cheeseburger tiene Pan
+  (901, 902),
+  -- Cheeseburger tiene Medallón
+  (901, 903),
+  -- Cheeseburger tiene Cheddar
+  (902, 901),
+  -- Doble Bacon tiene Pan
+  (902, 902),
+  -- Doble Bacon tiene Medallón
+  (902, 903),
+  -- Doble Bacon tiene Cheddar
+  (902, 904);
+-- Doble Bacon tiene Bacon
 -- 7. Insertamos los Precios de las Hamburguesas
 SET IDENTITY_INSERT Precio ON;
 INSERT INTO Precio (Id, HamburguesaId, PrecioFechaDesde, Precio)
