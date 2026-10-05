@@ -34,11 +34,11 @@ Para ingresar al sistema como **Administrador**:
 
 ### 📋 Plantilla para el archivo `.env`
 
-Crea un archivo llamado `.env` en la raíz del proyecto utilizando el siguiente formato como plantilla:
+Crea un archivo llamado `.env` en la raíz del proyecto utilizando el siguiente formato :
 
 ```env
-TPI9_JWT_SECRET_KEY=<tu_clave_secreta_jwt>
-TPI9_ADMIN_USERNAME=<tu_usuario_admin>
-TPI9_ADMIN_PASSWORD=<tu_password_admin>
-TPI_API_BASE_URL=<url_base_api>
+TPI9_JWT_SECRET_KEY=Hamburgueseria-JWT-Key-Development-2026
+TPI9_ADMIN_USERNAME=admin
+TPI9_ADMIN_PASSWORD=admin
+TPI_API_BASE_URL=http://localhost:5183/
 ```
