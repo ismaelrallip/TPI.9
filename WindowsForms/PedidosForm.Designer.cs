@@ -28,74 +28,60 @@
         /// </summary>
         private void InitializeComponent()
         {
-            buttonVerPedido = new Button();
-            buttonUpdatePedido = new Button();
             dataGridViewPedidos = new DataGridView();
             dateTimePickerFiltro = new DateTimePicker();
             labelFondoRadioButtons = new Label();
             comboBoxFiltro = new ComboBox();
             labelFiltroPedidos = new Label();
+            dataGridViewDetalle = new DataGridView();
+            btnAvanzarEstado = new Button();
+            btnAsignarDelivery = new Button();
+            btnCancelarPedido = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridViewPedidos).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewDetalle).BeginInit();
             SuspendLayout();
-            // 
-            // buttonVerPedido
-            // 
-            buttonVerPedido.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            buttonVerPedido.Location = new Point(1252, 610);
-            buttonVerPedido.Margin = new Padding(2);
-            buttonVerPedido.Name = "buttonVerPedido";
-            buttonVerPedido.Size = new Size(154, 36);
-            buttonVerPedido.TabIndex = 11;
-            buttonVerPedido.Text = "VER PEDIDO";
-            buttonVerPedido.UseVisualStyleBackColor = true;
-            // 
-            // buttonUpdatePedido
-            // 
-            buttonUpdatePedido.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            buttonUpdatePedido.Location = new Point(1427, 610);
-            buttonUpdatePedido.Margin = new Padding(2);
-            buttonUpdatePedido.Name = "buttonUpdatePedido";
-            buttonUpdatePedido.Size = new Size(128, 36);
-            buttonUpdatePedido.TabIndex = 10;
-            buttonUpdatePedido.Text = "MODIFICAR";
-            buttonUpdatePedido.UseVisualStyleBackColor = true;
             // 
             // dataGridViewPedidos
             // 
+            dataGridViewPedidos.AllowUserToAddRows = false;
             dataGridViewPedidos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewPedidos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewPedidos.Location = new Point(62, 76);
+            dataGridViewPedidos.Location = new Point(26, 61);
             dataGridViewPedidos.Margin = new Padding(2);
             dataGridViewPedidos.MultiSelect = false;
             dataGridViewPedidos.Name = "dataGridViewPedidos";
             dataGridViewPedidos.ReadOnly = true;
             dataGridViewPedidos.RowHeadersWidth = 62;
             dataGridViewPedidos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewPedidos.Size = new Size(1072, 570);
+            dataGridViewPedidos.Size = new Size(863, 428);
             dataGridViewPedidos.TabIndex = 7;
+            dataGridViewPedidos.SelectionChanged += dataGridViewPedidos_SelectionChanged;
             // 
             // dateTimePickerFiltro
             // 
-            dateTimePickerFiltro.Location = new Point(1186, 149);
+            dateTimePickerFiltro.Location = new Point(949, 119);
+            dateTimePickerFiltro.Margin = new Padding(2);
             dateTimePickerFiltro.Name = "dateTimePickerFiltro";
-            dateTimePickerFiltro.Size = new Size(352, 31);
+            dateTimePickerFiltro.Size = new Size(282, 27);
             dateTimePickerFiltro.TabIndex = 12;
             // 
             // labelFondoRadioButtons
             // 
             labelFondoRadioButtons.BackColor = SystemColors.ControlDark;
             labelFondoRadioButtons.BorderStyle = BorderStyle.FixedSingle;
-            labelFondoRadioButtons.Location = new Point(1167, 76);
+            labelFondoRadioButtons.Location = new Point(912, 61);
+            labelFondoRadioButtons.Margin = new Padding(2, 0, 2, 0);
             labelFondoRadioButtons.Name = "labelFondoRadioButtons";
-            labelFondoRadioButtons.Size = new Size(388, 261);
+            labelFondoRadioButtons.Size = new Size(377, 174);
             labelFondoRadioButtons.TabIndex = 16;
             // 
             // comboBoxFiltro
             // 
             comboBoxFiltro.FormattingEnabled = true;
-            comboBoxFiltro.Location = new Point(1186, 228);
+            comboBoxFiltro.Location = new Point(949, 182);
+            comboBoxFiltro.Margin = new Padding(2);
             comboBoxFiltro.Name = "comboBoxFiltro";
-            comboBoxFiltro.Size = new Size(256, 33);
+            comboBoxFiltro.Size = new Size(206, 28);
             comboBoxFiltro.TabIndex = 17;
             // 
             // labelFiltroPedidos
@@ -103,40 +89,89 @@
             labelFiltroPedidos.AutoSize = true;
             labelFiltroPedidos.BackColor = SystemColors.ControlDark;
             labelFiltroPedidos.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            labelFiltroPedidos.Location = new Point(1267, 94);
+            labelFiltroPedidos.Location = new Point(1014, 75);
+            labelFiltroPedidos.Margin = new Padding(2, 0, 2, 0);
             labelFiltroPedidos.Name = "labelFiltroPedidos";
-            labelFiltroPedidos.Size = new Size(184, 32);
+            labelFiltroPedidos.Size = new Size(157, 28);
             labelFiltroPedidos.TabIndex = 18;
             labelFiltroPedidos.Text = "Filtrar Pedidos";
             // 
+            // dataGridViewDetalle
+            // 
+            dataGridViewDetalle.AllowUserToAddRows = false;
+            dataGridViewDetalle.AllowUserToDeleteRows = false;
+            dataGridViewDetalle.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewDetalle.Location = new Point(912, 248);
+            dataGridViewDetalle.Name = "dataGridViewDetalle";
+            dataGridViewDetalle.ReadOnly = true;
+            dataGridViewDetalle.RowHeadersWidth = 51;
+            dataGridViewDetalle.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewDetalle.Size = new Size(377, 241);
+            dataGridViewDetalle.TabIndex = 19;
+            // 
+            // btnAvanzarEstado
+            // 
+            btnAvanzarEstado.Location = new Point(26, 507);
+            btnAvanzarEstado.Name = "btnAvanzarEstado";
+            btnAvanzarEstado.Size = new Size(187, 29);
+            btnAvanzarEstado.TabIndex = 20;
+            btnAvanzarEstado.Text = "Avanzar Estado";
+            btnAvanzarEstado.UseVisualStyleBackColor = true;
+            btnAvanzarEstado.Click += btnAvanzarEstado_Click;
+            // 
+            // btnAsignarDelivery
+            // 
+            btnAsignarDelivery.Location = new Point(365, 507);
+            btnAsignarDelivery.Name = "btnAsignarDelivery";
+            btnAsignarDelivery.Size = new Size(186, 30);
+            btnAsignarDelivery.TabIndex = 21;
+            btnAsignarDelivery.Text = "Asignar Delivery";
+            btnAsignarDelivery.UseVisualStyleBackColor = true;
+            btnAsignarDelivery.Click += btnAsignarDelivery_Click;
+            // 
+            // btnCancelarPedido
+            // 
+            btnCancelarPedido.Location = new Point(733, 506);
+            btnCancelarPedido.Name = "btnCancelarPedido";
+            btnCancelarPedido.Size = new Size(156, 29);
+            btnCancelarPedido.TabIndex = 22;
+            btnCancelarPedido.Text = "Cancelar Pedido";
+            btnCancelarPedido.UseVisualStyleBackColor = true;
+            btnCancelarPedido.Click += btnCancelarPedido_Click;
+            // 
             // PedidosForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1636, 696);
+            ClientSize = new Size(1309, 557);
+            Controls.Add(btnCancelarPedido);
+            Controls.Add(btnAsignarDelivery);
+            Controls.Add(btnAvanzarEstado);
+            Controls.Add(dataGridViewDetalle);
             Controls.Add(labelFiltroPedidos);
             Controls.Add(comboBoxFiltro);
             Controls.Add(dateTimePickerFiltro);
-            Controls.Add(buttonVerPedido);
-            Controls.Add(buttonUpdatePedido);
             Controls.Add(dataGridViewPedidos);
             Controls.Add(labelFondoRadioButtons);
+            Margin = new Padding(2);
             Name = "PedidosForm";
             Text = "PedidosForm";
             Load += PedidosForm_Load;
             ((System.ComponentModel.ISupportInitialize)dataGridViewPedidos).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewDetalle).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-
-        private Button buttonVerPedido;
-        private Button buttonUpdatePedido;
         private DataGridView dataGridViewPedidos;
         private DateTimePicker dateTimePickerFiltro;
         private Label labelFondoRadioButtons;
         private ComboBox comboBoxFiltro;
         private Label labelFiltroPedidos;
+        private DataGridView dataGridViewDetalle;
+        private Button btnAvanzarEstado;
+        private Button btnAsignarDelivery;
+        private Button btnCancelarPedido;
     }
 }

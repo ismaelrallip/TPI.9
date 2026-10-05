@@ -37,7 +37,7 @@ namespace Application.Services
 
                 if (precioDeliveryEntity != null)
                 {
-                    // Usamos la validación del dominio
+                    
                     costoDelivery = precioDeliveryEntity.ObtenerPrecioVigente(fechaPedido);
                 }
             }
@@ -84,26 +84,46 @@ namespace Application.Services
 
         public async Task<bool> UpdateAsync(PedidoDTO dto)
         {
-            var pedido = new Pedido(
-                dto.Id,
-                dto.Fecha,
-                dto.Comentario,
-                dto.Direccion,
-                dto.Modalidad,
-                dto.Estado,
-                dto.ComentarioFinal,
-                dto.PrecioTotal,
-                dto.ClienteId,
-                dto.DeliveryId ?? 0
-            );
+            
+            var pedidoExistente = await _pedidoRepository.GetByIdWithDetailsAsync(dto.Id);
+            if (pedidoExistente == null) return false;
 
-            foreach (var itemDto in dto.DetallesPedido)
+            
+            pedidoExistente.SetEstado(dto.Estado);
+            pedidoExistente.SetComentario(dto.Comentario);
+            pedidoExistente.SetComentarioFinal(dto.ComentarioFinal);
+            pedidoExistente.SetDelivery(dto.DeliveryId); 
+
+            
+            if (pedidoExistente.Estado == EstadoPedido.Pendiente)
             {
-                var item = new DetallePedido(itemDto.Id, itemDto.Cantidad, itemDto.PrecioUnitario, itemDto.HamburguesaId, dto.Id);
-                pedido.AddItem(item);
+                pedidoExistente.SetDireccion(dto.Direccion);
+
+                var itemsToDelete = pedidoExistente.DetallePedido
+                    .Where(e => !dto.DetallesPedido.Any(n => n.HamburguesaId == e.HamburguesaId)).ToList();
+
+                foreach (var item in itemsToDelete)
+                {
+                    pedidoExistente.RemoveItem(item);
+                }
+
+                foreach (var nuevoItem in dto.DetallesPedido)
+                {
+                    var existingItem = pedidoExistente.DetallePedido.FirstOrDefault(e => e.HamburguesaId == nuevoItem.HamburguesaId);
+                    if (existingItem != null)
+                    {
+                        existingItem.SetCantidad(nuevoItem.Cantidad);
+                        existingItem.SetPrecioUnitario(nuevoItem.PrecioUnitario);
+                    }
+                    else
+                    {
+                        pedidoExistente.AddItem(new DetallePedido(0, nuevoItem.Cantidad, nuevoItem.PrecioUnitario, nuevoItem.HamburguesaId, pedidoExistente.Id));
+                    }
+                }
             }
 
-            return await _pedidoRepository.UpdateAsync(pedido);
+            
+            return await _pedidoRepository.UpdateAsync(pedidoExistente);
         }
 
         public async Task<IEnumerable<PedidoDTO>> GetByClienteIdAsync(int clienteId)

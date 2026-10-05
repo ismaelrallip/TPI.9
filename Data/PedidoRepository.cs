@@ -40,7 +40,12 @@ namespace Data
 
         public async Task<IEnumerable<Pedido>> GetAllAsync()
         {
-            return await context.Pedidos.ToListAsync();
+            return await context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Delivery)
+                .Include(p => p.DetallePedido)
+                    .ThenInclude(d => d.Hamburguesa)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(Pedido pedido)
@@ -49,53 +54,51 @@ namespace Data
                 .Include(p => p.DetallePedido)
                 .FirstOrDefaultAsync(p => p.Id == pedido.Id);
 
-            if (existingPedido != null && existingPedido.Estado == EstadoPedido.Pendiente)
+            
+            if (existingPedido != null)
             {
-                // Actualizar propiedades básicas del pedido
                 existingPedido.SetCliente(pedido.ClienteId);
-                if (pedido.DeliveryId.HasValue)
-                {
-                    existingPedido.SetDelivery(pedido.DeliveryId.Value);
-                }
-                else
-                {
-                    existingPedido.SetDelivery(null);
-                }
+
+               
+                existingPedido.SetDelivery(pedido.DeliveryId);
+
                 existingPedido.SetComentario(pedido.Comentario);
                 existingPedido.SetDireccion(pedido.Direccion);
                 existingPedido.SetModalidad(pedido.Modalidad);
                 existingPedido.SetFecha(pedido.Fecha);
 
-                // Manejo inteligente de ItemsPedido
-
-                // 1. Items a eliminar (están en BD pero no en la nueva lista)
-                var itemsToDelete = existingPedido.DetallePedido
-                    .Where(existing => !pedido.DetallePedido.Any(nuevo => nuevo.HamburguesaId == existing.HamburguesaId))
-                    .ToList();
-
-                foreach (var itemToDelete in itemsToDelete)
+                
+                if (existingPedido.Estado == EstadoPedido.Pendiente)
                 {
-                    existingPedido.RemoveItem(itemToDelete);
+                    var itemsToDelete = existingPedido.DetallePedido
+                        .Where(existing => !pedido.DetallePedido.Any(nuevo => nuevo.HamburguesaId == existing.HamburguesaId))
+                        .ToList();
+
+                    foreach (var itemToDelete in itemsToDelete)
+                    {
+                        existingPedido.RemoveItem(itemToDelete);
+                    }
+
+                    foreach (var nuevoItem in pedido.DetallePedido)
+                    {
+                        var existingItem = existingPedido.DetallePedido
+                            .FirstOrDefault(e => e.HamburguesaId == nuevoItem.HamburguesaId);
+
+                        if (existingItem != null)
+                        {
+                            existingItem.SetCantidad(nuevoItem.Cantidad);
+                            existingItem.SetPrecioUnitario(nuevoItem.PrecioUnitario);
+                        }
+                        else
+                        {
+                           
+                            existingPedido.AddItem(new DetallePedido(0, nuevoItem.Cantidad, nuevoItem.PrecioUnitario, nuevoItem.HamburguesaId, existingPedido.Id));
+                        }
+                    }
                 }
 
-                // 2. Items a actualizar o agregar
-                foreach (var nuevoItem in pedido.DetallePedido)
-                {
-                    var existingItem = existingPedido.DetallePedido
-                        .FirstOrDefault(e => e.HamburguesaId == nuevoItem.HamburguesaId);
-
-                    if (existingItem != null)
-                    {
-                        // Actualizar item existente
-                        existingItem.SetCantidad(nuevoItem.Cantidad);
-                        existingItem.SetPrecioUnitario(nuevoItem.PrecioUnitario);
-                    }
-                    else
-                    {
-                        // Agregar nuevo item
-                        existingPedido.AddItem(nuevoItem);
-                    }
-                }
+                
+                existingPedido.SetEstado(pedido.Estado);
 
                 await context.SaveChangesAsync();
                 return true;
