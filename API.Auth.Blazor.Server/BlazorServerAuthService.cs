@@ -6,7 +6,7 @@ namespace API.Auth.Blazor.Server
 {
     public class BlazorServerAuthService : IAuthService
     {
-        private static LoginResponse? _currentSession;
+        private  LoginResponse? _currentSession;
 
         public event Action<bool>? AuthenticationStateChanged;
 

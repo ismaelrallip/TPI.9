@@ -55,6 +55,15 @@ namespace Application.Services
                 Monto = precioDelivery.Monto
             }).ToList();
         }
-
+        public async Task<IEnumerable<PrecioDeliveryDTO>> GetByCriteriaAsync(DateTime? fechaFiltro = null)
+        {
+            var preciosDelivery = await precioDeliveryRepository.GetByCriteriaAsync(fechaFiltro);
+            return preciosDelivery.Select(precioDelivery => new PrecioDeliveryDTO
+            {
+                Id = precioDelivery.Id,
+                FechaDesde = precioDelivery.FechaDesde,
+                Monto = precioDelivery.Monto
+            }).ToList();
+        }
     }
 }

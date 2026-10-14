@@ -57,6 +57,18 @@ namespace Application.Services
             }).ToList();
         }
 
+        public async Task<IEnumerable<IngredienteDTO>> GetByCriteriaAsync(string texto)
+        {
+            var ingredientes = await ingredienteRepository.GetByCriteriaAsync(texto ?? string.Empty);
+            return ingredientes.Select(ingrediente => new IngredienteDTO
+            {
+                Id = ingrediente.Id,
+                Nombre = ingrediente.Nombre,
+                Descripcion = ingrediente.Descripcion,
+                Stock = ingrediente.Stock
+            }).ToList();
+        }
+
         public async Task<bool> UpdateAsync(IngredienteDTO dto)
         {
             var existing = await ingredienteRepository.GetAsync(dto.Id);

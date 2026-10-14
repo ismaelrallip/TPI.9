@@ -8,21 +8,30 @@ namespace WebAPI
         public static void MapHamburguesaEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("/hamburguesas")
-                .WithTags("Hamburguesas")
-                .RequireAuthorization("AdminOnly");
+                .WithTags("Hamburguesas");
 
             group.MapGet("/", async (IHamburguesaService svc) =>
                 Results.Ok(await svc.GetAllAsync()))
             .WithName("GetAllHamburguesas")
             .Produces<List<HamburguesaDTO>>(StatusCodes.Status200OK)
-            .WithOpenApi();
+            .WithOpenApi()
+            .AllowAnonymous()
+            ;
+
+            group.MapGet("/criteria", async (string? texto, IHamburguesaService svc) =>
+                Results.Ok(await svc.GetByCriteriaAsync(texto ?? string.Empty)))
+            .WithName("GetHamburguesasByCriteria")
+            .Produces<List<HamburguesaDTO>>(StatusCodes.Status200OK)
+            .WithOpenApi()
+            .AllowAnonymous();
 
             group.MapGet("/{id:int}", async (int id, IHamburguesaService svc) =>
                 await svc.GetAsync(id) is HamburguesaDTO dto ? Results.Ok(dto) : Results.NotFound())
             .WithName("GetHamburguesa")
             .Produces<HamburguesaDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            .WithOpenApi()
+            .AllowAnonymous();
 
             group.MapPost("/", async (HamburguesaDTO dto, IHamburguesaService svc) =>
             {

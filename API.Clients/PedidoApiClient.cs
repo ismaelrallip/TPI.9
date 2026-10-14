@@ -152,5 +152,28 @@ namespace API.Clients
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al obtener los pedidos por estado.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al obtener los pedidos por estado.", ex); }
         }
+        public static async Task<IEnumerable<PedidoDTO>> GetByFiltroAsync(DateTime? fecha, ModalidadPedido? modalidad)
+        {
+            try
+            {
+                var parametros = new List<string>();
+                if (fecha.HasValue) parametros.Add($"fecha={fecha.Value:yyyy-MM-dd}");
+                if (modalidad.HasValue) parametros.Add($"modalidad={modalidad.Value}");
+                var url = "pedidos/filtro" + (parametros.Count > 0 ? "?" + string.Join("&", parametros) : string.Empty);
+
+                using var client = await CreateHttpClientAsync();
+                var response = await client.GetAsync(url);
+                await HandleAuthorizationAsync(response);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al obtener los pedidos filtrados. Status: {response.StatusCode}. Detalle: {content}");
+                }
+
+                return await response.Content.ReadFromJsonAsync<IEnumerable<PedidoDTO>>() ?? Enumerable.Empty<PedidoDTO>();
+            }
+            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al obtener los pedidos filtrados.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al obtener los pedidos filtrados.", ex); }
+        }
     }
 }

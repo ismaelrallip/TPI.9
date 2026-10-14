@@ -51,6 +51,18 @@ namespace Data
                 .OrderByDescending(p => p.FechaDesde)
                 .FirstOrDefaultAsync();
         }
+        public async Task<IEnumerable<PrecioDelivery>> GetByCriteriaAsync(DateTime? fechaFiltro = null)
+        {
+            var query = context.PreciosDelivery.AsQueryable();
 
+            if (fechaFiltro.HasValue)
+            {
+                // Compara solo la fecha , ignorando la hora
+                query = query.Where(p => p.FechaDesde.Date == fechaFiltro.Value.Date);
+            }
+
+            // Ordena del más reciente al más antiguo
+            return await query.OrderByDescending(p => p.FechaDesde).ToListAsync();
+        }
     }
 }

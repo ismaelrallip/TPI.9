@@ -18,14 +18,17 @@ namespace WindowsForms
         public PrecioDeliveryHistorico()
         {
             InitializeComponent();
+            this.Load += PrecioDeliveryHistorico_Load;
             PrecioDeliveryDataGridView.AutoGenerateColumns = false;
             ConfigurarColumnas();
         }
 
         private void PrecioDeliveryHistorico_Load(object sender, EventArgs e)
         {
-            dateTimePickerDesde.Value = dateTimePickerDesde.MinDate;
-            _ = CargarPrecioDeliveryAsync(dateTimePickerDesde.Value);
+            dateTimePickerDesde.Value = DateTime.Today;
+
+           
+            _ = CargarPrecioDeliveryAsync(null);
         }
         private void ConfigurarColumnas()
         {
@@ -39,17 +42,16 @@ namespace WindowsForms
             await CargarPrecioDeliveryAsync(dateTimePickerDesde.Value);
         }
 
-        public async Task CargarPrecioDeliveryAsync(DateTime desde)
+        public async Task CargarPrecioDeliveryAsync(DateTime? fechaFiltro = null)
         {
             try
             {
                 DeshabilitarControles();
 
-                IEnumerable<PrecioDeliveryDTO> precios = await PrecioDeliveryApiClient.GetAllAsync();
-                var preciosFiltrados = precios
-                    .Where(p => p.FechaDesde >= desde)
-                    .ToList();
-                PrecioDeliveryDataGridView.DataSource = preciosFiltrados;
+                // Llamada a la API que filtra directamente en la base de datos
+                IEnumerable<PrecioDeliveryDTO> preciosFiltrados = await PrecioDeliveryApiClient.GetByCriteriaAsync(fechaFiltro);
+
+                PrecioDeliveryDataGridView.DataSource = preciosFiltrados.ToList();
             }
             catch (Exception ex)
             {

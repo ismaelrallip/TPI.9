@@ -1,5 +1,4 @@
 ﻿using API.Clients;
-using Domain.Model;
 using DTOs;
 using System.Data;
 using System.Windows.Forms;
@@ -11,9 +10,23 @@ namespace WindowsForms
 
         private IEnumerable<HamburguesaDTO> burgas;
 
+        // Espera a que el usuario deje de escribir antes de buscar en el servidor
+        private readonly System.Windows.Forms.Timer _timerBusqueda = new() { Interval = 350 };
+
         public HamburguesaForm()
         {
             InitializeComponent();
+
+            ConfigurarColumnas();
+
+            dataGridViewHamburguesas.AutoGenerateColumns = false;
+
+            _timerBusqueda.Tick += async (s, e) =>
+            {
+                _timerBusqueda.Stop();
+                await LoadHamburguesas(textBoxBuscarHamburguesa.Text);
+            };
+            FormClosed += (s, e) => _timerBusqueda.Dispose();
         }
 
         private void HamburguesaForm_Load(object sender, EventArgs e)
@@ -22,15 +35,18 @@ namespace WindowsForms
             LoadHamburguesas();
         }
 
-        // FUNCIONES
-        private async Task LoadHamburguesas()
+       
+        // El filtro lo resuelve la API (base de datos): ya no se filtra en memoria.
+        private async Task LoadHamburguesas(string texto = "")
         {
             try
             {
                 buttonUpdateHamburguesa.Enabled = false;
                 buttonVerResumen.Enabled = false;
 
-                burgas = await HamburguesaApiClient.GetAllAsync();
+                burgas = string.IsNullOrWhiteSpace(texto)
+                    ? await HamburguesaApiClient.GetAllAsync()
+                    : await HamburguesaApiClient.GetByCriteriaAsync(texto.Trim());
 
                 var datosParaGrid = burgas.Select(h =>
                 {
@@ -44,9 +60,8 @@ namespace WindowsForms
                         h.Id,
                         h.Nombre,
                         h.Descripcion,
-                        // Si no hay precios o la lista es null, asigna 0m
+                        // Si no hay precios o la lista es null
                         Precio = ultimoPrecio?.Monto ?? 0m,
-                        // Opcional: si querés mostrar cuándo se actualizó ese precio
                         FechaPrecio = ultimoPrecio?.FechaDesde.ToString("dd/MM/yyyy") ?? "Sin registrar"
                     };
                 }).ToList();
@@ -63,38 +78,18 @@ namespace WindowsForms
             }
         }
 
+        // Cada cambio del texto reinicia la espera,la búsqueda se hace al dejar de escribir
         private void textBoxBuscarHamburguesa_TextChanged(object sender, EventArgs e)
         {
-            if (burgas == null) return;
+            _timerBusqueda.Stop();
+            _timerBusqueda.Start();
+        }
 
-            string filtro = textBoxBuscarHamburguesa.Text?.Trim() ?? string.Empty;
-
-            // 1. Filtrar sobre la lista original SIN reasignar 'burgas'
-            var burgasFiltradas = string.IsNullOrWhiteSpace(filtro)
-                ? burgas
-                : burgas.Where(i => (i.Nombre != null && i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase)) ||
-                                    (i.Descripcion != null && i.Descripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase)));
-
-            // 2. Proyectar las columnas exactamente igual que en LoadHamburguesas
-            var datosParaGrid = burgasFiltradas.Select(h =>
-            {
-                var ultimoPrecio = h.Precios?
-                                    .OrderByDescending(p => p.FechaDesde)
-                                    .FirstOrDefault();
-
-                return new
-                {
-                    h.Id,
-                    h.Nombre,
-                    h.Descripcion,
-                    Precio = ultimoPrecio?.Monto ?? 0m,
-                    FechaPrecio = ultimoPrecio?.FechaDesde.ToString("dd/MM/yyyy") ?? "Sin registrar"
-                };
-            }).ToList();
-
-            // 3. Refrescar el DataGridView
-            dataGridViewHamburguesas.DataSource = null;
-            dataGridViewHamburguesas.DataSource = datosParaGrid;
+        // Vacía el texto de búsqueda sin disparar una búsqueda extra (la recarga la hace quien llama)
+        private void LimpiarBusqueda()
+        {
+            textBoxBuscarHamburguesa.Text = string.Empty;
+            _timerBusqueda.Stop();
         }
 
         private void buttonAddHamburguesa_Click(object sender, EventArgs e)
@@ -106,11 +101,11 @@ namespace WindowsForms
         {
             using (var formModal = new AgregarHamburguesaForm())
             {
-                // ShowDialog() lo abre como popup modal
-                if (formModal.ShowDialog() == DialogResult.OK)
+                
+                if (formModal.ShowDialog(this) == DialogResult.OK)
                 {
                     // Si guardó con éxito, recarga el gridView
-                    textBoxBuscarHamburguesa.Text = string.Empty;
+                    LimpiarBusqueda();
                     await LoadHamburguesas();
                 }
             }
@@ -140,11 +135,10 @@ namespace WindowsForms
         {
             using (var formModal = new ActualizarHamburguesaForm(id))
             {
-                // ShowDialog() lo abre como popup modal
-                if (formModal.ShowDialog() == DialogResult.OK)
+                if (formModal.ShowDialog(this) == DialogResult.OK)
                 {
                     // Si guardó con éxito, recarga el gridView
-                    textBoxBuscarHamburguesa.Text = string.Empty;
+                    LimpiarBusqueda();
                     await LoadHamburguesas();
                 }
             }
@@ -174,13 +168,24 @@ namespace WindowsForms
             using (var formModal = new ResumenHamburguesaForm(id))
             {
                 // ShowDialog() lo abre como popup modal
-                if (formModal.ShowDialog() == DialogResult.OK)
+                if (formModal.ShowDialog(this) == DialogResult.OK)
                 {
                     // Si guardó con éxito, recarga el gridView
-                    textBoxBuscarHamburguesa.Text = string.Empty;
+                    LimpiarBusqueda();
                     await LoadHamburguesas();
                 }
             }
+        }
+        private void ConfigurarColumnas()
+        {
+            dataGridViewHamburguesas.AutoGenerateColumns = false;
+            dataGridViewHamburguesas.Columns.Clear(); 
+
+            dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "ID", DataPropertyName = "Id", Width = 50 });
+            dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre", Width = 150 });
+            dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "Descripcion", HeaderText = "Descripción", DataPropertyName = "Descripcion", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "Precio", HeaderText = "Precio Actual", DataPropertyName = "Precio", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "C2" } });
+            dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "FechaPrecio", HeaderText = "Fecha del Precio", DataPropertyName = "FechaPrecio", Width = 120 });
         }
     }
 }

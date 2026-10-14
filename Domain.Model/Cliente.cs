@@ -70,5 +70,13 @@ namespace Domain.Model
                 throw new ArgumentException("La contraseña es obligatoria y debe tener al menos 6 caracteres.", nameof(password));
             Password = password;
         }
+        public const int PasswordMinLength = 6;
+
+        // Valida la contraseña en texto plano, antes de hashearla
+        public static void ValidarPassword(string? password)
+        {
+            if (string.IsNullOrWhiteSpace(password) || password.Length < PasswordMinLength)
+                throw new ArgumentException($"La contraseña es obligatoria y debe tener al menos {PasswordMinLength} caracteres.", nameof(password));
+        }
     }
 }

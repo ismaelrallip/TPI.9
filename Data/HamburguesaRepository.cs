@@ -28,6 +28,23 @@ namespace Data
                                 .FirstOrDefaultAsync(h => h.Id == id);
         }
 
+        public async Task<IEnumerable<Hamburguesa>> GetByCriteriaAsync(string texto)
+        {
+            var query = context.Hamburguesas
+                               .Include(h => h.Precios)
+                               .Include(h => h.Ingredientes)
+                               .AsQueryable();
+
+            // El filtro se resuelve en la base de datos (WHERE ... LIKE), no en memoria
+            if (!string.IsNullOrWhiteSpace(texto))
+            {
+                var buscado = texto.Trim();
+                query = query.Where(h => h.Nombre.Contains(buscado) || h.Descripcion.Contains(buscado));
+            }
+
+            return await query.OrderBy(h => h.Nombre).ToListAsync();
+        }
+
         public async Task AddAsync(Hamburguesa hamburguesa)
         {
             var ids = hamburguesa.Ingredientes?.Select(i => i.Id).Where(id => id > 0).ToList() ?? new List<int>();

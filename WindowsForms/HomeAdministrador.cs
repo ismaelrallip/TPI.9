@@ -47,42 +47,32 @@ namespace WindowsForms
 
         private void clientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new ClienteLista();
-            form.MdiParent = this;
-            form.WindowState = FormWindowState.Maximized;
-            form.Show();
+            MostrarFormulario<ClienteLista>();
         }
 
         private void deliveriesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new DeliveryLista();
-            form.MdiParent = this;
-            form.WindowState = FormWindowState.Maximized;
-            form.Show();
+            MostrarFormulario<DeliveryLista>();
         }
 
         private void hamburguesasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new HamburguesaForm();
-            form.MdiParent = this;
-            form.WindowState = FormWindowState.Maximized;
-            form.Show();
+            MostrarFormulario<HamburguesaForm>();
         }
 
         private void ingredientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new IngredientesForm();
-            form.MdiParent = this;
-            form.WindowState = FormWindowState.Maximized;
-            form.Show();
+            MostrarFormulario<IngredientesForm>();
         }
 
         private void precioDeliveryToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var form = new PrecioDeliveryHistorico();
-            form.MdiParent = this;
-            form.WindowState = FormWindowState.Maximized;
-            form.Show();
+            MostrarFormulario<PrecioDeliveryHistorico>();
+        }
+
+        private void pedidosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MostrarFormulario<PedidosForm>();
         }
 
         private async void cerrarSesionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -91,13 +81,21 @@ namespace WindowsForms
             if (r == DialogResult.Yes && AuthServiceProvider.Current != null)
                 await AuthServiceProvider.Current.LogoutAsync();
         }
-
-        private void pedidosToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MostrarFormulario<T>() where T : Form, new()
         {
-            var form = new PedidosForm();
-            form.MdiParent = this;
-            form.WindowState = FormWindowState.Maximized;
-            form.Show();
+            var formularioExistente = this.MdiChildren.OfType<T>().FirstOrDefault();
+
+            if (formularioExistente != null)
+            {
+                formularioExistente.BringToFront();
+            }
+            else
+            {
+                var form = new T();
+                form.MdiParent = this;
+                form.WindowState = FormWindowState.Maximized;
+                form.Show();
+            }
         }
     }
 }

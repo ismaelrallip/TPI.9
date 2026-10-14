@@ -1,5 +1,4 @@
 ﻿using API.Clients;
-using Domain.Model;
 using DTOs;
 using System.Data;
 
@@ -13,8 +12,7 @@ namespace WindowsForms
         private string nombre;
         private string descripcion;
         private decimal precio;
-        private DateTime fechaDesde;
-        private List<Ingrediente> ingredientesSeleccionados;
+        private List<IngredienteDTO> ingredientesSeleccionados;
 
         private HamburguesaDTO hambuCambiada = new HamburguesaDTO();
 
@@ -30,7 +28,7 @@ namespace WindowsForms
             buttonDeleteHamburguesa.Enabled = false;
 
             _hamburguesa = await HamburguesaApiClient.GetAsync(idRecibida);
-            
+
 
             textBoxNombre.Text = _hamburguesa.Nombre;
             textBoxDescripcion.Text = _hamburguesa.Descripcion;
@@ -79,7 +77,6 @@ namespace WindowsForms
             // 3. Recorremos los elementos cargados en el CheckedListBox
             for (int i = 0; i < checkedListBoxIngredientes.Items.Count; i++)
             {
-                // Casteamos el item a IngredienteDTO (o Ingrediente según corresponda)
                 if (checkedListBoxIngredientes.Items[i] is IngredienteDTO ing)
                 {
                     if (idsIngredientesHamburguesa.Contains(ing.Id))
@@ -100,53 +97,46 @@ namespace WindowsForms
         {
             try
             {
-                SeleccionarDatos();
+                if (!SeleccionarDatos()) return;
+
                 await HamburguesaApiClient.UpdateAsync(hambuCambiada);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al agregar el ingrediente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al actualizar la hamburguesa: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void SeleccionarDatos()
+        // Arma el DTO con los datos del formulario. Devuelve false si falta algo.
+        private bool SeleccionarDatos()
         {
             nombre = textBoxNombre.Text;
             descripcion = textBoxDescripcion.Text;
-            // precio
-            if ((_hamburguesa.Precios.Last()).Monto != decimal.Parse(textBoxPrecio.Text))
-            {
-                precio = decimal.Parse(textBoxPrecio.Text);
-                fechaDesde = DateTime.Now;
-                Precio _precio = new Precio(fechaDesde, precio);
 
-                hambuCambiada.Precios.Add(_precio);
-            }
-            else
-            {
-                hambuCambiada.Precios = _hamburguesa.Precios;
-
-            }
-            //
-            ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems
-                                                            .Cast<IngredienteDTO>()
-                                                            .Select(dto => new Ingrediente(dto.Id, dto.Nombre, dto.Descripcion, dto.Stock))
-                                                            .ToList();
-
-            // Validar que el nombre no esté vacío
-            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrEmpty(descripcion) || precio < 0)
+            // Validar que el nombre y la descripción no estén vacíos y que el precio sea válido
+            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(descripcion) ||
+                !decimal.TryParse(textBoxPrecio.Text, out precio) || precio < 0)
             {
                 MessageBox.Show("Nombre o Descripcion no validos o el precio no puede ser negativo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
 
-            // Crear un ingredientea actualizado
+            ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems
+                                                            .Cast<IngredienteDTO>()
+                                                            .ToList();
+
             hambuCambiada.Id = idRecibida;
             hambuCambiada.Nombre = nombre;
             hambuCambiada.Descripcion = descripcion;
             hambuCambiada.Ingredientes = ingredientesSeleccionados;
+
+            // Se manda el precio del formulario: el servicio compara con el vigente y,
+            // solo si es distinto, crea un precio nuevo con la fecha de hoy.
+            hambuCambiada.Precios = new List<PrecioDTO> { new PrecioDTO { Monto = precio } };
+
+            return true;
         }
 
         private async void buttonDeleteHamburguesa_Click(object sender, EventArgs e)
@@ -154,7 +144,7 @@ namespace WindowsForms
             EliminarHamburguesa();
         }
 
-        private async void EliminarHamburguesa() 
+        private async void EliminarHamburguesa()
         {
             try
             {
@@ -164,7 +154,7 @@ namespace WindowsForms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al agregar el ingrediente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al eliminar la hamburguesa: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

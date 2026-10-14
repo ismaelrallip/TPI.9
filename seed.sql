@@ -20,6 +20,8 @@ DELETE FROM Clientes;
 -- FIN DE LA ZONA DE BORRADO
 -- =========================================================================================
 -- 1. Insertamos un Cliente (Usamos ID 901)
+-- Login: prueba901@email.com / contraseña 123456 (guardada hasheada con PBKDF2-SHA256, igual que el alta;
+-- el login ya no acepta contraseñas en texto plano)
 SET IDENTITY_INSERT Clientes ON;
 INSERT INTO Clientes (Id, Nombre, Apellido, Email, Telefono, Password)
 VALUES (
@@ -28,10 +30,10 @@ VALUES (
     'Prueba',
     'prueba901@email.com',
     '3410000000',
-    '123456'
+    'PBKDF2-SHA256$100000$RlQQJ3M8TUda97RPcX2y+g==$eFPxF55dpQv14PRn7VAsEeCpzYip/x4lkbDO9MTPKSs='
   );
 SET IDENTITY_INSERT Clientes OFF;
--- 2. Insertamos un Delivery (Repartidor - ID 901)
+-- 2. Insertamos dos Deliveries (Repartidores - ID 901 y 902)
 SET IDENTITY_INSERT Deliveries ON;
 INSERT INTO Deliveries (IdDelivery, Nombre, Apellido, Telefono, Dni)
 VALUES (
@@ -40,6 +42,13 @@ VALUES (
     'Repartidor',
     '3411111111',
     30901901
+  ),
+  (
+    902,
+    'Lucía',
+    'Repartidora',
+    '3412222222',
+    30902902
   );
 SET IDENTITY_INSERT Deliveries OFF;
 -- 3. Insertamos el Precio Histórico del Delivery (ID 901)
@@ -107,9 +116,11 @@ INSERT INTO Precio (Id, HamburguesaId, PrecioFechaDesde, Precio)
 VALUES (901, 901, DATEADD(MONTH, -1, GETDATE()), 5500.00),
   (902, 902, DATEADD(MONTH, -1, GETDATE()), 7800.00);
 SET IDENTITY_INSERT Precio OFF;
--- 8. Insertamos los Pedidos 
+-- 8. Insertamos los Pedidos
 -- Modalidad: 0 = TakeAway, 1 = Delivery
--- Estado: 0 = Pendiente, 3 = Asignado
+-- Estado: 0 = Pendiente, 1 = EnProceso, 2 = Listo, 3 = Asignado, 4 = EnCamino, 5 = Entregado, 6 = Cancelado
+-- PrecioTotal = suma(Cantidad x PrecioUnitario) + 1500.00 de envío si la modalidad es Delivery
+-- (el mismo cálculo que hace PedidoService al crear y al modificar un pedido)
 SET IDENTITY_INSERT Pedidos ON;
 INSERT INTO Pedidos (
     Id,
@@ -118,52 +129,35 @@ INSERT INTO Pedidos (
     Direccion,
     Modalidad,
     Estado,
+    ComentarioFinal,
     PrecioTotal,
     ClienteId,
     DeliveryId,
-    CalificacionPedido
+    CalificacionPedido,
+    CalificacionDelivery
   )
-VALUES (
-    901,
-    GETDATE(),
-    'Sin aderezos',
-    'Av. Pellegrini 123',
-    0,
-    0,
-    5500.00,
-    901,
-    NULL,
-    0
-  ),
-  -- TAKE AWAY (Pendiente, sin delivery)
-  (
-    902,
-    GETDATE(),
-    'Tocar timbre fuerte',
-    'Bv. Oroño 456',
-    1,
-    0,
-    9300.00,
-    901,
-    NULL,
-    0
-  ),
-  -- DELIVERY PENDIENTE (Modalidad 1, Estado 0, sin repartidor asignado)
-  (
-    903,
-    GETDATE(),
-    'Dejar en portería',
-    'Mendoza 789',
-    1,
-    3,
-    9300.00,
-    901,
-    901,
-    0
-  );
--- DELIVERY ASIGNADO (Modalidad 1, Estado 3, con repartidor 901)
+VALUES
+  -- TAKE AWAY - Pendiente, 1 línea
+  (901, GETDATE(), 'Sin aderezos', 'Av. Pellegrini 123', 0, 0, NULL, 5500.00, 901, NULL, 0, NULL),
+  -- DELIVERY - Pendiente, sin repartidor asignado
+  (902, GETDATE(), 'Tocar timbre fuerte', 'Bv. Oroño 456', 1, 0, NULL, 9300.00, 901, NULL, 0, NULL),
+  -- DELIVERY - Asignado (repartidor 901)
+  (903, GETDATE(), 'Dejar en portería', 'Mendoza 789', 1, 3, NULL, 9300.00, 901, 901, 0, NULL),
+  -- TAKE AWAY - En proceso
+  (904, DATEADD(MINUTE, -40, GETDATE()), 'Sin cebolla', 'San Martín 321', 0, 1, NULL, 11000.00, 901, NULL, 0, NULL),
+  -- TAKE AWAY - Listo
+  (905, DATEADD(MINUTE, -30, GETDATE()), NULL, 'Córdoba 1500', 0, 2, NULL, 7800.00, 901, NULL, 0, NULL),
+  -- DELIVERY - En camino (repartidor 901), 2 líneas
+  (906, DATEADD(MINUTE, -20, GETDATE()), 'Llamar al llegar', 'Italia 250', 1, 4, NULL, 14800.00, 901, 901, 0, NULL),
+  -- DELIVERY - Entregado (repartidor 902), con calificación, de ayer
+  (907, DATEADD(DAY, -1, GETDATE()), 'Dejar con el encargado', 'Salta 980', 1, 5, 'Excelente servicio', 17100.00, 901, 902, 5, 4),
+  -- TAKE AWAY - Cancelado
+  (908, DATEADD(MINUTE, -10, GETDATE()), 'Pedido cancelado por el cliente', 'Moreno 640', 0, 6, NULL, 5500.00, 901, NULL, 0, NULL),
+  -- DELIVERY - Pendiente, sin repartidor, 2 líneas
+  (909, DATEADD(MINUTE, -5, GETDATE()), 'Agregar servilletas', 'Rioja 77', 1, 0, NULL, 22600.00, 901, NULL, 0, NULL);
 SET IDENTITY_INSERT Pedidos OFF;
 -- 9. Insertamos los Detalles del Pedido
+-- Los precios unitarios son los vigentes de la sección 7 (901 = 5500.00, 902 = 7800.00)
 SET IDENTITY_INSERT DetallesPedido ON;
 INSERT INTO DetallesPedido (
     Id,
@@ -172,11 +166,17 @@ INSERT INTO DetallesPedido (
     PedidoId,
     HamburguesaId
   )
-VALUES (901, 1, 5500.00, 901, 901),
-  -- 1 Cheeseburger para el TakeAway (Pedido 901)
+VALUES
+  (901, 1, 5500.00, 901, 901),
   (902, 1, 7800.00, 902, 902),
-  -- 1 Doble Bacon para el Delivery Pendiente (Pedido 902)
-  (903, 1, 7800.00, 903, 902);
--- 1 Doble Bacon para el Delivery Asignado (Pedido 903)
+  (903, 1, 7800.00, 903, 902),
+  (904, 2, 5500.00, 904, 901),
+  (905, 1, 7800.00, 905, 902),
+  (906, 1, 5500.00, 906, 901),
+  (907, 1, 7800.00, 906, 902),
+  (908, 2, 7800.00, 907, 902),
+  (909, 1, 5500.00, 908, 901),
+  (910, 1, 5500.00, 909, 901),
+  (911, 2, 7800.00, 909, 902);
 SET IDENTITY_INSERT DetallesPedido OFF;
 GO

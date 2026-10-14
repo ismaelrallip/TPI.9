@@ -11,7 +11,7 @@
     <div class="row mb-3">
         <div class="col-md-5 d-flex gap-2">
             <input type="text" class="form-control" placeholder="Buscar por nombre, apellido o email..."
-                   @bind="textoBusqueda" @bind:event="oninput" />
+                   value="@textoBusqueda" @oninput="OnBusquedaInput" />
             <button class="btn btn-outline-secondary" @onclick="CargarClientes">Buscar</button>
         </div>
     </div>
@@ -46,7 +46,7 @@
                         </td>
                     </tr>
                 }
-                else if (!ClientesFiltrados.Any())
+                else if (!listaClientes.Any())
                 {
                     <tr>
                         <td colspan="6" class="text-center py-4 text-muted">
@@ -56,7 +56,7 @@
                 }
                 else
                 {
-                    @foreach (var c in ClientesFiltrados)
+                    @foreach (var c in listaClientes)
                     {
                         var seleccionado = clienteSeleccionado?.Id == c.Id;
 
@@ -242,19 +242,31 @@
     private string formPassword = string.Empty;
     private string formConfirmarPassword = string.Empty;
 
-    // Filtro reactivo local
-    private IEnumerable<ClienteDTO> ClientesFiltrados =>
-        string.IsNullOrWhiteSpace(textoBusqueda)
-            ? listaClientes
-            : listaClientes.Where(c =>
-                (!string.IsNullOrEmpty(c.Nombre) && c.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(c.Apellido) && c.Apellido.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(c.Email) && c.Email.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(c.Telefono) && c.Telefono.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)));
+    private CancellationTokenSource? busquedaCts;
 
     protected override async Task OnInitializedAsync()
     {
         await CargarClientes();
+    }
+
+    // Busca en el servidor cuando el usuario deja de escribir (evita una llamada por cada tecla)
+    private async Task OnBusquedaInput(ChangeEventArgs e)
+    {
+        textoBusqueda = e.Value?.ToString() ?? string.Empty;
+
+        busquedaCts?.Cancel();
+        busquedaCts = new CancellationTokenSource();
+        var token = busquedaCts.Token;
+
+        try
+        {
+            await Task.Delay(350, token);
+            await CargarClientes();
+        }
+        catch (TaskCanceledException)
+        {
+            // llegó otra tecla: esta búsqueda se descarta
+        }
     }
 
     private async Task CargarClientes()

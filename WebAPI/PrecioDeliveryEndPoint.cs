@@ -1,5 +1,6 @@
 ﻿using Application.Services;
 using DTOs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI
 {
@@ -20,36 +21,18 @@ namespace WebAPI
             .WithName("GetPrecioDelivery")
             .Produces<PrecioDeliveryDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .RequireAuthorization("AdminOnly")
+            .AllowAnonymous()
             .WithOpenApi();
 
-            app.MapGet("/precios-delivery", async (IPrecioDeliveryService precioDeliveryService) =>
+            // Único endpoint GET para la colección (filtra por fecha si se envía, o trae todo si es nulo)
+            app.MapGet("/precios-delivery", async ([FromQuery] DateTime? fecha, IPrecioDeliveryService precioDeliveryService) =>
             {
-                var dtos = await precioDeliveryService.GetAllAsync();
-
+                var dtos = await precioDeliveryService.GetByCriteriaAsync(fecha);
                 return Results.Ok(dtos);
             })
-            .WithName("GetAllPreciosDelivery")
+            .WithName("GetPreciosDeliveryByCriteria")
             .Produces<List<PrecioDeliveryDTO>>(StatusCodes.Status200OK)
-            .RequireAuthorization("AdminOnly")
-            .WithOpenApi();
-
-            app.MapPost("/precios-delivery", async (PrecioDeliveryDTO dto, IPrecioDeliveryService precioDeliveryService) =>
-            {
-                try
-                {
-                    PrecioDeliveryDTO precioDeliveryDTO = await precioDeliveryService.AddAsync(dto);
-                    return Results.Created($"/precios-delivery/{precioDeliveryDTO.Id}", precioDeliveryDTO);
-                }
-                catch (ArgumentException ex)
-                {
-                    return Results.BadRequest(new { error = ex.Message });
-                }
-            })
-            .WithName("AddPrecioDelivery")
-            .Produces<PrecioDeliveryDTO>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
-            .RequireAuthorization("AdminOnly")
+            .AllowAnonymous()
             .WithOpenApi();
 
             app.MapDelete("/precios-delivery/{id}", async (int id, IPrecioDeliveryService precioDeliveryService) =>

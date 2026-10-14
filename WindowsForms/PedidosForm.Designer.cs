@@ -59,6 +59,7 @@
             // 
             // dateTimePickerFiltro
             // 
+            dateTimePickerFiltro.Checked = false;
             dateTimePickerFiltro.Location = new Point(949, 119);
             dateTimePickerFiltro.Margin = new Padding(2);
             dateTimePickerFiltro.Name = "dateTimePickerFiltro";

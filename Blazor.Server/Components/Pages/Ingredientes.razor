@@ -10,8 +10,8 @@
     <!-- Barra de búsqueda superior -->
     <div class="row mb-3">
         <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="Ingrediente..." @bind="textoBusqueda"
-                   @bind:event="oninput" />
+            <input type="text" class="form-control" placeholder="Ingrediente..." value="@textoBusqueda"
+                   @oninput="OnBusquedaInput" />
         </div>
     </div>
 
@@ -44,7 +44,7 @@
                         </td>
                     </tr>
                 }
-                else if (!IngredientesFiltrados.Any())
+                else if (!listaIngredientes.Any())
                 {
                     <tr>
                         <td colspan="5" class="text-center py-4 text-muted">
@@ -54,7 +54,7 @@
                 }
                 else
                 {
-                    @foreach (var ing in IngredientesFiltrados)
+                    @foreach (var ing in listaIngredientes)
                     {
                         var seleccionado = ingredienteSeleccionado?.Id == ing.Id;
 
@@ -173,17 +173,31 @@
     private string formDescripcion = string.Empty;
     private int formStock;
 
-    // Filtro reactivo en tiempo real
-    private IEnumerable<IngredienteDTO> IngredientesFiltrados =>
-        string.IsNullOrWhiteSpace(textoBusqueda)
-            ? listaIngredientes
-            : listaIngredientes.Where(i =>
-                (!string.IsNullOrEmpty(i.Nombre) && i.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(i.Descripcion) && i.Descripcion.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)));
+    private CancellationTokenSource? busquedaCts;
 
     protected override async Task OnInitializedAsync()
     {
         await CargarIngredientes();
+    }
+
+    // Busca en el servidor cuando el usuario deja de escribir (evita una llamada por cada tecla)
+    private async Task OnBusquedaInput(ChangeEventArgs e)
+    {
+        textoBusqueda = e.Value?.ToString() ?? string.Empty;
+
+        busquedaCts?.Cancel();
+        busquedaCts = new CancellationTokenSource();
+        var token = busquedaCts.Token;
+
+        try
+        {
+            await Task.Delay(350, token);
+            await CargarIngredientes();
+        }
+        catch (TaskCanceledException)
+        {
+            // llegó otra tecla: esta búsqueda se descarta
+        }
     }
 
     private async Task CargarIngredientes()
@@ -192,7 +206,10 @@
         mensajeError = null;
         try
         {
-            var resultado = await IngredienteApiClient.GetAllAsync();
+            // El filtro lo resuelve la API (base de datos), no se filtra en memoria
+            var resultado = string.IsNullOrWhiteSpace(textoBusqueda)
+                ? await IngredienteApiClient.GetAllAsync()
+                : await IngredienteApiClient.GetByCriteriaAsync(textoBusqueda.Trim());
             listaIngredientes = resultado.ToList();
             ingredienteSeleccionado = null;
         }

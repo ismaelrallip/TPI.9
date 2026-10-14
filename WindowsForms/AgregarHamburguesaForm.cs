@@ -1,5 +1,4 @@
 ﻿using API.Clients;
-using Domain.Model;
 using DTOs;
 using System.Data;
 
@@ -33,7 +32,7 @@ namespace WindowsForms
 
         private async void buttonAddHamburguesa_Click(object sender, EventArgs e)
         {
-            if(string.IsNullOrWhiteSpace(textBoxNombre.Text) ||
+            if (string.IsNullOrWhiteSpace(textBoxNombre.Text) ||
                string.IsNullOrWhiteSpace(textBoxDescripcion.Text) ||
                string.IsNullOrWhiteSpace(textBoxPrecio.Text) ||
                checkedListBoxIngredientes.CheckedItems.Count == 0)
@@ -42,34 +41,21 @@ namespace WindowsForms
                 return;
             }
 
-            try 
+            try
             {
-                string nombre = textBoxNombre.Text;
-                string descripcion = textBoxDescripcion.Text;
-                // precio
                 decimal precio = decimal.Parse(textBoxPrecio.Text);
-                DateTime fechaDesde = DateTime.Now;
-
-                Precio _precio = new Precio(fechaDesde, precio);
-                //
                 IngredienteDTO[] ingredientesSeleccionados = checkedListBoxIngredientes.CheckedItems.Cast<IngredienteDTO>().ToArray();
-                List<Ingrediente> ingredientes = ingredientesSeleccionados.Select(
-                    dto => new Ingrediente(
-                            dto.Id,
-                            dto.Nombre,
-                            dto.Descripcion,
-                            dto.Stock
-                            )).ToList();
 
-                List<Precio> precios = new List<Precio>();
-                precios.Add(_precio);
-
-                HamburguesaDTO nuevaHamburguesa = new HamburguesaDTO();
-                nuevaHamburguesa.Id = 0;
-                nuevaHamburguesa.Nombre = nombre;
-                nuevaHamburguesa.Descripcion = descripcion;
-                nuevaHamburguesa.Precios = precios;
-                nuevaHamburguesa.Ingredientes = ingredientes;
+                // El formulario solo manda datos simples (DTO). El servicio arma las entidades:
+                // el precio con la fecha de hoy y los ingredientes existentes.
+                HamburguesaDTO nuevaHamburguesa = new HamburguesaDTO
+                {
+                    Id = 0,
+                    Nombre = textBoxNombre.Text,
+                    Descripcion = textBoxDescripcion.Text,
+                    Precios = new List<PrecioDTO> { new PrecioDTO { Monto = precio } },
+                    Ingredientes = ingredientesSeleccionados.ToList()
+                };
 
                 await HamburguesaApiClient.AddAsync(nuevaHamburguesa);
                 this.DialogResult = DialogResult.OK;
@@ -78,6 +64,11 @@ namespace WindowsForms
             catch (FormatException)
             {
                 MessageBox.Show("Por favor, ingrese valores validos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                // Las validaciones ahora las hace el servicio 
+                MessageBox.Show($"Error al agregar la hamburguesa: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

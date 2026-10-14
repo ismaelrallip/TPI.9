@@ -18,5 +18,6 @@ namespace Application.Services
         Task<IEnumerable<PedidoDTO>> GetByClienteIdAsync(int clienteId);
         Task<IEnumerable<PedidoDTO>> GetByDeliveryIdAsync(int deliveryId);
         Task<IEnumerable<PedidoDTO>> GetByEstadoAsync(EstadoPedido estado);
+        Task<IEnumerable<PedidoDTO>> GetByFiltroAsync(DateTime? fecha, ModalidadPedido? modalidad);
     }
 }

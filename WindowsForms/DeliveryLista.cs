@@ -19,6 +19,7 @@ namespace WindowsForms
         {
             InitializeComponent();
             deliveriesDataGridView.AutoGenerateColumns = false;
+            this.Load += DeliveryLista_Load;
             ConfigurarColumnas();
         }
 

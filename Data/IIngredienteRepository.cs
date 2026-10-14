@@ -8,6 +8,7 @@ namespace Data
         Task<bool> DeleteAsync(int id);
         Task<Ingrediente?> GetAsync(int id);
         Task<IEnumerable<Ingrediente>> GetAllAsync();
+        Task<IEnumerable<Ingrediente>> GetByCriteriaAsync(string texto);
         Task<bool> UpdateAsync(Ingrediente ingrediente);
     }
 }

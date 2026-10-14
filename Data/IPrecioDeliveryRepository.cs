@@ -14,5 +14,6 @@ namespace Data
         Task<PrecioDelivery?> GetAsync(int id);
         Task<IEnumerable<PrecioDelivery>> GetAllAsync();
         Task<PrecioDelivery?> GetByFechaAsync(DateTime fecha);
+        Task<IEnumerable<PrecioDelivery>> GetByCriteriaAsync(DateTime? fechaFiltro = null);
     }
 }

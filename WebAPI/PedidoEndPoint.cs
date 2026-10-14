@@ -68,12 +68,24 @@ namespace WebAPI
             .RequireAuthorization()
             .WithOpenApi();
 
+
             app.MapPut("/pedidos", async (PedidoDTO dto, ClaimsPrincipal user, IPedidoService pedidoService) =>
             {
-                if (!PuedeAccederAlPedido(user, dto))
+                // El permiso se controla contra el pedido guardado,
+                // No contra el ClienteId que llega en el body, que lo manda quien hace la peticion.
+                var pedidoGuardado = await pedidoService.GetAsync(dto.Id);
+                if (pedidoGuardado == null)
+                {
+                    return Results.NotFound();
+                }
+
+                if (!PuedeAccederAlPedido(user, pedidoGuardado))
                 {
                     return Results.Forbid();
                 }
+
+                // El dueño del pedido nunca se toma del body
+                dto.ClienteId = pedidoGuardado.ClienteId;
 
                 try
                 {
@@ -156,6 +168,16 @@ namespace WebAPI
             })
             .WithName("GetPedidosByEstado")
             .Produces<List<PedidoDTO>>(StatusCodes.Status200OK)
+            .RequireAuthorization("AdminOnly")
+            .WithOpenApi();
+            
+            app.MapGet("/pedidos/filtro", async (DateTime? fecha, ModalidadPedido? modalidad, IPedidoService pedidoService) =>
+            {
+                var dtos = await pedidoService.GetByFiltroAsync(fecha, modalidad);
+                return Results.Ok(dtos);
+            })
+            .WithName("GetPedidosByFiltro")
+            .Produces<IEnumerable<PedidoDTO>>(StatusCodes.Status200OK)
             .RequireAuthorization("AdminOnly")
             .WithOpenApi();
         }

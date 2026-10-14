@@ -25,6 +25,8 @@ namespace Application.Services
 
         public async Task<PedidoDTO> AddAsync(PedidoDTO dto)
         {
+            if (dto.DetallesPedido == null || dto.DetallesPedido.Count == 0)
+                throw new ArgumentException("El pedido debe tener al menos una hamburguesa.");
             var fechaPedido = DateTime.Now;
             var pedido = new Pedido(0, fechaPedido, dto.Direccion, dto.Modalidad, dto.ClienteId);
 
@@ -46,8 +48,7 @@ namespace Application.Services
             {
                 var hamburguesa = await _hamburguesaRepository.GetByIdAsync(detalleDto.HamburguesaId);
                 if (hamburguesa == null)
-                    throw new Exception($"La hamburguesa con ID {detalleDto.HamburguesaId} no existe.");
-
+                    throw new ArgumentException($"La hamburguesa con ID {detalleDto.HamburguesaId} no existe.");
                 var precioVigente = hamburguesa.ObtenerPrecioVigente(fechaPedido);
                 var item = new DetallePedido(detalleDto.Id, detalleDto.Cantidad, precioVigente, hamburguesa.Id, pedido.Id);
 
@@ -84,17 +85,22 @@ namespace Application.Services
 
         public async Task<bool> UpdateAsync(PedidoDTO dto)
         {
-            
             var pedidoExistente = await _pedidoRepository.GetByIdWithDetailsAsync(dto.Id);
             if (pedidoExistente == null) return false;
+            // Mientras está Pendiente se pueden editar las líneas, pero no puede quedar sin ninguna
+            if (pedidoExistente.Estado == EstadoPedido.Pendiente &&
+                (dto.DetallesPedido == null || dto.DetallesPedido.Count == 0))
+                throw new ArgumentException("El pedido debe tener al menos una hamburguesa.");
+            // Igual que en el alta, los precios salen de la base (hamburguesa y delivery vigentes a la
+            // fecha del pedido). Lo que mande el cliente en PrecioUnitario / PrecioTotal se ignora.
+            var fechaPedido = pedidoExistente.Fecha;
 
-            
-            pedidoExistente.SetEstado(dto.Estado);
             pedidoExistente.SetComentario(dto.Comentario);
             pedidoExistente.SetComentarioFinal(dto.ComentarioFinal);
-            pedidoExistente.SetDelivery(dto.DeliveryId); 
+            pedidoExistente.SetDelivery(dto.DeliveryId);
 
-            
+            // Los items solo se pueden modificar mientras el pedido está Pendiente.
+            // Se evalúa el estado ACTUAL, antes de aplicar el nuevo estado.
             if (pedidoExistente.Estado == EstadoPedido.Pendiente)
             {
                 pedidoExistente.SetDireccion(dto.Direccion);
@@ -109,21 +115,41 @@ namespace Application.Services
 
                 foreach (var nuevoItem in dto.DetallesPedido)
                 {
+                    var hamburguesa = await _hamburguesaRepository.GetByIdAsync(nuevoItem.HamburguesaId);
+                    if (hamburguesa == null)
+                        throw new InvalidOperationException($"La hamburguesa con ID {nuevoItem.HamburguesaId} no existe.");
+
+                    // Precio vigente a la fecha del pedido
+                    var precioVigente = hamburguesa.ObtenerPrecioVigente(fechaPedido);
+
                     var existingItem = pedidoExistente.DetallePedido.FirstOrDefault(e => e.HamburguesaId == nuevoItem.HamburguesaId);
                     if (existingItem != null)
                     {
                         existingItem.SetCantidad(nuevoItem.Cantidad);
-                        existingItem.SetPrecioUnitario(nuevoItem.PrecioUnitario);
+                        existingItem.SetPrecioUnitario(precioVigente);
                     }
                     else
                     {
-                        pedidoExistente.AddItem(new DetallePedido(0, nuevoItem.Cantidad, nuevoItem.PrecioUnitario, nuevoItem.HamburguesaId, pedidoExistente.Id));
+                        pedidoExistente.AddItem(new DetallePedido(0, nuevoItem.Cantidad, precioVigente, hamburguesa.Id, pedidoExistente.Id));
                     }
                 }
             }
 
-            
+            // Total: misma lógica que el alta 
+            var costoDelivery = await ObtenerCostoDeliveryAsync(pedidoExistente.Modalidad, fechaPedido);
+            pedidoExistente.RecalcularPrecioTotal(costoDelivery);
+
+            // El nuevo estado se aplica al final 
+
             return await _pedidoRepository.UpdateAsync(pedidoExistente);
+        }
+
+        private async Task<decimal> ObtenerCostoDeliveryAsync(ModalidadPedido modalidad, DateTime fecha)
+        {
+            if (modalidad != ModalidadPedido.Delivery) return 0;
+
+            var precioDelivery = await _precioDeliveryRepository.GetByFechaAsync(fecha);
+            return precioDelivery?.ObtenerPrecioVigente(fecha) ?? 0;
         }
 
         public async Task<IEnumerable<PedidoDTO>> GetByClienteIdAsync(int clienteId)
@@ -172,6 +198,11 @@ namespace Application.Services
                     PrecioUnitario = item.PrecioUnitario
                 }).ToList() ?? new List<DetallePedidoDTO>()
             };
+        }
+        public async Task<IEnumerable<PedidoDTO>> GetByFiltroAsync(DateTime? fecha, ModalidadPedido? modalidad)
+        {
+            var pedidos = await _pedidoRepository.GetByFiltroAsync(fecha, modalidad);
+            return pedidos.Select(pedido => MapToDTO(pedido)).ToList();
         }
     }
 }

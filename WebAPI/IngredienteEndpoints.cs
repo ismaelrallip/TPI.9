@@ -8,21 +8,29 @@ namespace WebAPI
         public static void MapIngredienteEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("/ingredientes")
-                .WithTags("Ingredientes")
-                .RequireAuthorization("AdminOnly");
+                .WithTags("Ingredientes");
 
             group.MapGet("/", async (IIngredienteService svc) =>
                 Results.Ok(await svc.GetAllAsync()))
             .WithName("GetAllIngredientes")
             .Produces<List<IngredienteDTO>>(StatusCodes.Status200OK)
-            .WithOpenApi();
+            .WithOpenApi()
+            .AllowAnonymous();
 
             group.MapGet("/{id:int}", async (int id, IIngredienteService svc) =>
                 await svc.GetAsync(id) is IngredienteDTO dto ? Results.Ok(dto) : Results.NotFound())
             .WithName("GetIngrediente")
             .Produces<IngredienteDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            .WithOpenApi()
+            .AllowAnonymous();
+
+            group.MapGet("/criteria", async (string? texto, IIngredienteService svc) =>
+            Results.Ok(await svc.GetByCriteriaAsync(texto ?? string.Empty)))
+            .WithName("GetIngredientesByCriteria")
+            .Produces<List<IngredienteDTO>>(StatusCodes.Status200OK)
+            .WithOpenApi()
+            .AllowAnonymous();
 
             group.MapPost("/", async (IngredienteDTO dto, IIngredienteService svc) =>
             {

@@ -13,6 +13,7 @@ namespace Application.Services
         Task<bool> DeleteAsync(int id);
         Task<HamburguesaDTO?> GetAsync(int id);
         Task<IEnumerable<HamburguesaDTO>> GetAllAsync();
+        Task<IEnumerable<HamburguesaDTO>> GetByCriteriaAsync(string texto);
         Task<bool> UpdateAsync(HamburguesaDTO dto);
     }
 }

@@ -39,6 +39,20 @@ namespace Data
             return await context.Ingredientes.ToListAsync();
         }
 
+        public async Task<IEnumerable<Ingrediente>> GetByCriteriaAsync(string texto)
+        {
+            var query = context.Ingredientes.AsQueryable();
+
+            // El filtro se resuelve en la base de datos, no en memoria
+            if (!string.IsNullOrWhiteSpace(texto))
+            {
+                var buscado = texto.Trim();
+                query = query.Where(i => i.Nombre.Contains(buscado) || i.Descripcion.Contains(buscado));
+            }
+
+            return await query.OrderBy(i => i.Nombre).ToListAsync();
+        }
+
         public async Task<bool> UpdateAsync(Ingrediente ingrediente)
         {
             var existingIngrediente = await context.Ingredientes.FindAsync(ingrediente.Id);
@@ -52,4 +66,4 @@ namespace Data
             return true;
         }
     }
-}   
+}

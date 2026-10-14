@@ -35,8 +35,6 @@
             ((System.ComponentModel.ISupportInitialize)PrecioDeliveryDataGridView).BeginInit();
             SuspendLayout();
             // 
-            // 
-            // 
             // agregarButton
             // 
             agregarButton.Location = new Point(796, 614);
@@ -83,7 +81,7 @@
             dateTimePickerDesde.Name = "dateTimePickerDesde";
             dateTimePickerDesde.Size = new Size(228, 27);
             dateTimePickerDesde.TabIndex = 17;
-            dateTimePickerDesde.Value = new DateTime(2026, 9, 6, 0, 0, 0, 0);
+            dateTimePickerDesde.Value = new DateTime(2026, 10, 14, 18, 16, 47, 0);
             // 
             // PrecioDeliveryHistorico
             // 

@@ -53,13 +53,10 @@ namespace Application.Services
                 return null;
             }
 
+            // Solo se acepta la contraseña si coincide con el hash guardado 
             if (!PasswordHasher.Verify(request.Password, cliente.Password))
             {
-                if (cliente.Password != request.Password)
-                    return null;
-
-                cliente.SetPassword(PasswordHasher.Hash(request.Password));
-                await clienteRepository.UpdateAsync(cliente);
+                return null;
             }
 
             return CreateLoginResponse(cliente.Email, "Cliente", cliente.Id);

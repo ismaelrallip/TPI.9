@@ -71,12 +71,19 @@ namespace WindowsForms
 
             dateTimePickerFiltro.Value = DateTime.Today;
 
+            // Al arrancar destildado (requiere la propiedad ShowCheckBox = true desde el diseñador visual),
+            // indicamos que queremos traer absolutamente todos los pedidos históricos sin importar la fecha.
+            dateTimePickerFiltro.Checked = false;
+
             var opcionesModalidad = new List<string> { "Todos", "TakeAway", "Delivery" };
             comboBoxFiltro.DataSource = opcionesModalidad;
             comboBoxFiltro.SelectedIndex = 0;
 
-            dateTimePickerFiltro.ValueChanged += (s, ev) => AplicarFiltros();
-            comboBoxFiltro.SelectedIndexChanged += (s, ev) => AplicarFiltros();
+            // El filtro completo lo resuelve la API. 
+            // Cualquier acción del usuario (tildar/destildar el checkbox, cambiar el día o elegir otra modalidad)
+            // volverá a consultar automáticamente al servidor.
+            dateTimePickerFiltro.ValueChanged += async (s, ev) => { if (!_estaCargando) await LoadPedidos(); };
+            comboBoxFiltro.SelectedIndexChanged += async (s, ev) => { if (!_estaCargando) await LoadPedidos(); };
 
             _estaCargando = false;
         }
@@ -85,16 +92,30 @@ namespace WindowsForms
         {
             try
             {
+                // Leemos los filtros antes de bloquear la interfaz.
+                // Si el control está tildado, mandamos la fecha específica. Si está destildado, mandamos null.
+                DateTime? fechaSeleccionada = dateTimePickerFiltro.Checked ? dateTimePickerFiltro.Value.Date : null;
+
+                // Si la modalidad es "Todos", mandamos null para que la API no filtre por este campo.
+                string modalidadSeleccionada = comboBoxFiltro.SelectedItem?.ToString() ?? "Todos";
+                ModalidadPedido? modalidad = modalidadSeleccionada == "Todos"
+                    ? null
+                    : Enum.Parse<ModalidadPedido>(modalidadSeleccionada);
+
                 _estaCargando = true;
 
+                // Bloqueamos los controles temporalmente para evitar que el usuario haga múltiples cambios 
+                // rápidos y sature la API de peticiones simultáneas.
                 dateTimePickerFiltro.Enabled = false;
                 comboBoxFiltro.Enabled = false;
 
-                var resultado = await PedidoApiClient.GetAllAsync();
+                // Consultamos al servidor. 
+                // Ya no filtramos en memoria con .Where(); la API nos devuelve la lista exacta y lista para mostrar.
+                var resultado = await PedidoApiClient.GetByFiltroAsync(fechaSeleccionada, modalidad);
                 _pedidosCache = resultado?.ToList() ?? new List<PedidoDTO>();
 
                 _estaCargando = false;
-                AplicarFiltros();
+                MostrarPedidos(); // Solo mapea y proyecta los datos ya filtrados en la grilla
             }
             catch (Exception ex)
             {
@@ -103,27 +124,16 @@ namespace WindowsForms
             }
             finally
             {
+                // Volvemos a habilitar la botonera de filtros, haya salido bien o mal la consulta
                 dateTimePickerFiltro.Enabled = true;
                 comboBoxFiltro.Enabled = true;
             }
         }
 
-        private void AplicarFiltros()
+        // Muestra en el grid los pedidos que devolvió el servidor (el filtro lo hace la API)
+        private void MostrarPedidos()
         {
-            if (_estaCargando || _pedidosCache == null) return;
-
-            DateTime fechaSeleccionada = dateTimePickerFiltro.Value.Date;
-            string modalidadSeleccionada = comboBoxFiltro.SelectedItem?.ToString() ?? "Todos";
-
-            var pedidosFiltrados = _pedidosCache.Where(p =>
-            {
-                bool coincideFecha = p.Fecha.Date == fechaSeleccionada;
-                bool coincideModalidad = modalidadSeleccionada == "Todos" || p.Modalidad.ToString() == modalidadSeleccionada;
-
-                return coincideFecha && coincideModalidad;
-            });
-
-            var datosParaGrid = pedidosFiltrados.Select(p => new
+            var datosParaGrid = _pedidosCache.Select(p => new
             {
                 Id = p.Id,
                 Fecha = p.Fecha.ToString("dd/MM/yyyy HH:mm"),
@@ -245,14 +255,14 @@ namespace WindowsForms
 
             EstadoPedido nuevoEstado = (EstadoPedido)btnAvanzarEstado.Tag;
 
-            
+
             var confirmar = MessageBox.Show(
                 $"¿Estás seguro que deseas avanzar el pedido #{pedido.Id} a '{nuevoEstado}'?\n\nATENCIÓN: Esta acción NO se puede deshacer y el pedido no podrá volver a un estado anterior.",
                 "Confirmar Avance",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
-            if (confirmar != DialogResult.Yes) return; 
+            if (confirmar != DialogResult.Yes) return;
 
             try
             {

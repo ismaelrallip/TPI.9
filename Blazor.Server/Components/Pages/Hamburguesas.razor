@@ -10,8 +10,8 @@
     <!-- Barra de búsqueda superior -->
     <div class="row mb-3">
         <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="Hamburguesa..." @bind="textoBusqueda"
-                   @bind:event="oninput" />
+            <input type="text" class="form-control" placeholder="Hamburguesa..." value="@textoBusqueda"
+                   @oninput="OnBusquedaInput" />
         </div>
     </div>
 
@@ -45,7 +45,7 @@
                         </td>
                     </tr>
                 }
-                else if (!HamburguesasFiltradas.Any())
+                else if (!listaHamburguesas.Any())
                 {
                     <tr>
                         <td colspan="6" class="text-center py-4 text-muted">
@@ -55,7 +55,7 @@
                 }
                 else
                 {
-                    @foreach (var burger in HamburguesasFiltradas)
+                    @foreach (var burger in listaHamburguesas)
                     {
                         var seleccionado = hamburguesaSeleccionada?.Id == burger.Id;
                         var ultimoPrecio = burger.Precios?.LastOrDefault();
@@ -229,7 +229,7 @@
                                     </thead>
                                     <tbody>
                                         @if (hamburguesaSeleccionada.Ingredientes != null &&
-                                    hamburguesaSeleccionada.Ingredientes.Any())
+                                                                            hamburguesaSeleccionada.Ingredientes.Any())
                                         {
                                             @foreach (var ing in hamburguesaSeleccionada.Ingredientes)
                                             {
@@ -263,10 +263,10 @@
                                     </thead>
                                     <tbody>
                                         @if (hamburguesaSeleccionada.Precios != null &&
-                                    hamburguesaSeleccionada.Precios.Any())
+                                                                            hamburguesaSeleccionada.Precios.Any())
                                         {
                                             @foreach (var p in hamburguesaSeleccionada.Precios.OrderByDescending(x =>
-                                    x.FechaDesde))
+                                                                                x.FechaDesde))
                                             {
                                                 <tr>
                                                     <td>$@p.Monto.ToString("N2")</td>
@@ -296,7 +296,7 @@
 
 @code {
     private List<HamburguesaDTO> listaHamburguesas = new();
-    private List<Domain.Model.Ingrediente> todosLosIngredientes = new();
+    private List<IngredienteDTO> todosLosIngredientes = new();
     private HamburguesaDTO? hamburguesaSeleccionada;
     private string textoBusqueda = string.Empty;
     private bool cargando = true;
@@ -315,12 +315,7 @@
     private decimal formPrecio;
     private HashSet<int> idsIngredientesSeleccionados = new();
 
-    private IEnumerable<HamburguesaDTO> HamburguesasFiltradas =>
-        string.IsNullOrWhiteSpace(textoBusqueda)
-            ? listaHamburguesas
-            : listaHamburguesas.Where(h =>
-                (!string.IsNullOrEmpty(h.Nombre) && h.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(h.Descripcion) && h.Descripcion.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)));
+    private CancellationTokenSource? busquedaCts;
 
     protected override async Task OnInitializedAsync()
     {
@@ -334,7 +329,10 @@
         mensajeError = null;
         try
         {
-            var resultado = await HamburguesaApiClient.GetAllAsync();
+            // El filtro lo resuelve la API (base de datos), no se filtra en memoria
+            var resultado = string.IsNullOrWhiteSpace(textoBusqueda)
+                ? await HamburguesaApiClient.GetAllAsync()
+                : await HamburguesaApiClient.GetByCriteriaAsync(textoBusqueda.Trim());
             listaHamburguesas = resultado.ToList();
             hamburguesaSeleccionada = null;
         }
@@ -348,18 +346,31 @@
         }
     }
 
+    // Busca en el servidor cuando el usuario deja de escribir (evita una llamada por cada tecla)
+    private async Task OnBusquedaInput(ChangeEventArgs e)
+    {
+        textoBusqueda = e.Value?.ToString() ?? string.Empty;
+
+        busquedaCts?.Cancel();
+        busquedaCts = new CancellationTokenSource();
+        var token = busquedaCts.Token;
+
+        try
+        {
+            await Task.Delay(350, token);
+            await CargarHamburguesas();
+        }
+        catch (TaskCanceledException)
+        {
+            // llegó otra tecla: esta búsqueda se descarta
+        }
+    }
+
     private async Task CargarIngredientesDisponibles()
     {
         try
         {
-            var ingredientesDto = await IngredienteApiClient.GetAllAsync();
-            todosLosIngredientes = ingredientesDto.Select(dto => new Domain.Model.Ingrediente
-            {
-                Id = dto.Id,
-                Nombre = dto.Nombre,
-                Descripcion = dto.Descripcion,
-                Stock = dto.Stock
-            }).ToList();
+            todosLosIngredientes = (await IngredienteApiClient.GetAllAsync()).ToList();
         }
         catch
         {
@@ -446,14 +457,11 @@
                     Nombre = formNombre,
                     Descripcion = formDescripcion,
                     Ingredientes = ingredientesSeleccionados,
-                    Precios = new List<Domain.Model.Precio>(hamburguesaSeleccionada.Precios ?? new())
+                    // El servicio compara con el precio vigente y decide si es un precio nuevo (con fecha de hoy)
+                    Precios = formPrecio > 0
+                        ? new List<PrecioDTO> { new PrecioDTO { Monto = formPrecio } }
+                        : new List<PrecioDTO>()
                 };
-
-                var ultimoPrecio = hamburguesaSeleccionada.Precios?.LastOrDefault()?.Monto ?? 0;
-                if (formPrecio != ultimoPrecio && formPrecio > 0)
-                {
-                    dto.Precios.Add(new Domain.Model.Precio(DateTime.Now, formPrecio));
-                }
 
                 await HamburguesaApiClient.UpdateAsync(dto);
             }
@@ -465,8 +473,8 @@
                     Descripcion = formDescripcion,
                     Ingredientes = ingredientesSeleccionados,
                     Precios = formPrecio > 0
-                        ? new List<Domain.Model.Precio> { new Domain.Model.Precio(DateTime.Now, formPrecio) }
-                        : new List<Domain.Model.Precio>()
+                        ? new List<PrecioDTO> { new PrecioDTO { Monto = formPrecio } }
+                        : new List<PrecioDTO>()
                 };
 
                 await HamburguesaApiClient.AddAsync(dto);

@@ -1,5 +1,4 @@
 ﻿using API.Clients;
-using Domain.Model;
 using System.Data;
 using DTOs;
 
@@ -10,33 +9,41 @@ namespace WindowsForms
 
         private IEnumerable<IngredienteDTO> _ingredientes;
 
+        // Espera a que el usuario deje de escribir antes de buscar en el servidor
+        private readonly System.Windows.Forms.Timer _timerBusqueda = new() { Interval = 350 };
 
         public IngredientesForm()
         {
             InitializeComponent();
+
+            ConfigurarColumnas();
+
+            dataGridViewIngredientes.AutoGenerateColumns = false;
+
+            _timerBusqueda.Tick += async (s, e) =>
+            {
+                _timerBusqueda.Stop();
+                await LoadIngredientes(textBoxBuscarIngredientes.Text);
+            };
+            FormClosed += (s, e) => _timerBusqueda.Dispose();
         }
 
-        private void IngredientesForm_Load(object sender, EventArgs e)
+        private async void IngredientesForm_Load(object sender, EventArgs e)
         {
-            LoadIngredientes();
+            await LoadIngredientes();
         }
-
+        // Cada cambio del texto reinicia la espera; la búsqueda se hace al dejar de escribir
         private void textBoxBuscarIngredientes_TextChanged(object sender, EventArgs e)
         {
-            if (_ingredientes == null) return;
+            _timerBusqueda.Stop();
+            _timerBusqueda.Start();
+        }
 
-            string filtro = textBoxBuscarIngredientes.Text?.Trim() ?? string.Empty;
-
-            // 1. Si no hay filtro, mostramos la lista completa original
-            // 2. Si hay filtro, filtramos sobre _ingredientes SIN sobrescribirlo
-            var ingredientesFiltrados = string.IsNullOrWhiteSpace(filtro)
-                ? _ingredientes
-                : _ingredientes.Where(i => (i.Nombre != null && i.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase)) ||
-                                          (i.Descripcion != null && i.Descripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase)));
-
-            // 3. Asignar el resultado al DataGridView
-            dataGridViewIngredientes.DataSource = null;
-            dataGridViewIngredientes.DataSource = ingredientesFiltrados.ToList();
+        // Vacía el texto de búsqueda sin disparar una búsqueda extra (la recarga la hace quien llama)
+        private void LimpiarBusqueda()
+        {
+            textBoxBuscarIngredientes.Text = string.Empty;
+            _timerBusqueda.Stop();
         }
 
         private void buttonAddIngrediente_Click(object sender, EventArgs e)
@@ -44,15 +51,18 @@ namespace WindowsForms
             AgregarIngrediente();
         }
 
-        // FUNCIONES
-        private async Task LoadIngredientes()
+       
+        // El filtro lo resuelve la API, ya no se filtra en memoria.
+        private async Task LoadIngredientes(string texto = "")
         {
             try
             {
                 buttonUpdateIngrediente.Enabled = false;
                 buttonVerResumen.Enabled = false;
 
-                var ingredientes = await IngredienteApiClient.GetAllAsync();
+                var ingredientes = string.IsNullOrWhiteSpace(texto)
+                    ? await IngredienteApiClient.GetAllAsync()
+                    : await IngredienteApiClient.GetByCriteriaAsync(texto.Trim());
                 _ingredientes = ingredientes;
                 dataGridViewIngredientes.DataSource = ingredientes.ToList();
 
@@ -90,10 +100,10 @@ namespace WindowsForms
             using (var formModal = new AgregarIngredienteForm())
             {
                 // ShowDialog() lo abre como popup modal
-                if (formModal.ShowDialog() == DialogResult.OK)
+                if (formModal.ShowDialog(this) == DialogResult.OK)
                 {
                     // Si guardó con éxito, recarga el gridView
-                    textBoxBuscarIngredientes.Text = string.Empty;
+                    LimpiarBusqueda();
                     await LoadIngredientes();
                 }
             }
@@ -103,16 +113,25 @@ namespace WindowsForms
             using (var formModal = new ActualizarIngredienteForm(id))
             {
                 // ShowDialog() lo abre como popup modal
-                if (formModal.ShowDialog() == DialogResult.OK)
+                if (formModal.ShowDialog(this) == DialogResult.OK)
                 {
                     // Si guardó con éxito, recarga el gridView
-                    textBoxBuscarIngredientes.Text = string.Empty;
+                    LimpiarBusqueda();
                     await LoadIngredientes();
                 }
             }
 
         }
 
-        
+        private void ConfigurarColumnas()
+        {
+            dataGridViewIngredientes.AutoGenerateColumns = false;
+            dataGridViewIngredientes.Columns.Clear(); 
+
+            dataGridViewIngredientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "ID", DataPropertyName = "Id", Width = 50 });
+            dataGridViewIngredientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre", Width = 150 });
+            dataGridViewIngredientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Descripcion", HeaderText = "Descripción", DataPropertyName = "Descripcion", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dataGridViewIngredientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Stock", HeaderText = "Stock", DataPropertyName = "Stock", Width = 80 });
+        }
     }
 }

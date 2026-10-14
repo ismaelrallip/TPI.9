@@ -19,10 +19,7 @@ namespace Application.Services
 
         public async Task<ClienteDTO> AddAsync(ClienteDTO dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.Password))
-            {
-                throw new ArgumentException("La contraseña es obligatoria al crear un cliente.", nameof(dto.Password));
-            }
+            Cliente.ValidarPassword(dto.Password);
 
             if (await clienteRepository.EmailExistsAsync(dto.Email))
             {
@@ -77,7 +74,10 @@ namespace Application.Services
         }
 
         public async Task<bool> UpdateAsync(ClienteDTO dto)
-        {
+        {   
+            // Si se envía una contraseña nueva, se valida en texto plano antes de hashearla
+            if (!string.IsNullOrEmpty(dto.Password))
+                Cliente.ValidarPassword(dto.Password);
             if (await clienteRepository.EmailExistsAsync(dto.Email, dto.Id))
             {
                 throw new ArgumentException($"Ya existe otro cliente con el Email '{dto.Email}'.");

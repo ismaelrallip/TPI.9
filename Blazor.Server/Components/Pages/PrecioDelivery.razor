@@ -17,16 +17,16 @@
     </div>
 
     <!-- Barra de búsqueda / filtro por fecha -->
-    <div class="row mb-3 align-items-center">
-        <div class="col-md-4 d-flex gap-2">
-            <input type="date" class="form-control" @bind="fechaFiltro" />
-            @if (fechaFiltro.HasValue)
-            {
-                <button class="btn btn-outline-secondary" @onclick="() => fechaFiltro = null">
-                    Limpiar
-                </button>
-            }
-        </div>
+    <div class="col-md-4 d-flex gap-2">
+        
+        <input type="date" class="form-control" @bind="fechaFiltro" @bind:after="CargarPrecios" />
+
+        @if (fechaFiltro.HasValue)
+        {
+            <button class="btn btn-outline-secondary" @onclick="LimpiarFiltro">
+                Limpiar
+            </button>
+        }
     </div>
 
     @if (!string.IsNullOrEmpty(mensajeError))
@@ -57,7 +57,7 @@
                         </td>
                     </tr>
                 }
-                else if (!PreciosFiltrados.Any())
+                else if (!listaPrecios.Any())
                 {
                     <tr>
                         <td colspan="4" class="text-center py-4 text-muted">
@@ -67,7 +67,7 @@
                 }
                 else
                 {
-                    @foreach (var p in PreciosFiltrados)
+                    @foreach (var p in listaPrecios)
                     {
                         var seleccionado = precioSeleccionado?.Id == p.Id;
 
@@ -150,6 +150,10 @@
 }
 
 @code {
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPrecios();
+    }
     private List<PrecioDeliveryDTO> listaPrecios = new();
     private PrecioDeliveryDTO? precioSeleccionado;
     private DateTime? fechaFiltro;
@@ -168,14 +172,10 @@
     private PrecioDeliveryDTO? ultimoPrecioVigente =>
         listaPrecios.OrderByDescending(p => p.FechaDesde).FirstOrDefault();
 
-    // Filtro por fecha (compara día, mes y año)
-    private IEnumerable<PrecioDeliveryDTO> PreciosFiltrados =>
-        !fechaFiltro.HasValue
-            ? listaPrecios.OrderByDescending(p => p.FechaDesde)
-            : listaPrecios.Where(p => p.FechaDesde.Date == fechaFiltro.Value.Date).OrderByDescending(p => p.FechaDesde);
-
-    protected override async Task OnInitializedAsync()
+    
+    private async Task LimpiarFiltro()
     {
+        fechaFiltro = null;
         await CargarPrecios();
     }
 
@@ -185,7 +185,8 @@
         mensajeError = null;
         try
         {
-            var resultado = await PrecioDeliveryApiClient.GetAllAsync();
+            
+            var resultado = await PrecioDeliveryApiClient.GetByCriteriaAsync(fechaFiltro);
             listaPrecios = resultado.ToList();
             precioSeleccionado = null;
         }

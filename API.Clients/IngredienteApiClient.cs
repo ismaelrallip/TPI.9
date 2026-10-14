@@ -44,6 +44,25 @@ namespace API.Clients
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al obtener los ingredientes.", ex); }
         }
 
+        public static async Task<IEnumerable<IngredienteDTO>> GetByCriteriaAsync(string texto)
+        {
+            try
+            {
+                using var client = await CreateHttpClientAsync();
+                var response = await client.GetAsync($"ingredientes/criteria?texto={Uri.EscapeDataString(texto)}");
+                await HandleAuthorizationAsync(response);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al buscar ingredientes. Status: {response.StatusCode}. Detalle: {content}");
+                }
+
+                return await response.Content.ReadFromJsonAsync<IEnumerable<IngredienteDTO>>() ?? Enumerable.Empty<IngredienteDTO>();
+            }
+            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al buscar ingredientes.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al buscar ingredientes.", ex); }
+        }
+
         public static async Task AddAsync(IngredienteDTO dto)
         {
 

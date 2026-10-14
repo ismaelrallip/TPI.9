@@ -83,5 +83,31 @@ namespace API.Clients
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al eliminar el precio delivery.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al eliminar el precio delivery.", ex); }
         }
+        public static async Task<IEnumerable<PrecioDeliveryDTO>> GetByCriteriaAsync(DateTime? fechaFiltro = null)
+        {
+            try
+            {
+                using var client = await CreateHttpClientAsync();
+
+                string url = "precios-delivery";
+                if (fechaFiltro.HasValue)
+                {
+                    url += $"?fecha={fechaFiltro.Value.ToString("yyyy-MM-dd")}";
+                }
+
+                var response = await client.GetAsync(url);
+                await HandleAuthorizationAsync(response);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al obtener la lista de precios. Status: {response.StatusCode}. Detalle: {content}");
+                }
+
+                return await response.Content.ReadFromJsonAsync<IEnumerable<PrecioDeliveryDTO>>() ?? Enumerable.Empty<PrecioDeliveryDTO>();
+            }
+            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder.", ex); }
+        }
     }
 }

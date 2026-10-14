@@ -148,5 +148,29 @@ namespace Data
                     .ThenInclude(dp => dp.Hamburguesa)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<Pedido>> GetByFiltroAsync(DateTime? fecha, ModalidadPedido? modalidad)
+        {
+            var query = context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Delivery)
+                .Include(p => p.DetallePedido)
+                    .ThenInclude(d => d.Hamburguesa)
+                .AsQueryable();
+
+            // Los filtros se resuelven en la base de datos  no en memoria
+            if (fecha.HasValue)
+            {
+                var desde = fecha.Value.Date;
+                var hasta = desde.AddDays(1);
+                query = query.Where(p => p.Fecha >= desde && p.Fecha < hasta);
+            }
+
+            if (modalidad.HasValue)
+            {
+                query = query.Where(p => p.Modalidad == modalidad.Value);
+            }
+
+            return await query.OrderByDescending(p => p.Fecha).ToListAsync();
+        }
     }
 }
