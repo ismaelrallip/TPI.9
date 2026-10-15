@@ -37,7 +37,7 @@
             // labelDelivery
             // 
             labelDelivery.AutoSize = true;
-            labelDelivery.Location = new Point(66, 125);
+            labelDelivery.Location = new Point(12, 62);
             labelDelivery.Name = "labelDelivery";
             labelDelivery.Size = new Size(63, 20);
             labelDelivery.TabIndex = 0;
@@ -46,14 +46,14 @@
             // comboRepartidores
             // 
             comboRepartidores.FormattingEnabled = true;
-            comboRepartidores.Location = new Point(147, 125);
+            comboRepartidores.Location = new Point(93, 62);
             comboRepartidores.Name = "comboRepartidores";
-            comboRepartidores.Size = new Size(357, 28);
+            comboRepartidores.Size = new Size(295, 28);
             comboRepartidores.TabIndex = 1;
             // 
             // btnAceptar
             // 
-            btnAceptar.Location = new Point(147, 216);
+            btnAceptar.Location = new Point(93, 153);
             btnAceptar.Name = "btnAceptar";
             btnAceptar.Size = new Size(94, 29);
             btnAceptar.TabIndex = 2;
@@ -63,7 +63,7 @@
             // 
             // btnCancelar
             // 
-            btnCancelar.Location = new Point(334, 216);
+            btnCancelar.Location = new Point(280, 153);
             btnCancelar.Name = "btnCancelar";
             btnCancelar.Size = new Size(94, 29);
             btnCancelar.TabIndex = 3;
@@ -79,7 +79,7 @@
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             CancelButton = btnCancelar;
-            ClientSize = new Size(568, 346);
+            ClientSize = new Size(432, 254);
             Controls.Add(btnCancelar);
             Controls.Add(btnAceptar);
             Controls.Add(comboRepartidores);

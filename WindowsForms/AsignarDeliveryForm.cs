@@ -35,6 +35,13 @@ namespace WindowsForms
                     d.IdDelivery,
                     Nombre = $"{d.Nombre} {d.Apellido} - DNI: {d.Dni}"
                 }).ToList();
+                comboRepartidores.SelectedValue = -1;
+                //  Si el pedido ya tiene un delivery asignado, lo preseleccionamos
+                if (_pedido.DeliveryId != null && _pedido.DeliveryId > 0)
+                {
+                    comboRepartidores.SelectedValue = _pedido.DeliveryId;
+                    this.Text = $"Reasignar Repartidor a Pedido #{_pedido.Id}";
+                }
 
                 btnAceptar.Enabled = true;
             }
@@ -49,25 +56,25 @@ namespace WindowsForms
         {
             if (comboRepartidores.SelectedValue == null) return;
 
-            
             string nombreRepartidor = comboRepartidores.Text;
+            int nuevoDeliveryId = (int)comboRepartidores.SelectedValue;
 
-           
-            var confirmar = MessageBox.Show(
-                $"¿Estás seguro que deseas asignar a {nombreRepartidor} al pedido #{_pedido.Id}?\n\nATENCIÓN: Esta acción NO se puede deshacer. Una vez asignado, no podrás cambiar el repartidor ni volver atrás.",
-                "Confirmar Repartidor",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
+            // Quitamos el bloqueo anticipado que podía causar falsos retornos si el ID venía en 0 o null
 
-            if (confirmar != DialogResult.Yes) return; 
+            string mensaje = (_pedido.DeliveryId != null && _pedido.DeliveryId > 0)
+                ? $"¿Estás seguro que deseas cambiar el repartidor a {nombreRepartidor} para el pedido #{_pedido.Id}?"
+                : $"¿Estás seguro que deseas asignar a {nombreRepartidor} al pedido #{_pedido.Id}?\n\n(Podrás cambiarlo luego si aún no está En Camino).";
+
+            var confirmar = MessageBox.Show(mensaje, "Confirmar Repartidor", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (confirmar != DialogResult.Yes) return;
 
             try
             {
                 btnAceptar.Enabled = false;
 
-                
-                _pedido.DeliveryId = (int)comboRepartidores.SelectedValue;
-                _pedido.Estado = EstadoPedido.Asignado; 
+                _pedido.DeliveryId = nuevoDeliveryId;
+                _pedido.Estado = EstadoPedido.Asignado;
 
                 await PedidoApiClient.UpdateAsync(_pedido);
 

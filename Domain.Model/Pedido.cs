@@ -11,9 +11,9 @@ namespace Domain.Model
         public int Id { get; private set; }
         public DateTime Fecha { get; private set; }
         public string? Comentario { get; private set; }
-        public string Direccion { get; private set; }
+        public string? Direccion { get; private set; }
         public ModalidadPedido Modalidad { get; private set; }
-        public int CalificacionPedido { get; private set; }
+        public int? CalificacionPedido { get; private set; }
         public int? CalificacionDelivery { get; private set; }
         public EstadoPedido Estado { get; private set; }
         public string? ComentarioFinal { get; private set; }
@@ -23,10 +23,9 @@ namespace Domain.Model
         private Cliente? _cliente;
         public int ClienteId
         {
-            get => _cliente?.Id ?? _clienteId;
+            get => _clienteId;
             private set => _clienteId = value;
         }
-
         public Cliente? Cliente
         {
             get => _cliente;
@@ -44,7 +43,7 @@ namespace Domain.Model
         private Delivery? _delivery;
         public int? DeliveryId
         {
-            get => _delivery?.IdDelivery ?? _deliveryId;
+            get => _deliveryId;
             private set => _deliveryId = value;
         }
 
@@ -70,8 +69,8 @@ namespace Domain.Model
         {
             SetId(id);
             SetFecha(fecha);
-            SetDireccion(direccion);
             SetModalidad(modalidad);
+            SetDireccion(direccion);
             SetCliente(clienteId);
             Estado = EstadoPedido.Pendiente;
         }
@@ -81,8 +80,8 @@ namespace Domain.Model
             SetId(id);
             SetFecha(fecha);
             SetComentario(comentario);
-            SetDireccion(direccion);
             SetModalidad(modalidad);
+            SetDireccion(direccion);
             SetEstado(estado);
             SetComentarioFinal(comentarioFinal);
             SetPrecioTotal(precioTotal);
@@ -128,11 +127,29 @@ namespace Domain.Model
 
         public void SetDireccion(string direccion)
         {
-            if (string.IsNullOrWhiteSpace(direccion) || direccion.Length < 1 || direccion.Length > 100)
-                throw new ArgumentException("La dirección es obligatoria y debe tener entre 1 y 100 caracteres.", nameof(direccion));
-            Direccion = direccion;
+            
+            if (Modalidad == ModalidadPedido.Delivery)
+            {
+                if (string.IsNullOrWhiteSpace(direccion) || direccion.Length < 1 || direccion.Length > 100)
+                    throw new ArgumentException("La dirección es obligatoria y debe tener entre 1 y 100 caracteres para envíos por delivery.", nameof(direccion));
+
+                Direccion = direccion.Trim();
+            }
+            else 
+            {
+                
+                if (!string.IsNullOrWhiteSpace(direccion))
+                    throw new ArgumentException("Los pedidos de tipo Take Away no deben llevar dirección.", nameof(direccion));
+
+                Direccion = null;
+            }
         }
 
+        // método para limpiar la dirección cuando es Take Away
+        public void LimpiarDireccion()
+        {
+            Direccion = null;
+        }
         public void SetModalidad(ModalidadPedido modalidad)
         {
             Modalidad = modalidad;

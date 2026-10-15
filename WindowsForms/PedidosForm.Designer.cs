@@ -37,6 +37,8 @@
             btnAvanzarEstado = new Button();
             btnAsignarDelivery = new Button();
             btnCancelarPedido = new Button();
+            btnNuevoPedido = new Button();
+            btnModificarPedido = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridViewPedidos).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewDetalle).BeginInit();
             SuspendLayout();
@@ -122,7 +124,7 @@
             // 
             // btnAsignarDelivery
             // 
-            btnAsignarDelivery.Location = new Point(365, 507);
+            btnAsignarDelivery.Location = new Point(317, 505);
             btnAsignarDelivery.Name = "btnAsignarDelivery";
             btnAsignarDelivery.Size = new Size(186, 30);
             btnAsignarDelivery.TabIndex = 21;
@@ -132,7 +134,7 @@
             // 
             // btnCancelarPedido
             // 
-            btnCancelarPedido.Location = new Point(733, 506);
+            btnCancelarPedido.Location = new Point(657, 507);
             btnCancelarPedido.Name = "btnCancelarPedido";
             btnCancelarPedido.Size = new Size(156, 29);
             btnCancelarPedido.TabIndex = 22;
@@ -140,11 +142,34 @@
             btnCancelarPedido.UseVisualStyleBackColor = true;
             btnCancelarPedido.Click += btnCancelarPedido_Click;
             // 
+            // btnNuevoPedido
+            // 
+            btnNuevoPedido.Location = new Point(912, 507);
+            btnNuevoPedido.Name = "btnNuevoPedido";
+            btnNuevoPedido.Size = new Size(145, 29);
+            btnNuevoPedido.TabIndex = 23;
+            btnNuevoPedido.Text = "Nuevo Pedido";
+            btnNuevoPedido.UseVisualStyleBackColor = true;
+            btnNuevoPedido.Click += btnNuevoPedido_Click;
+            // 
+            // btnModificarPedido
+            // 
+            btnModificarPedido.Enabled = false;
+            btnModificarPedido.Location = new Point(1141, 507);
+            btnModificarPedido.Name = "btnModificarPedido";
+            btnModificarPedido.Size = new Size(148, 29);
+            btnModificarPedido.TabIndex = 24;
+            btnModificarPedido.Text = "Modificar Pedido";
+            btnModificarPedido.UseVisualStyleBackColor = true;
+            btnModificarPedido.Click += btnModificarPedido_Click;
+            // 
             // PedidosForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1309, 557);
+            Controls.Add(btnModificarPedido);
+            Controls.Add(btnNuevoPedido);
             Controls.Add(btnCancelarPedido);
             Controls.Add(btnAsignarDelivery);
             Controls.Add(btnAvanzarEstado);
@@ -174,5 +199,7 @@
         private Button btnAvanzarEstado;
         private Button btnAsignarDelivery;
         private Button btnCancelarPedido;
+        private Button btnNuevoPedido;
+        private Button btnModificarPedido;
     }
 }

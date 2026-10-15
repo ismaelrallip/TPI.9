@@ -84,8 +84,11 @@ namespace WebAPI
                     return Results.Forbid();
                 }
 
-                // El dueño del pedido nunca se toma del body
-                dto.ClienteId = pedidoGuardado.ClienteId;
+                // Un cliente no puede cambiar el dueño del pedido; el administrador sí 
+                if (!user.IsInRole("Administrador"))
+                {
+                    dto.ClienteId = pedidoGuardado.ClienteId;
+                }
 
                 try
                 {

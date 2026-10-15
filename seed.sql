@@ -121,6 +121,8 @@ SET IDENTITY_INSERT Precio OFF;
 -- Estado: 0 = Pendiente, 1 = EnProceso, 2 = Listo, 3 = Asignado, 4 = EnCamino, 5 = Entregado, 6 = Cancelado
 -- PrecioTotal = suma(Cantidad x PrecioUnitario) + 1500.00 de envío si la modalidad es Delivery
 -- (el mismo cálculo que hace PedidoService al crear y al modificar un pedido)
+-- Direccion: solo los pedidos Delivery tienen dirección (los TakeAway van en NULL).
+-- Comentario y calificaciones: NULL hasta que se cargan (el 907 es el ejemplo de un pedido ya calificado).
 SET IDENTITY_INSERT Pedidos ON;
 INSERT INTO Pedidos (
     Id,
@@ -138,23 +140,23 @@ INSERT INTO Pedidos (
   )
 VALUES
   -- TAKE AWAY - Pendiente, 1 línea
-  (901, GETDATE(), 'Sin aderezos', 'Av. Pellegrini 123', 0, 0, NULL, 5500.00, 901, NULL, 0, NULL),
+  (901, GETDATE(), 'Sin aderezos', NULL, 0, 0, NULL, 5500.00, 901, NULL, NULL, NULL),
   -- DELIVERY - Pendiente, sin repartidor asignado
-  (902, GETDATE(), 'Tocar timbre fuerte', 'Bv. Oroño 456', 1, 0, NULL, 9300.00, 901, NULL, 0, NULL),
+  (902, GETDATE(), 'Tocar timbre fuerte', 'Bv. Oroño 456', 1, 0, NULL, 9300.00, 901, NULL, NULL, NULL),
   -- DELIVERY - Asignado (repartidor 901)
-  (903, GETDATE(), 'Dejar en portería', 'Mendoza 789', 1, 3, NULL, 9300.00, 901, 901, 0, NULL),
+  (903, GETDATE(), NULL, 'Mendoza 789', 1, 3, NULL, 9300.00, 901, 901, NULL, NULL),
   -- TAKE AWAY - En proceso
-  (904, DATEADD(MINUTE, -40, GETDATE()), 'Sin cebolla', 'San Martín 321', 0, 1, NULL, 11000.00, 901, NULL, 0, NULL),
+  (904, DATEADD(MINUTE, -40, GETDATE()), 'Sin cebolla', NULL, 0, 1, NULL, 11000.00, 901, NULL, NULL, NULL),
   -- TAKE AWAY - Listo
-  (905, DATEADD(MINUTE, -30, GETDATE()), NULL, 'Córdoba 1500', 0, 2, NULL, 7800.00, 901, NULL, 0, NULL),
+  (905, DATEADD(MINUTE, -30, GETDATE()), NULL, NULL, 0, 2, NULL, 7800.00, 901, NULL, NULL, NULL),
   -- DELIVERY - En camino (repartidor 901), 2 líneas
-  (906, DATEADD(MINUTE, -20, GETDATE()), 'Llamar al llegar', 'Italia 250', 1, 4, NULL, 14800.00, 901, 901, 0, NULL),
+  (906, DATEADD(MINUTE, -20, GETDATE()), NULL, 'Italia 250', 1, 4, NULL, 14800.00, 901, 901, NULL, NULL),
   -- DELIVERY - Entregado (repartidor 902), con calificación, de ayer
   (907, DATEADD(DAY, -1, GETDATE()), 'Dejar con el encargado', 'Salta 980', 1, 5, 'Excelente servicio', 17100.00, 901, 902, 5, 4),
   -- TAKE AWAY - Cancelado
-  (908, DATEADD(MINUTE, -10, GETDATE()), 'Pedido cancelado por el cliente', 'Moreno 640', 0, 6, NULL, 5500.00, 901, NULL, 0, NULL),
+  (908, DATEADD(MINUTE, -10, GETDATE()), 'Pedido cancelado por el cliente', NULL, 0, 6, NULL, 5500.00, 901, NULL, NULL, NULL),
   -- DELIVERY - Pendiente, sin repartidor, 2 líneas
-  (909, DATEADD(MINUTE, -5, GETDATE()), 'Agregar servilletas', 'Rioja 77', 1, 0, NULL, 22600.00, 901, NULL, 0, NULL);
+  (909, DATEADD(MINUTE, -5, GETDATE()), 'Agregar servilletas', 'Rioja 77', 1, 0, NULL, 22600.00, 901, NULL, NULL, NULL);
 SET IDENTITY_INSERT Pedidos OFF;
 -- 9. Insertamos los Detalles del Pedido
 -- Los precios unitarios son los vigentes de la sección 7 (901 = 5500.00, 902 = 7800.00)

@@ -111,10 +111,10 @@ namespace Data
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Fecha).IsRequired();
                 entity.Property(e => e.Comentario).HasMaxLength(200);
-                entity.Property(e => e.Direccion).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Direccion).IsRequired(false).HasMaxLength(200);
                 entity.Property(e => e.Modalidad).IsRequired();
-                entity.Property(e => e.CalificacionPedido);
-                entity.Property(e => e.CalificacionDelivery);
+                entity.Property(e => e.CalificacionPedido).IsRequired(false);
+                entity.Property(e => e.CalificacionDelivery).IsRequired(false);
                 entity.Property(e => e.Estado).IsRequired();
                 entity.Property(e => e.ComentarioFinal).HasMaxLength(200);
                 entity.Property(e => e.PrecioTotal).IsRequired().HasColumnType("decimal(18,2)");

@@ -27,28 +27,35 @@ namespace Application.Services
         {
             if (dto.DetallesPedido == null || dto.DetallesPedido.Count == 0)
                 throw new ArgumentException("El pedido debe tener al menos una hamburguesa.");
-            var fechaPedido = DateTime.Now;
-            var pedido = new Pedido(0, fechaPedido, dto.Direccion, dto.Modalidad, dto.ClienteId);
 
-            decimal costoDelivery = 0;
+            var fechaPedido = DateTime.Now;
+
+            // Validamos y determinamos la dirección según la modalidad
+            string direccionFinal = null;
+            if (dto.Modalidad == ModalidadPedido.Delivery)
+            {
+                if (string.IsNullOrWhiteSpace(dto.Direccion))
+                    throw new ArgumentException("La dirección es obligatoria para pedidos con delivery.");
+
+                direccionFinal = dto.Direccion.Trim();
+            }
+
+            var pedido = new Pedido(0, fechaPedido, direccionFinal, dto.Modalidad, dto.ClienteId);
 
             if (dto.Modalidad == ModalidadPedido.Delivery && dto.DeliveryId.HasValue)
             {
                 pedido.SetDelivery(dto.DeliveryId.Value);
-                var precioDeliveryEntity = await _precioDeliveryRepository.GetByFechaAsync(fechaPedido);
-
-                if (precioDeliveryEntity != null)
-                {
-                    
-                    costoDelivery = precioDeliveryEntity.ObtenerPrecioVigente(fechaPedido);
-                }
             }
+
+            // El envío se cobra a todo pedido Delivery, tenga o no repartidor asignado todavía
+            decimal costoDelivery = await ObtenerCostoDeliveryAsync(dto.Modalidad, fechaPedido);
 
             foreach (var detalleDto in dto.DetallesPedido)
             {
                 var hamburguesa = await _hamburguesaRepository.GetByIdAsync(detalleDto.HamburguesaId);
                 if (hamburguesa == null)
                     throw new ArgumentException($"La hamburguesa con ID {detalleDto.HamburguesaId} no existe.");
+
                 var precioVigente = hamburguesa.ObtenerPrecioVigente(fechaPedido);
                 var item = new DetallePedido(detalleDto.Id, detalleDto.Cantidad, precioVigente, hamburguesa.Id, pedido.Id);
 
@@ -87,23 +94,42 @@ namespace Application.Services
         {
             var pedidoExistente = await _pedidoRepository.GetByIdWithDetailsAsync(dto.Id);
             if (pedidoExistente == null) return false;
+
             // Mientras está Pendiente se pueden editar las líneas, pero no puede quedar sin ninguna
             if (pedidoExistente.Estado == EstadoPedido.Pendiente &&
                 (dto.DetallesPedido == null || dto.DetallesPedido.Count == 0))
                 throw new ArgumentException("El pedido debe tener al menos una hamburguesa.");
-            // Igual que en el alta, los precios salen de la base (hamburguesa y delivery vigentes a la
-            // fecha del pedido). Lo que mande el cliente en PrecioUnitario / PrecioTotal se ignora.
+
             var fechaPedido = pedidoExistente.Fecha;
 
             pedidoExistente.SetComentario(dto.Comentario);
             pedidoExistente.SetComentarioFinal(dto.ComentarioFinal);
             pedidoExistente.SetDelivery(dto.DeliveryId);
 
-            // Los items solo se pueden modificar mientras el pedido está Pendiente.
-            // Se evalúa el estado ACTUAL, antes de aplicar el nuevo estado.
+            // <-- 1. AQUÍ AGREGAMOS LA ACTUALIZACIÓN DEL ESTADO -->
+            pedidoExistente.SetEstado(dto.Estado);
+
+            // Los items y la dirección solo se pueden modificar mientras el pedido está Pendiente.
             if (pedidoExistente.Estado == EstadoPedido.Pendiente)
             {
-                pedidoExistente.SetDireccion(dto.Direccion);
+                // Primero se aplican cliente y modalidad: SetDireccion valida según la modalidad que tiene el propio pedido
+                pedidoExistente.SetCliente(dto.ClienteId);
+                pedidoExistente.SetModalidad(dto.Modalidad);
+
+                // Validamos la dirección según la modalidad elegida
+                if (dto.Modalidad == ModalidadPedido.Delivery)
+                {
+                    if (string.IsNullOrWhiteSpace(dto.Direccion))
+                        throw new ArgumentException("La dirección es obligatoria para pedidos con delivery.");
+
+                    pedidoExistente.SetDireccion(dto.Direccion.Trim());
+                }
+                else
+                {
+                    // Si es Take Away, no lleva dirección ni delivery
+                    pedidoExistente.SetDireccion(null);
+                    pedidoExistente.SetDelivery(null);
+                }
 
                 var itemsToDelete = pedidoExistente.DetallePedido
                     .Where(e => !dto.DetallesPedido.Any(n => n.HamburguesaId == e.HamburguesaId)).ToList();
@@ -139,11 +165,8 @@ namespace Application.Services
             var costoDelivery = await ObtenerCostoDeliveryAsync(pedidoExistente.Modalidad, fechaPedido);
             pedidoExistente.RecalcularPrecioTotal(costoDelivery);
 
-            // El nuevo estado se aplica al final 
-
             return await _pedidoRepository.UpdateAsync(pedidoExistente);
         }
-
         private async Task<decimal> ObtenerCostoDeliveryAsync(ModalidadPedido modalidad, DateTime fecha)
         {
             if (modalidad != ModalidadPedido.Delivery) return 0;

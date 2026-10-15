@@ -191,6 +191,7 @@ namespace WindowsForms
             btnAsignarDelivery.Enabled = false;
             btnCancelarPedido.Enabled = false;
             btnAvanzarEstado.Text = "Avanzar Estado";
+            btnModificarPedido.Enabled = false;
         }
 
         private void ActualizarBotonera(PedidoDTO pedido)
@@ -203,10 +204,12 @@ namespace WindowsForms
             if (pedido.Estado == EstadoPedido.Pendiente)
             {
                 btnCancelarPedido.Enabled = true;
+                btnModificarPedido.Enabled = true;
 
                 if (pedido.Modalidad == ModalidadPedido.Delivery)
                 {
                     btnAsignarDelivery.Enabled = true;
+                    btnAsignarDelivery.Text = "Asignar Delivery"; // Lo forzamos por si había cambiado
                 }
                 else
                 {
@@ -237,6 +240,10 @@ namespace WindowsForms
                     btnAvanzarEstado.Enabled = true;
                     btnAvanzarEstado.Text = "Avanzar a: En Camino";
                     btnAvanzarEstado.Tag = EstadoPedido.EnCamino;
+
+                   
+                    btnAsignarDelivery.Enabled = true;
+                    btnAsignarDelivery.Text = "Cambiar Delivery";
                 }
                 else if (pedido.Estado == EstadoPedido.EnCamino)
                 {
@@ -311,6 +318,42 @@ namespace WindowsForms
 
             using var formAsignar = new AsignarDeliveryForm(pedido);
             if (formAsignar.ShowDialog(this) == DialogResult.OK)
+            {
+                await LoadPedidos();
+            }
+        }
+        private async void btnNuevoPedido_Click(object sender, EventArgs e)
+        {
+            using var form = new AgregarEditarPedidoForm();
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                await LoadPedidos();
+            }
+        }
+
+        private async void btnModificarPedido_Click(object sender, EventArgs e)
+        {
+            
+            if (dataGridViewPedidos.SelectedRows.Count == 0) return;
+
+            
+            int idPedido = (int)dataGridViewPedidos.SelectedRows[0].Cells["Id"].Value;
+
+            
+            var pedidoSeleccionado = _pedidosCache.FirstOrDefault(p => p.Id == idPedido);
+
+            if (pedidoSeleccionado == null) return;
+
+            
+            if (pedidoSeleccionado.Estado != EstadoPedido.Pendiente)
+            {
+                MessageBox.Show("Solo se pueden modificar pedidos en estado Pendiente.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            
+            using var form = new AgregarEditarPedidoForm(pedidoSeleccionado);
+            if (form.ShowDialog() == DialogResult.OK)
             {
                 await LoadPedidos();
             }

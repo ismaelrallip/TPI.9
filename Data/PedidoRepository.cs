@@ -63,8 +63,8 @@ namespace Data
                 existingPedido.SetDelivery(pedido.DeliveryId);
 
                 existingPedido.SetComentario(pedido.Comentario);
-                existingPedido.SetDireccion(pedido.Direccion);
                 existingPedido.SetModalidad(pedido.Modalidad);
+                existingPedido.SetDireccion(pedido.Direccion);
                 existingPedido.SetFecha(pedido.Fecha);
 
                 
