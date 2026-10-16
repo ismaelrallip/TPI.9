@@ -51,6 +51,7 @@
             lblTotalValor = new Label();
             btnGuardar = new Button();
             btnCancelar = new Button();
+            lblCostoDelivery = new Label();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvDetalles).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCantidad).BeginInit();
@@ -279,11 +280,22 @@
             btnCancelar.UseVisualStyleBackColor = true;
             btnCancelar.Click += btnCancelar_Click;
             // 
+            // lblCostoDelivery
+            // 
+            lblCostoDelivery.AutoSize = true;
+            lblCostoDelivery.Location = new Point(53, 645);
+            lblCostoDelivery.Name = "lblCostoDelivery";
+            lblCostoDelivery.Size = new Size(147, 20);
+            lblCostoDelivery.TabIndex = 15;
+            lblCostoDelivery.Text = "Costo Delivery: $0.00";
+            lblCostoDelivery.Visible = false;
+            // 
             // AgregarEditarPedidoForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(632, 720);
+            Controls.Add(lblCostoDelivery);
             Controls.Add(btnCancelar);
             Controls.Add(btnGuardar);
             Controls.Add(lblTotalValor);
@@ -340,5 +352,6 @@
         private Label lblTotalValor;
         private Button btnGuardar;
         private Button btnCancelar;
+        private Label lblCostoDelivery;
     }
 }

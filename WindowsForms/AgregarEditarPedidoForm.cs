@@ -15,6 +15,7 @@ namespace WindowsForms
         private bool _esEdicion;
         private BindingList<DetallePedidoDTO> _detallesBinding;
         private decimal _precioDeliveryActual = 0;
+        private bool _cargando;   // true mientras se arma el formulario: los eventos de los combos se ignoran
 
         //  Constructor para ALTA (Nuevo Pedido)
         public AgregarEditarPedidoForm()
@@ -62,84 +63,101 @@ namespace WindowsForms
 
         private async void AgregarEditarPedidoForm_Load(object sender, EventArgs e)
         {
+            _cargando = true;
+            this.Enabled = false;          // bloquea botones, listas y todo lo que se pueda tocar hasta terminar de cargar
+            this.UseWaitCursor = true;     // cursor de espera
+
             try
             {
-                btnGuardar.Enabled = false;
+               
+                var clientesTask = ClienteApiClient.GetAllAsync();
+                var hamburguesasTask = HamburguesaApiClient.GetAllAsync();
+                var preciosDeliveryTask = PrecioDeliveryApiClient.GetByCriteriaAsync(null);
 
-                cmbCliente.SelectedIndex = -1;
-                cmbModalidad.SelectedIndex = -1; 
+                await Task.WhenAll(clientesTask, hamburguesasTask, preciosDeliveryTask);
 
-                var clientes = await ClienteApiClient.GetAllAsync();
+                var clientes = await clientesTask;
+                var hamburguesas = await hamburguesasTask;
+                var preciosDel = await preciosDeliveryTask;
+
+                
+                var precioDeliveryVigente = preciosDel
+                    .Where(p => p.FechaDesde <= _pedidoActual.Fecha)
+                    .OrderByDescending(p => p.FechaDesde)
+                    .FirstOrDefault();
+
+                
+                if (precioDeliveryVigente == null)
+                {
+                    precioDeliveryVigente = preciosDel
+                        .OrderBy(p => p.FechaDesde)
+                        .FirstOrDefault();
+                }
+
+                _precioDeliveryActual = precioDeliveryVigente?.Monto ?? 0;
+
+                
+                cmbCliente.DisplayMember = "NombreCompleto";
+                cmbCliente.ValueMember = "Id";
                 cmbCliente.DataSource = clientes.Select(c => new
                 {
                     Id = c.Id,
                     NombreCompleto = $"{c.Nombre} {c.Apellido}"
                 }).ToList();
-                cmbCliente.DisplayMember = "NombreCompleto";
-                cmbCliente.ValueMember = "Id";
 
-                
-                var hamburguesas = await HamburguesaApiClient.GetAllAsync();
-                cmbHamburguesa.DataSource = hamburguesas.ToList();
                 cmbHamburguesa.DisplayMember = "Nombre";
                 cmbHamburguesa.ValueMember = "Id";
+                cmbHamburguesa.DataSource = hamburguesas.ToList();
                 cmbHamburguesa.SelectedIndex = -1;
 
-                
                 cmbModalidad.DataSource = Enum.GetValues(typeof(ModalidadPedido));
-
-                
-                var preciosDel = await PrecioDeliveryApiClient.GetByCriteriaAsync(null);
-                _precioDeliveryActual = preciosDel.OrderByDescending(p => p.FechaDesde).FirstOrDefault()?.Monto ?? 0;
 
                 dgvDetalles.DataSource = _detallesBinding;
 
-                
                 if (_esEdicion)
                 {
                     
                     lblFechaValor.Text = _pedidoActual.Fecha.ToString("dd/MM/yyyy HH:mm");
                     cmbCliente.SelectedValue = _pedidoActual.ClienteId;
                     cmbModalidad.SelectedItem = _pedidoActual.Modalidad;
-                    txtDireccion.Text = _pedidoActual.Modalidad == ModalidadPedido.TakeAway ? "" : _pedidoActual.Direccion;
-                    txtComentario.Text = _pedidoActual.Comentario;
-                }
-                
-                if (_esEdicion)
-                {
-                    lblFechaValor.Text = _pedidoActual.Fecha.ToString("dd/MM/yyyy HH:mm");
-                    cmbCliente.SelectedValue = _pedidoActual.ClienteId;
-                    cmbModalidad.SelectedItem = _pedidoActual.Modalidad;
-                    txtDireccion.Text = _pedidoActual.Modalidad == ModalidadPedido.TakeAway ? "" : _pedidoActual.Direccion;
+
+                    bool esDelivery = _pedidoActual.Modalidad == ModalidadPedido.Delivery;
+                    txtDireccion.Enabled = esDelivery;
+                    txtDireccion.Text = esDelivery ? _pedidoActual.Direccion : string.Empty;
                     txtComentario.Text = _pedidoActual.Comentario;
                 }
                 else
                 {
+                    
                     lblFechaValor.Text = DateTime.Now.ToString("dd/MM/yyyy");
-                }
-
-               
-                if (!_esEdicion)
-                {
                     cmbCliente.SelectedIndex = -1;
                     cmbModalidad.SelectedIndex = -1;
+                    txtDireccion.Enabled = false;
+                    txtDireccion.Clear();
                 }
 
                 RecalcularTotal();
-                btnGuardar.Enabled = true;
-                RecalcularTotal();
-                btnGuardar.Enabled = true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al inicializar formulario: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.Close();
             }
+            finally
+            {
+                
+                _cargando = false;
+                this.UseWaitCursor = false;
+                this.Enabled = true;
+            }
         }
-       
+
 
         private void cmbModalidad_SelectedIndexChanged(object sender, EventArgs e)
         {
+
+            if (_cargando) return;
+
             if (cmbModalidad.SelectedItem == null) return;
 
             ModalidadPedido modalidad = (ModalidadPedido)cmbModalidad.SelectedItem;
@@ -304,12 +322,20 @@ namespace WindowsForms
             if (cmbModalidad.SelectedItem != null && (ModalidadPedido)cmbModalidad.SelectedItem == ModalidadPedido.Delivery)
             {
                 totalLineas += _precioDeliveryActual;
+
+                
+                lblCostoDelivery.Text = $"+ Delivery: {_precioDeliveryActual:C2}";
+                lblCostoDelivery.Visible = true;
+            }
+            else
+            {
+               
+                lblCostoDelivery.Visible = false;
             }
 
             lblTotalValor.Text = totalLineas.ToString("C2");
             _pedidoActual.PrecioTotal = totalLineas;
         }
-
         private void DgvDetalles_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dgvDetalles.Columns[e.ColumnIndex].Name == "SubtotalCol")
