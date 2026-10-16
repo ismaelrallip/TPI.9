@@ -1,4 +1,10 @@
 using System.Net.Http.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using DTOs;
 
 namespace API.Clients
@@ -94,6 +100,7 @@ namespace API.Clients
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al eliminar el cliente.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al eliminar el cliente.", ex); }
         }
+
         public static async Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(string texto)
         {
             try
@@ -113,5 +120,22 @@ namespace API.Clients
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al buscar clientes.", ex); }
         }
 
+        public static async Task RegisterAsync(ClienteDTO dto)
+        {
+            try
+            {
+                using var client = CreatePublicHttpClient();
+
+                var response = await client.PostAsJsonAsync("clientes", dto);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al registrar cliente. Status: {response.StatusCode}. Detalle: {content}");
+                }
+            }
+            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al registrar el cliente.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al registrar el cliente.", ex); }
+        }
     }
 }

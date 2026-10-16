@@ -83,5 +83,45 @@ namespace WindowsForms
             passwordTextBox.Enabled = !loading;
             loginButton.Text = loading ? "Verificando..." : "Iniciar sesión";
         }
+        private async void registerButton_Click(object sender, EventArgs e)
+        {
+            using var registerForm = new ClienteDetalle(
+                FormMode.Add,
+                new ClienteDTO())
+            {
+                EsRegistro = true
+            };
+
+            if (registerForm.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            SetLoading(true);
+
+            try
+            {
+                // ClienteDetalle ya devolvió los datos validados.
+                // Para el registro público usamos el endpoint público (no requiere token).
+                // Usamos el endpoint público para el registro (no requiere token).
+                await ClienteApiClient.RegisterAsync(registerForm.Cliente);
+
+                MessageBox.Show(
+                    "Registro exitoso. Ya podés iniciar sesión.",
+                    "Registro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo completar el registro.\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                SetLoading(false);
+            }
+        }
     }
 }

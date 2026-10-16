@@ -21,6 +21,10 @@ namespace WindowsForms
 
     public partial class ClienteDetalle : Form
     {
+        // Indica que el formulario se está usando para el registro público
+        // Cuando es true, el formulario solo valida y devuelve los datos al llamador
+        // sin realizar la llamada a la API autenticada.
+        public bool EsRegistro { get; set; }
         private ClienteDTO cliente;
         private FormMode mode;
 
@@ -53,44 +57,53 @@ namespace WindowsForms
 
         private async void aceptarButton_Click(object sender, EventArgs e)
         {
-            if (ValidateCliente())
+            // Validar primero los campos de entrada. Si no son válidos, dejamos
+            // los errores en pantalla y no intentamos ninguna operación.
+            if (!ValidateCliente())
+                return;
+
+            try
             {
-                try
+                DeshabilitarControles();
+
+                Cliente.Nombre = nombreTextBox.Text.Trim();
+                Cliente.Apellido = apellidoTextBox.Text.Trim();
+                Cliente.Email = emailTextBox.Text.Trim();
+                Cliente.Telefono = telefonoTextBox.Text.Trim();
+
+                if (Mode == FormMode.Update)
                 {
-                    DeshabilitarControles();
-
-                    Cliente.Nombre = nombreTextBox.Text.Trim();
-                    Cliente.Apellido = apellidoTextBox.Text.Trim();
-                    Cliente.Email = emailTextBox.Text.Trim();
-                    Cliente.Telefono = telefonoTextBox.Text.Trim();
-
-                    if (Mode == FormMode.Update)
+                    // Si en modo Update no se ingresó contraseña, no la cambiamos.
+                    if (!string.IsNullOrEmpty(passwordTextBox.Text))
                     {
-                        // Si en modo Update no se ingresó contraseña, no la cambiamos.
-                        if (!string.IsNullOrEmpty(passwordTextBox.Text))
-                        {
-                            Cliente.Password = passwordTextBox.Text;
-                        }
-
-                        await ClienteApiClient.UpdateAsync(Cliente);
-                    }
-                    else
-                    {
-                        // Add: contraseña obligatoria (validada por ValidateCliente)
                         Cliente.Password = passwordTextBox.Text;
+                    }
+
+                    await ClienteApiClient.UpdateAsync(Cliente);
+                }
+                else
+                {
+                    // Add: contraseña obligatoria (validada por ValidateCliente)
+                    Cliente.Password = passwordTextBox.Text;
+
+                    // Si el formulario se usa para registro público (desde LoginForm)
+                    // no realizamos la llamada autenticada aquí. El llamador será
+                    // responsable de invocar el endpoint público correspondiente.
+                    if (!EsRegistro)
+                    {
                         await ClienteApiClient.AddAsync(Cliente);
                     }
+                }
 
-                    DialogResult = DialogResult.OK;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error al guardar cliente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    HabilitarControles();
-                }
+                DialogResult = DialogResult.OK;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al guardar cliente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                HabilitarControles();
             }
         }
 
