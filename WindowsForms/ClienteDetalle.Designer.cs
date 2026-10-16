@@ -52,65 +52,65 @@
             // idLabel
             // 
             idLabel.AutoSize = true;
-            idLabel.Location = new Point(179, 71);
+            idLabel.Location = new Point(157, 53);
             idLabel.Margin = new Padding(2, 0, 2, 0);
             idLabel.Name = "idLabel";
-            idLabel.Size = new Size(22, 20);
+            idLabel.Size = new Size(17, 15);
             idLabel.TabIndex = 26;
             idLabel.Text = "Id";
             // 
             // idTextBox
             // 
-            idTextBox.Location = new Point(302, 71);
+            idTextBox.Location = new Point(264, 53);
             idTextBox.Margin = new Padding(2);
             idTextBox.Name = "idTextBox";
             idTextBox.ReadOnly = true;
-            idTextBox.Size = new Size(125, 27);
+            idTextBox.Size = new Size(110, 23);
             idTextBox.TabIndex = 14;
             idTextBox.TabStop = false;
             // 
             // emailLabel
             // 
             emailLabel.AutoSize = true;
-            emailLabel.Location = new Point(179, 208);
+            emailLabel.Location = new Point(157, 156);
             emailLabel.Margin = new Padding(2, 0, 2, 0);
             emailLabel.Name = "emailLabel";
-            emailLabel.Size = new Size(46, 20);
+            emailLabel.Size = new Size(36, 15);
             emailLabel.TabIndex = 24;
             emailLabel.Text = "Email";
             // 
             // emailTextBox
             // 
-            emailTextBox.Location = new Point(302, 208);
+            emailTextBox.Location = new Point(264, 156);
             emailTextBox.Margin = new Padding(2);
             emailTextBox.Name = "emailTextBox";
-            emailTextBox.Size = new Size(235, 27);
+            emailTextBox.Size = new Size(206, 23);
             emailTextBox.TabIndex = 19;
             // 
             // apellidoLabel
             // 
             apellidoLabel.AutoSize = true;
-            apellidoLabel.Location = new Point(179, 160);
+            apellidoLabel.Location = new Point(157, 120);
             apellidoLabel.Margin = new Padding(2, 0, 2, 0);
             apellidoLabel.Name = "apellidoLabel";
-            apellidoLabel.Size = new Size(66, 20);
+            apellidoLabel.Size = new Size(51, 15);
             apellidoLabel.TabIndex = 23;
             apellidoLabel.Text = "Apellido";
             // 
             // apellidoTextBox
             // 
-            apellidoTextBox.Location = new Point(302, 160);
+            apellidoTextBox.Location = new Point(264, 120);
             apellidoTextBox.Margin = new Padding(2);
             apellidoTextBox.Name = "apellidoTextBox";
-            apellidoTextBox.Size = new Size(125, 27);
+            apellidoTextBox.Size = new Size(110, 23);
             apellidoTextBox.TabIndex = 17;
             // 
             // cancelarButton
             // 
-            cancelarButton.Location = new Point(533, 383);
+            cancelarButton.Location = new Point(466, 287);
             cancelarButton.Margin = new Padding(2);
             cancelarButton.Name = "cancelarButton";
-            cancelarButton.Size = new Size(92, 29);
+            cancelarButton.Size = new Size(80, 22);
             cancelarButton.TabIndex = 22;
             cancelarButton.Text = "Cancelar";
             cancelarButton.UseVisualStyleBackColor = true;
@@ -118,10 +118,10 @@
             // 
             // aceptarButton
             // 
-            aceptarButton.Location = new Point(428, 383);
+            aceptarButton.Location = new Point(374, 287);
             aceptarButton.Margin = new Padding(2);
             aceptarButton.Name = "aceptarButton";
-            aceptarButton.Size = new Size(92, 29);
+            aceptarButton.Size = new Size(80, 22);
             aceptarButton.TabIndex = 20;
             aceptarButton.Text = "Aceptar";
             aceptarButton.UseVisualStyleBackColor = true;
@@ -130,38 +130,38 @@
             // nombreLabel
             // 
             nombreLabel.AutoSize = true;
-            nombreLabel.Location = new Point(179, 118);
+            nombreLabel.Location = new Point(157, 88);
             nombreLabel.Margin = new Padding(2, 0, 2, 0);
             nombreLabel.Name = "nombreLabel";
-            nombreLabel.Size = new Size(64, 20);
+            nombreLabel.Size = new Size(51, 15);
             nombreLabel.TabIndex = 18;
             nombreLabel.Text = "Nombre";
             // 
             // nombreTextBox
             // 
-            nombreTextBox.Location = new Point(302, 118);
+            nombreTextBox.Location = new Point(264, 88);
             nombreTextBox.Margin = new Padding(2);
             nombreTextBox.Name = "nombreTextBox";
-            nombreTextBox.Size = new Size(125, 27);
+            nombreTextBox.Size = new Size(110, 23);
             nombreTextBox.TabIndex = 16;
             // 
             // telefonoLabel
             // 
             telefonoLabel.AutoSize = true;
-            telefonoLabel.Location = new Point(179, 251);
+            telefonoLabel.Location = new Point(157, 188);
             telefonoLabel.Margin = new Padding(2, 0, 2, 0);
             telefonoLabel.Name = "telefonoLabel";
-            telefonoLabel.Size = new Size(67, 20);
+            telefonoLabel.Size = new Size(53, 15);
             telefonoLabel.TabIndex = 27;
             telefonoLabel.Text = "Teléfono";
             // 
             // passwordLabel
             // 
             passwordLabel.AutoSize = true;
-            passwordLabel.Location = new Point(179, 289);
+            passwordLabel.Location = new Point(157, 217);
             passwordLabel.Margin = new Padding(2, 0, 2, 0);
             passwordLabel.Name = "passwordLabel";
-            passwordLabel.Size = new Size(83, 20);
+            passwordLabel.Size = new Size(67, 15);
             passwordLabel.TabIndex = 28;
             passwordLabel.Text = "Contraseña";
             // 
@@ -171,47 +171,47 @@
             // 
             // telefonoTextBox
             // 
-            telefonoTextBox.Location = new Point(302, 251);
+            telefonoTextBox.Location = new Point(264, 188);
             telefonoTextBox.Margin = new Padding(2);
             telefonoTextBox.Name = "telefonoTextBox";
-            telefonoTextBox.Size = new Size(235, 27);
+            telefonoTextBox.Size = new Size(206, 23);
             telefonoTextBox.TabIndex = 29;
             // 
             // passwordTextBox
             // 
-            passwordTextBox.Location = new Point(302, 289);
+            passwordTextBox.Location = new Point(264, 217);
             passwordTextBox.Margin = new Padding(2);
             passwordTextBox.Name = "passwordTextBox";
             passwordTextBox.PasswordChar = '*';
-            passwordTextBox.Size = new Size(235, 27);
+            passwordTextBox.Size = new Size(206, 23);
             passwordTextBox.TabIndex = 30;
             // 
             // confirmarPasswordTextBox
             // 
-            confirmarPasswordTextBox.Location = new Point(302, 332);
+            confirmarPasswordTextBox.Location = new Point(264, 249);
             confirmarPasswordTextBox.Margin = new Padding(2);
             confirmarPasswordTextBox.Name = "confirmarPasswordTextBox";
             confirmarPasswordTextBox.PasswordChar = '*';
-            confirmarPasswordTextBox.Size = new Size(235, 27);
+            confirmarPasswordTextBox.Size = new Size(206, 23);
             confirmarPasswordTextBox.TabIndex = 32;
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(147, 332);
+            label1.Location = new Point(129, 249);
             label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
-            label1.Size = new Size(151, 20);
+            label1.Size = new Size(122, 15);
             label1.TabIndex = 31;
             label1.Text = "Confirmar contraseña";
             // 
             // ClienteDetalle
             // 
             AcceptButton = aceptarButton;
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             CancelButton = cancelarButton;
-            ClientSize = new Size(702, 433);
+            ClientSize = new Size(614, 325);
             Controls.Add(confirmarPasswordTextBox);
             Controls.Add(label1);
             Controls.Add(passwordTextBox);
@@ -229,6 +229,7 @@
             Controls.Add(nombreLabel);
             Controls.Add(nombreTextBox);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(3, 2, 3, 2);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "ClienteDetalle";

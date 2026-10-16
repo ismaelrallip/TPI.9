@@ -13,8 +13,8 @@ namespace WindowsForms
         {
             ApplicationConfiguration.Initialize();
             AuthServiceProvider.Register(new WindowsFormsAuthService());
-            System.Windows.Forms.Application.ThreadException += Application_ThreadException;
-            System.Windows.Forms.Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += Application_ThreadException;
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
 
             MainAsync();
         }
@@ -42,7 +42,7 @@ namespace WindowsForms
                     {
                         
                         var home = new HomeAdministrador();
-                        System.Windows.Forms.Application.Run(home);
+                        Application.Run(home);
 
                         
                         if (home.LogoutRequested)
@@ -63,9 +63,25 @@ namespace WindowsForms
                 }
                 else
                 {
-                    // Todavia no armamos la pantalla del Cliente.
-                    MessageBox.Show("La pantalla para Clientes todavia no esta disponible.", "Aviso",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    try
+                    {
+                        var home = new HomeCliente();
+                        Application.Run(home);
+
+                        if (home.LogoutRequested)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            return; // cerrar la app
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error en la aplicacion: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
                 }
             }
         }

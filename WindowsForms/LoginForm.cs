@@ -81,6 +81,7 @@ namespace WindowsForms
             cancelButton.Enabled = !loading;
             usernameTextBox.Enabled = !loading;
             passwordTextBox.Enabled = !loading;
+            registerButton.Enabled = !loading;
             loginButton.Text = loading ? "Verificando..." : "Iniciar sesión";
         }
         private async void registerButton_Click(object sender, EventArgs e)
@@ -109,6 +110,7 @@ namespace WindowsForms
                     "Registro",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
+                Close();
             }
             catch (Exception ex)
             {
