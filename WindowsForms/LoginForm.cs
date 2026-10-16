@@ -110,7 +110,6 @@ namespace WindowsForms
                     "Registro",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
-                Close();
             }
             catch (Exception ex)
             {
