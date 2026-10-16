@@ -80,5 +80,70 @@ namespace WindowsForms
             if (r == DialogResult.Yes && AuthServiceProvider.Current != null)
                 await AuthServiceProvider.Current.LogoutAsync();
         }
+
+        private void crearPedidoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                crearPedidoToolStripMenuItem.Enabled = false;
+                var session = AuthServiceProvider.Current?.CurrentSession;
+                if (session == null || session.ClienteId == null)
+                {
+                    MessageBox.Show("No se pudo obtener la información del cliente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                using var form = new AgregarEditarPedidoForm(session.ClienteId.Value);
+                if (form.ShowDialog(this) == DialogResult.OK)
+                {
+                    MessageBox.Show("Pedido creado correctamente.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"No se pudo crear el pedido: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                crearPedidoToolStripMenuItem.Enabled = true;
+            }
+        }
+
+        private void misPedidosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                misPedidosToolStripMenuItem.Enabled = false;
+                var session = AuthServiceProvider.Current?.CurrentSession;
+                if (session == null || session.ClienteId == null)
+                {
+                    MessageBox.Show("No se pudo obtener la información del cliente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                int clienteId = session.ClienteId.Value;
+
+                // Buscar una instancia ya abierta específica para este cliente
+                var existente = this.MdiChildren.OfType<PedidosForm>().FirstOrDefault(f => f.Tag?.ToString() == $"cliente_{clienteId}");
+                if (existente != null)
+                {
+                    existente.BringToFront();
+                    return;
+                }
+
+                var form = new PedidosForm(clienteId, true);
+                form.MdiParent = this;
+                form.Tag = $"cliente_{clienteId}";
+                form.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"No se pudieron obtener los pedidos: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                misPedidosToolStripMenuItem.Enabled = true;
+            }
+        }
     }
 }

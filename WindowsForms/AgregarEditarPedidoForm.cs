@@ -16,6 +16,9 @@ namespace WindowsForms
         private BindingList<DetallePedidoDTO> _detallesBinding;
         private decimal _precioDeliveryActual = 0;
         private bool _cargando;   // true mientras se arma el formulario: los eventos de los combos se ignoran
+        private bool _clienteBloqueado = false;
+        private int? _clienteBloqueadoId = null;
+        private bool _esVistaCliente = false;
 
         //  Constructor para ALTA (Nuevo Pedido)
         public AgregarEditarPedidoForm()
@@ -34,6 +37,15 @@ namespace WindowsForms
             this.Text = "Nuevo Pedido";
         }
 
+        // Constructor para ALTA con cliente preseleccionado y bloqueado (uso desde HomeCliente)
+        public AgregarEditarPedidoForm(int clienteId) : this()
+        {
+            _clienteBloqueado = true;
+            _clienteBloqueadoId = clienteId;
+            // Preasignamos el cliente al pedido actual para uso posterior
+            _pedidoActual.ClienteId = clienteId;
+        }
+
         // Constructor para MODIFICACIÓN (Editar Pedido existente)
         public AgregarEditarPedidoForm(PedidoDTO pedidoAEditar) : this()
         {
@@ -48,6 +60,12 @@ namespace WindowsForms
                 }
             }
             this.Text = $"Modificar Pedido #{_pedidoActual.Id}";
+        }
+
+        // Constructor para MODIFICACIÓN indicando que se abre en vista cliente (limita opciones)
+        public AgregarEditarPedidoForm(PedidoDTO pedidoAEditar, bool esVistaCliente) : this(pedidoAEditar)
+        {
+            _esVistaCliente = esVistaCliente;
         }
 
         private void ConfigurarColumnasGrilla()
@@ -69,14 +87,30 @@ namespace WindowsForms
 
             try
             {
-               
-                var clientesTask = ClienteApiClient.GetAllAsync();
                 var hamburguesasTask = HamburguesaApiClient.GetAllAsync();
                 var preciosDeliveryTask = PrecioDeliveryApiClient.GetByCriteriaAsync(null);
 
-                await Task.WhenAll(clientesTask, hamburguesasTask, preciosDeliveryTask);
+                // Si el formulario fue abierto para un cliente específico (alta bloqueada)
+                // o si es edición desde la vista cliente, no traemos todos los clientes.
+                List<DTOs.ClienteDTO> clientes = new();
+                if (_clienteBloqueado && _clienteBloqueadoId.HasValue)
+                {
+                    var c = await ClienteApiClient.GetAsync(_clienteBloqueadoId.Value);
+                    if (c != null) clientes.Add(c);
+                }
+                else if (_esEdicion && _esVistaCliente)
+                {
+                    // Traemos solo el cliente propietario del pedido
+                    var c = await ClienteApiClient.GetAsync(_pedidoActual.ClienteId);
+                    if (c != null) clientes.Add(c);
+                }
+                else
+                {
+                    var clientesTask = ClienteApiClient.GetAllAsync();
+                    var clientesResult = await clientesTask;
+                    clientes = clientesResult?.ToList() ?? new List<DTOs.ClienteDTO>();
+                }
 
-                var clientes = await clientesTask;
                 var hamburguesas = await hamburguesasTask;
                 var preciosDel = await preciosDeliveryTask;
 
@@ -119,6 +153,10 @@ namespace WindowsForms
                     
                     lblFechaValor.Text = _pedidoActual.Fecha.ToString("dd/MM/yyyy HH:mm");
                     cmbCliente.SelectedValue = _pedidoActual.ClienteId;
+                    if (_esVistaCliente)
+                    {
+                        cmbCliente.Enabled = false;
+                    }
                     cmbModalidad.SelectedItem = _pedidoActual.Modalidad;
 
                     bool esDelivery = _pedidoActual.Modalidad == ModalidadPedido.Delivery;
@@ -134,6 +172,13 @@ namespace WindowsForms
                     cmbModalidad.SelectedIndex = -1;
                     txtDireccion.Enabled = false;
                     txtDireccion.Clear();
+                }
+
+                // Si se pasó un cliente bloqueado desde el constructor, lo preseleccionamos
+                if (!_esEdicion && _clienteBloqueado && _clienteBloqueadoId.HasValue)
+                {
+                    cmbCliente.SelectedValue = _clienteBloqueadoId.Value;
+                    cmbCliente.Enabled = false; // no permitir cambiar
                 }
 
                 RecalcularTotal();
@@ -176,10 +221,13 @@ namespace WindowsForms
         }
         private async void btnGuardar_Click(object sender, EventArgs e)
         {
-            if (cmbCliente.SelectedValue == null)
+            if (!_clienteBloqueado)
             {
-                MessageBox.Show("Debe seleccionar un cliente.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                if (cmbCliente.SelectedValue == null)
+                {
+                    MessageBox.Show("Debe seleccionar un cliente.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
             }
 
             if (cmbModalidad.SelectedItem == null)
@@ -201,7 +249,15 @@ namespace WindowsForms
                 return;
             }
 
-            _pedidoActual.ClienteId = (int)cmbCliente.SelectedValue;
+            // Si el cliente está bloqueado (vista desde HomeCliente), usamos ese cliente
+            if (_clienteBloqueado && _clienteBloqueadoId.HasValue)
+            {
+                _pedidoActual.ClienteId = _clienteBloqueadoId.Value;
+            }
+            else
+            {
+                _pedidoActual.ClienteId = (int)cmbCliente.SelectedValue;
+            }
             _pedidoActual.Modalidad = modalidad;
 
             if (modalidad == ModalidadPedido.Delivery)

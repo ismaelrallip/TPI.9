@@ -57,12 +57,14 @@
             crearPedidoToolStripMenuItem.Name = "crearPedidoToolStripMenuItem";
             crearPedidoToolStripMenuItem.Size = new Size(87, 20);
             crearPedidoToolStripMenuItem.Text = "Crear Pedido";
+            crearPedidoToolStripMenuItem.Click += crearPedidoToolStripMenuItem_Click;
             // 
             // misPedidosToolStripMenuItem
             // 
             misPedidosToolStripMenuItem.Name = "misPedidosToolStripMenuItem";
             misPedidosToolStripMenuItem.Size = new Size(83, 20);
             misPedidosToolStripMenuItem.Text = "Mis Pedidos";
+            misPedidosToolStripMenuItem.Click += misPedidosToolStripMenuItem_Click;
             // 
             // cerrarSesionToolStripMenuItem
             // 

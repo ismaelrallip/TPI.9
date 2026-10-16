@@ -15,6 +15,8 @@ namespace WindowsForms
         private List<PedidoDTO> _pedidosCache = new();
 
         private bool _estaCargando = false;
+        private int? _clienteIdFilter = null;
+        private bool _esVistaCliente = false;
 
         public PedidosForm()
         {
@@ -22,9 +24,20 @@ namespace WindowsForms
             ConfigurarColumnas();
         }
 
+        // Constructor para vista enfocada en un cliente (clienteId) y para desactivar opciones de admin
+        public PedidosForm(int? clienteId = null, bool esVistaCliente = false) : this()
+        {
+            _clienteIdFilter = clienteId;
+            _esVistaCliente = esVistaCliente;
+        }
+
         private async void PedidosForm_Load(object sender, EventArgs e)
         {
             ConfigurarControlesFiltro();
+            // Ajustar visibilidad de botones administrativos si esta es la vista de cliente
+            btnAvanzarEstado.Visible = !_esVistaCliente;
+            btnAsignarDelivery.Visible = !_esVistaCliente;
+
             await LoadPedidos();
         }
 
@@ -109,10 +122,18 @@ namespace WindowsForms
                 dateTimePickerFiltro.Enabled = false;
                 comboBoxFiltro.Enabled = false;
 
-                // Consultamos al servidor. 
-                // Ya no filtramos en memoria con .Where(); la API nos devuelve la lista exacta y lista para mostrar.
-                var resultado = await PedidoApiClient.GetByFiltroAsync(fechaSeleccionada, modalidad);
-                _pedidosCache = resultado?.ToList() ?? new List<PedidoDTO>();
+                // Consultamos al servidor. Si tenemos un cliente específico, pedimos sólo sus pedidos.
+                if (_clienteIdFilter.HasValue)
+                {
+                    var resultado = await PedidoApiClient.GetByClienteIdAsync(_clienteIdFilter.Value);
+                    _pedidosCache = resultado?.ToList() ?? new List<PedidoDTO>();
+                }
+                else
+                {
+                    // Ya no filtramos en memoria con .Where(); la API nos devuelve la lista exacta y lista para mostrar.
+                    var resultado = await PedidoApiClient.GetByFiltroAsync(fechaSeleccionada, modalidad);
+                    _pedidosCache = resultado?.ToList() ?? new List<PedidoDTO>();
+                }
 
                 _estaCargando = false;
                 MostrarPedidos(); // Solo mapea y proyecta los datos ya filtrados en la grilla
@@ -192,6 +213,17 @@ namespace WindowsForms
             btnCancelarPedido.Enabled = false;
             btnAvanzarEstado.Text = "Avanzar Estado";
             btnModificarPedido.Enabled = false;
+            // Si esta vista es para cliente, ocultamos botones administrativos
+            if (_esVistaCliente)
+            {
+                btnAvanzarEstado.Visible = false;
+                btnAsignarDelivery.Visible = false;
+            }
+            else
+            {
+                btnAvanzarEstado.Visible = true;
+                btnAsignarDelivery.Visible = true;
+            }
         }
 
         private void ActualizarBotonera(PedidoDTO pedido)
@@ -205,6 +237,13 @@ namespace WindowsForms
             {
                 btnCancelarPedido.Enabled = true;
                 btnModificarPedido.Enabled = true;
+
+                if (_esVistaCliente)
+                {
+                    // Clientes pueden cancelar/modificar solo si está pendiente, pero no otras acciones
+                    btnAsignarDelivery.Enabled = false;
+                    btnAvanzarEstado.Enabled = false;
+                }
 
                 if (pedido.Modalidad == ModalidadPedido.Delivery)
                 {
@@ -256,6 +295,7 @@ namespace WindowsForms
 
         private async void btnAvanzarEstado_Click(object sender, EventArgs e)
         {
+            if (_esVistaCliente) return; // no permitir en vista cliente
             if (dataGridViewPedidos.SelectedRows.Count == 0 || btnAvanzarEstado.Tag == null) return;
             int idPedido = (int)dataGridViewPedidos.SelectedRows[0].Cells["Id"].Value;
             var pedido = _pedidosCache.First(p => p.Id == idPedido);
@@ -295,6 +335,12 @@ namespace WindowsForms
             int idPedido = (int)dataGridViewPedidos.SelectedRows[0].Cells["Id"].Value;
             var pedido = _pedidosCache.First(p => p.Id == idPedido);
 
+            if (_esVistaCliente && pedido.Estado != EstadoPedido.Pendiente)
+            {
+                MessageBox.Show("Solo se pueden cancelar pedidos en estado Pendiente.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var confirmar = MessageBox.Show($"¿Estás seguro que deseas cancelar el pedido #{pedido.Id}?", "Cancelar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (confirmar != DialogResult.Yes) return;
 
@@ -312,6 +358,7 @@ namespace WindowsForms
 
         private async void btnAsignarDelivery_Click(object sender, EventArgs e)
         {
+            if (_esVistaCliente) return; // no permitir asignar delivery en vista cliente
             if (dataGridViewPedidos.SelectedRows.Count == 0) return;
             int idPedido = (int)dataGridViewPedidos.SelectedRows[0].Cells["Id"].Value;
             var pedido = _pedidosCache.First(p => p.Id == idPedido);
@@ -324,7 +371,8 @@ namespace WindowsForms
         }
         private async void btnNuevoPedido_Click(object sender, EventArgs e)
         {
-            using var form = new AgregarEditarPedidoForm();
+            // Si estamos en vista de cliente, preseleccionamos y bloqueamos el cliente
+            using var form = _clienteIdFilter.HasValue ? new AgregarEditarPedidoForm(_clienteIdFilter.Value) : new AgregarEditarPedidoForm();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 await LoadPedidos();
@@ -333,29 +381,36 @@ namespace WindowsForms
 
         private async void btnModificarPedido_Click(object sender, EventArgs e)
         {
-            
             if (dataGridViewPedidos.SelectedRows.Count == 0) return;
 
-            
             int idPedido = (int)dataGridViewPedidos.SelectedRows[0].Cells["Id"].Value;
 
-            
             var pedidoSeleccionado = _pedidosCache.FirstOrDefault(p => p.Id == idPedido);
 
             if (pedidoSeleccionado == null) return;
 
-            
             if (pedidoSeleccionado.Estado != EstadoPedido.Pendiente)
             {
                 MessageBox.Show("Solo se pueden modificar pedidos en estado Pendiente.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            
-            using var form = new AgregarEditarPedidoForm(pedidoSeleccionado);
-            if (form.ShowDialog() == DialogResult.OK)
+            // Si es vista cliente, abrimos el formulario en modo cliente para bloquear cambios de cliente y opciones admin
+            if (_esVistaCliente)
             {
-                await LoadPedidos();
+                using var form = new AgregarEditarPedidoForm(pedidoSeleccionado, true);
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    await LoadPedidos();
+                }
+            }
+            else
+            {
+                using var form = new AgregarEditarPedidoForm(pedidoSeleccionado);
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    await LoadPedidos();
+                }
             }
         }
     }
