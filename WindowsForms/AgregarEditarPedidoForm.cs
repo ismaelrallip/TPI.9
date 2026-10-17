@@ -150,13 +150,15 @@ namespace WindowsForms
 
                 if (_esEdicion)
                 {
-                    
                     lblFechaValor.Text = _pedidoActual.Fecha.ToString("dd/MM/yyyy HH:mm");
                     cmbCliente.SelectedValue = _pedidoActual.ClienteId;
+
                     if (_esVistaCliente)
                     {
-                        cmbCliente.Enabled = false;
+                        cmbCliente.Visible = false; // Oculta el selector
+                        label1.Visible = false;     // Oculta el texto "Cliente:"
                     }
+
                     cmbModalidad.SelectedItem = _pedidoActual.Modalidad;
 
                     bool esDelivery = _pedidoActual.Modalidad == ModalidadPedido.Delivery;
@@ -166,7 +168,6 @@ namespace WindowsForms
                 }
                 else
                 {
-                    
                     lblFechaValor.Text = DateTime.Now.ToString("dd/MM/yyyy");
                     cmbCliente.SelectedIndex = -1;
                     cmbModalidad.SelectedIndex = -1;
@@ -174,11 +175,12 @@ namespace WindowsForms
                     txtDireccion.Clear();
                 }
 
-                // Si se pasó un cliente bloqueado desde el constructor, lo preseleccionamos
+                // Si se pasó un cliente bloqueado desde el constructor (Alta en vista cliente)
                 if (!_esEdicion && _clienteBloqueado && _clienteBloqueadoId.HasValue)
                 {
                     cmbCliente.SelectedValue = _clienteBloqueadoId.Value;
-                    cmbCliente.Enabled = false; // no permitir cambiar
+                    cmbCliente.Visible = false; // Oculta el selector
+                    label1.Visible = false;     // Oculta el texto "Cliente:"
                 }
 
                 RecalcularTotal();
