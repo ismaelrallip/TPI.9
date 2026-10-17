@@ -81,6 +81,12 @@ namespace WindowsForms
 
         private async void AgregarEditarPedidoForm_Load(object sender, EventArgs e)
         {
+            if (_esVistaCliente || _clienteBloqueado)
+            {
+                cmbCliente.Visible = false;
+                label1.Visible = false;
+            }
+
             _cargando = true;
             this.Enabled = false;          // bloquea botones, listas y todo lo que se pueda tocar hasta terminar de cargar
             this.UseWaitCursor = true;     // cursor de espera
