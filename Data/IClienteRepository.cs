@@ -13,5 +13,6 @@ namespace Data
         Task<bool> EmailExistsAsync(string email, int? excludeId = null);
         Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null);
         Task<Cliente?> GetByEmailAsync(string email);
+        Task<bool> DeactivateAsync(int id, string comentarioFinal);
     }
 }

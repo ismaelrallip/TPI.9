@@ -42,6 +42,12 @@ namespace Application.Services
 
             var pedido = new Pedido(0, fechaPedido, direccionFinal, dto.Modalidad, dto.ClienteId);
 
+            // Asignar comentario si viene desde DTO
+            if (!string.IsNullOrWhiteSpace(dto.Comentario))
+            {
+                pedido.SetComentario(dto.Comentario);
+            }
+
             if (dto.Modalidad == ModalidadPedido.Delivery && dto.DeliveryId.HasValue)
             {
                 pedido.SetDelivery(dto.DeliveryId.Value);
@@ -181,6 +187,12 @@ namespace Application.Services
             return pedidos.Select(p => MapToDTO(p)).ToList();
         }
 
+        public async Task<IEnumerable<PedidoDTO>> GetByClienteIdAsync(int clienteId, DateTime? fecha, ModalidadPedido? modalidad)
+        {
+            var pedidos = await _pedidoRepository.GetByClienteIdAsync(clienteId, fecha, modalidad);
+            return pedidos.Select(p => MapToDTO(p)).ToList();
+        }
+
         public async Task<IEnumerable<PedidoDTO>> GetByDeliveryIdAsync(int deliveryId)
         {
             var pedidos = await _pedidoRepository.GetByDeliveryIdAsync(deliveryId);
@@ -200,6 +212,7 @@ namespace Application.Services
                 Id = pedido.Id,
                 ClienteId = pedido.ClienteId,
                 ClienteNombre = pedido.Cliente != null ? $"{pedido.Cliente.Nombre} {pedido.Cliente.Apellido}" : null,
+                ClienteActivo = pedido.Cliente != null ? pedido.Cliente.Activo : false,
                 DeliveryId = pedido.DeliveryId,
                 DeliveryNombre = pedido.Delivery != null ? $"{pedido.Delivery.Nombre} {pedido.Delivery.Apellido}" : null,
                 Fecha = pedido.Fecha,

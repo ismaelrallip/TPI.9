@@ -96,12 +96,17 @@ namespace API.Clients
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al eliminar el pedido.", ex); }
         }
 
-        public static async Task<IEnumerable<PedidoDTO>> GetByClienteIdAsync(int clienteId)
+        public static async Task<IEnumerable<PedidoDTO>> GetByClienteIdAsync(int clienteId, DateTime? fecha = null, ModalidadPedido? modalidad = null)
         {
             try
             {
+                var parametros = new List<string>();
+                if (fecha.HasValue) parametros.Add($"fecha={fecha.Value:yyyy-MM-dd}");
+                if (modalidad.HasValue) parametros.Add($"modalidad={modalidad.Value}");
+                var url = "pedidos/cliente/" + clienteId + (parametros.Count > 0 ? "?" + string.Join("&", parametros) : string.Empty);
+
                 using var client = await CreateHttpClientAsync();
-                var response = await client.GetAsync("pedidos/cliente/" + clienteId);
+                var response = await client.GetAsync(url);
                 await HandleAuthorizationAsync(response);
                 if (!response.IsSuccessStatusCode)
                 {

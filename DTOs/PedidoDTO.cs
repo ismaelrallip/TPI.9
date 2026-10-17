@@ -21,6 +21,7 @@ namespace DTOs
         public decimal PrecioTotal { get; set; }
         public int ClienteId { get; set; }
         public string? ClienteNombre { get; set; }
+        public bool ClienteActivo { get; set; }
         public int? DeliveryId { get; set; }
         public string? DeliveryNombre { get; set; }
         public List<DetallePedidoDTO> DetallesPedido { get; set; } = new List<DetallePedidoDTO>();

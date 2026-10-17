@@ -127,6 +127,31 @@ namespace Data
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Pedido>> GetByClienteIdAsync(int clienteId, DateTime? fecha, ModalidadPedido? modalidad)
+        {
+            var query = context.Pedidos
+                .Where(p => p.ClienteId == clienteId)
+                .Include(p => p.Cliente)
+                .Include(p => p.Delivery)
+                .Include(p => p.DetallePedido)
+                    .ThenInclude(dp => dp.Hamburguesa)
+                .AsQueryable();
+
+            if (fecha.HasValue)
+            {
+                var desde = fecha.Value.Date;
+                var hasta = desde.AddDays(1);
+                query = query.Where(p => p.Fecha >= desde && p.Fecha < hasta);
+            }
+
+            if (modalidad.HasValue)
+            {
+                query = query.Where(p => p.Modalidad == modalidad.Value);
+            }
+
+            return await query.OrderByDescending(p => p.Fecha).ToListAsync();
+        }
+
         public async Task<IEnumerable<Pedido>> GetByDeliveryIdAsync(int deliveryId)
         {
             return await context.Pedidos

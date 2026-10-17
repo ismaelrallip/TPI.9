@@ -129,7 +129,7 @@ namespace WebAPI
             .RequireAuthorization("AdminOnly")
             .WithOpenApi();
 
-            app.MapGet("/pedidos/cliente/{clienteId:int}", async (int clienteId, ClaimsPrincipal user, IPedidoService pedidoService) =>
+            app.MapGet("/pedidos/cliente/{clienteId:int}", async (int clienteId, DateTime? fecha, ModalidadPedido? modalidad, ClaimsPrincipal user, IPedidoService pedidoService) =>
             {
                 bool esAdmin = user.IsInRole("Administrador");
                 bool esClienteAutorizado = user.IsInRole("Cliente") && TryGetClienteId(user, out var authenticatedClienteId) && authenticatedClienteId == clienteId;
@@ -139,7 +139,7 @@ namespace WebAPI
                     return Results.Forbid();
                 }
 
-                var dtos = await pedidoService.GetByClienteIdAsync(clienteId);
+                var dtos = await pedidoService.GetByClienteIdAsync(clienteId, fecha, modalidad);
                 return Results.Ok(dtos);
             })
             .WithName("GetPedidosByCliente")

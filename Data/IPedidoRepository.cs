@@ -16,6 +16,7 @@ namespace Data
         Task<bool> UpdateAsync(Pedido pedido);
         Task<Pedido?> GetByIdWithDetailsAsync(int id);
         Task<IEnumerable<Pedido>> GetByClienteIdAsync(int clienteId);
+        Task<IEnumerable<Pedido>> GetByClienteIdAsync(int clienteId, DateTime? fecha, ModalidadPedido? modalidad);
         Task<IEnumerable<Pedido>> GetByDeliveryIdAsync(int deliveryId);
         Task<IEnumerable<Pedido>> GetByEstadoAsync(EstadoPedido estado);
         Task<IEnumerable<Pedido>> GetByFiltroAsync(DateTime? fecha, ModalidadPedido? modalidad);

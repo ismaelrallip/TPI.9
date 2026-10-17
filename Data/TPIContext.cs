@@ -54,6 +54,7 @@ namespace Data
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.Property(e => e.Telefono).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Password).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Activo).IsRequired().HasDefaultValue(true);
             });
 
             modelBuilder.Entity<Delivery>(entity =>

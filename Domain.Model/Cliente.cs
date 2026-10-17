@@ -10,6 +10,7 @@ namespace Domain.Model
         public string Email { get; private set; }
         public string Telefono { get; private set; }
         public string Password { get; private set; }
+        public bool Activo { get; private set; } = true;
         public ICollection<Pedido> Pedidos { get; private set; } = new List<Pedido>();
 
         public Cliente(int id, string nombre, string apellido, string email, string telefono, string password)
@@ -77,6 +78,11 @@ namespace Domain.Model
         {
             if (string.IsNullOrWhiteSpace(password) || password.Length < PasswordMinLength)
                 throw new ArgumentException($"La contraseña es obligatoria y debe tener al menos {PasswordMinLength} caracteres.", nameof(password));
+        }
+
+        public void SetActivo(bool activo)
+        {
+            Activo = activo;
         }
     }
 }

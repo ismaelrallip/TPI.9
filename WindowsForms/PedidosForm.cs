@@ -51,6 +51,7 @@ namespace WindowsForms
             AgregarColumna(dataGridViewPedidos, "Id", "Id", 50);
             AgregarColumna(dataGridViewPedidos, "Fecha", "Fecha", 120);
             AgregarColumna(dataGridViewPedidos, "Cliente", "Cliente", 130);
+            AgregarColumna(dataGridViewPedidos, "ClienteActivo", "Cliente Activo", 80);
             AgregarColumna(dataGridViewPedidos, "Modalidad", "Modalidad", 90);
             AgregarColumna(dataGridViewPedidos, "Estado", "Estado", 90);
             AgregarColumna(dataGridViewPedidos, "Direccion", "Dirección", 140);
@@ -129,7 +130,7 @@ namespace WindowsForms
                 // Consultamos al servidor. Si tenemos un cliente específico, pedimos sólo sus pedidos.
                 if (_clienteIdFilter.HasValue)
                 {
-                    var resultado = await PedidoApiClient.GetByClienteIdAsync(_clienteIdFilter.Value);
+                    var resultado = await PedidoApiClient.GetByClienteIdAsync(_clienteIdFilter.Value, fechaSeleccionada, modalidad);
                     _pedidosCache = resultado?.ToList() ?? new List<PedidoDTO>();
                 }
                 else
@@ -163,6 +164,7 @@ namespace WindowsForms
                 Id = p.Id,
                 Fecha = p.Fecha.ToString("dd/MM/yyyy HH:mm"),
                 Cliente = p.ClienteNombre ?? "-",
+                ClienteActivo = p.ClienteActivo ? "Activo" : "Inactivo",
                 Modalidad = p.Modalidad.ToString(),
                 Estado = p.Estado.ToString(),
                 Direccion = p.Direccion ?? "-",

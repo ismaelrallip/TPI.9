@@ -80,26 +80,17 @@ namespace WindowsForms
                 }
 
                 // Buscar si ya existe una instancia abierta de Perfil
-                var existente = this.MdiChildren.OfType<ClienteDetalle>().FirstOrDefault();
+                var existente = this.MdiChildren.OfType<PerfilCliente>().FirstOrDefault();
                 if (existente != null)
                 {
                     existente.BringToFront();
                     return;
                 }
 
-                var cliente = await ClienteApiClient.GetAsync(session.ClienteId.Value);
-
-                var detalle = new ClienteDetalle(FormMode.Update, cliente) { EsRegistro = false };
+                var detalle = new PerfilCliente();
                 detalle.MdiParent = this;
                 detalle.FormBorderStyle = FormBorderStyle.None;
                 detalle.Dock = DockStyle.Fill;
-
-                // Escuchar el cierre para refrescar la etiqueta con el nombre si se actualizó
-                detalle.FormClosed += (s, ev) =>
-                {
-                    if (_etiquetaCliente != null && cliente != null)
-                        _etiquetaCliente.Text = $"{cliente.Nombre} {cliente.Apellido}";
-                };
 
                 detalle.Show();
             }

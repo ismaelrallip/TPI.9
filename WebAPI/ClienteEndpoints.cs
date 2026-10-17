@@ -88,7 +88,7 @@ namespace WebAPI
             {
                 if (!PuedeAdministrarOAccederAlCliente(user, id))
                     return Results.Forbid();
-
+                // Deprecated: prefer eliminar con verificación de contraseña desde el cliente.
                 var deleted = await clienteService.DeleteAsync(id);
 
                 if (!deleted)
@@ -101,6 +101,57 @@ namespace WebAPI
             .WithName("DeleteCliente")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .WithOpenApi();
+
+            app.MapPost("/clientes/{id}/change-password", async (int id, DTOs.ChangePasswordRequest req, ClaimsPrincipal user, IClienteService clienteService) =>
+            {
+                if (!PuedeAdministrarOAccederAlCliente(user, id))
+                    return Results.Forbid();
+
+                try
+                {
+                    await clienteService.ChangePasswordAsync(id, req.CurrentPassword, req.NewPassword);
+                    return Results.NoContent();
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+            })
+            .WithName("ChangePassword")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status403Forbidden)
+            .RequireAuthorization()
+            .WithOpenApi();
+
+            app.MapPost("/clientes/{id}/delete", async (int id, DTOs.DeleteAccountRequest req, ClaimsPrincipal user, IClienteService clienteService) =>
+            {
+                if (!PuedeAdministrarOAccederAlCliente(user, id))
+                    return Results.Forbid();
+
+                try
+                {
+                    var deleted = await clienteService.DeleteWithPasswordAsync(id, req.CurrentPassword);
+                    if (!deleted) return Results.NotFound();
+                    return Results.NoContent();
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { mensaje = ex.Message });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // Pedido en curso u otra restricción: devolver mensaje claro al cliente
+                    return Results.UnprocessableEntity(new { mensaje = ex.Message });
+                }
+            })
+            .WithName("DeleteClienteWithPassword")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status422UnprocessableEntity)
+            .RequireAuthorization()
             .WithOpenApi();
 
             app.MapGet("/clientes/criteria", async (string texto, IClienteService clienteService) =>

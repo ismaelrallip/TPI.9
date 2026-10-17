@@ -29,6 +29,7 @@ namespace WindowsForms
             clientesDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Apellido", HeaderText = "Apellido", DataPropertyName = "Apellido", Width = 150 });
             clientesDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Email", HeaderText = "Email", DataPropertyName = "Email", Width = 240 });
             clientesDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Telefono", HeaderText = "Teléfono", DataPropertyName = "Telefono", Width = 140 });
+            clientesDataGridView.Columns.Add(new DataGridViewCheckBoxColumn { Name = "Activo", HeaderText = "Activo", DataPropertyName = "Activo", Width = 60 });
         }
 
         private async void ClienteLista_Load(object sender, EventArgs e)

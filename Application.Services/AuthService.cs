@@ -59,6 +59,12 @@ namespace Application.Services
                 return null;
             }
 
+            // No permitir login si el cliente está inactivo (baja lógica)
+            if (!cliente.Activo)
+            {
+                return null; // se tratará como credenciales inválidas / no autorizado
+            }
+
             return CreateLoginResponse(cliente.Email, "Cliente", cliente.Id);
         }
 

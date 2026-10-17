@@ -32,6 +32,37 @@ namespace Data
             return false;
         }
 
+        public async Task<bool> DeactivateAsync(int id, string comentarioFinal)
+        {
+            var cliente = await context.Clientes
+                .Include(c => c.Pedidos)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (cliente == null) return false;
+
+            // Bloquear si existen pedidos en estados que impiden la baja
+            var estadosBloqueo = new[] { EstadoPedido.Pendiente, EstadoPedido.Listo, EstadoPedido.Asignado, EstadoPedido.EnCamino };
+            var pedidosBloqueantes = cliente.Pedidos.Where(p => estadosBloqueo.Contains(p.Estado)).ToList();
+            if (pedidosBloqueantes.Any())
+            {
+                throw new InvalidOperationException("No se puede eliminar la cuenta porque existen pedidos en curso.");
+            }
+
+            // Para pedidos en EnProceso (Procesando) los cancelamos y agregamos comentario final
+            var pedidosParaCancelar = cliente.Pedidos.Where(p => p.Estado == EstadoPedido.EnProceso).ToList();
+            foreach (var pedido in pedidosParaCancelar)
+            {
+                pedido.SetEstado(EstadoPedido.Cancelado);
+                var texto = string.IsNullOrWhiteSpace(pedido.ComentarioFinal) ? comentarioFinal : pedido.ComentarioFinal + " | " + comentarioFinal;
+                pedido.SetComentarioFinal(texto);
+            }
+
+            cliente.SetActivo(false);
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<Cliente?> GetAsync(int id)
         {
             return await context.Clientes.FindAsync(id);

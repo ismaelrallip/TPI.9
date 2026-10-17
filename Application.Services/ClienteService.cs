@@ -55,7 +55,8 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = null // no expone contraseña
+                Password = null, // no expone contraseña
+                Activo = cliente.Activo
             };
         }
 
@@ -69,7 +70,8 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = null // no expone contraseña
+                Password = null, // no expone contraseña
+                Activo = cliente.Activo
             }).ToList();
         }
 
@@ -108,6 +110,34 @@ namespace Application.Services
             // Persistir cambios
             return await clienteRepository.UpdateAsync(existing);
         }
+        public async Task ChangePasswordAsync(int id, string currentPassword, string newPassword)
+        {
+            Cliente.ValidarPassword(newPassword);
+
+            var existing = await clienteRepository.GetAsync(id);
+            if (existing == null) throw new InvalidOperationException("Cliente no encontrado.");
+
+            if (!PasswordHasher.Verify(currentPassword, existing.Password))
+                throw new ArgumentException("La contraseña actual no es correcta.");
+
+            existing.SetPassword(PasswordHasher.Hash(newPassword));
+
+            await clienteRepository.UpdateAsync(existing);
+        }
+
+        public async Task<bool> DeleteWithPasswordAsync(int id, string currentPassword)
+        {
+            var existing = await clienteRepository.GetAsync(id);
+            if (existing == null) return false;
+
+            if (!PasswordHasher.Verify(currentPassword, existing.Password))
+                throw new ArgumentException("La contraseña actual no es correcta.");
+
+            // Comentario que se agregará a pedidos cancelados
+            const string comentarioFinal = "Cuenta eliminada por el usuario.";
+
+            return await clienteRepository.DeactivateAsync(id, comentarioFinal);
+        }
         public async Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(ClienteCriteriaDTO criteria)
         {
             var domainCriteria = new ClienteCriteria(criteria.Texto);
@@ -120,7 +150,8 @@ namespace Application.Services
                 Apellido = cliente.Apellido,
                 Email = cliente.Email,
                 Telefono = cliente.Telefono,
-                Password = null // no expone contraseña
+                Password = null, // no expone contraseña
+                Activo = cliente.Activo
             }).ToList();
         }
     }
