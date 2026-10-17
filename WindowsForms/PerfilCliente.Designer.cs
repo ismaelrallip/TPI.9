@@ -46,81 +46,87 @@
             ConfirmarContraseñaLabel = new Label();
             aceptarButton = new Button();
             cancelButton = new Button();
+            editarPerfilButton = new Button();
             SuspendLayout();
             // 
             // nombreLabel
             // 
             nombreLabel.AutoSize = true;
-            nombreLabel.Location = new Point(48, 27);
+            nombreLabel.Location = new Point(55, 36);
             nombreLabel.Name = "nombreLabel";
-            nombreLabel.Size = new Size(51, 15);
+            nombreLabel.Size = new Size(64, 20);
             nombreLabel.TabIndex = 0;
             nombreLabel.Text = "Nombre";
             // 
             // nombreTextBox
             // 
             nombreTextBox.Enabled = false;
-            nombreTextBox.Location = new Point(178, 27);
+            nombreTextBox.Location = new Point(203, 36);
+            nombreTextBox.Margin = new Padding(3, 4, 3, 4);
             nombreTextBox.Name = "nombreTextBox";
-            nombreTextBox.Size = new Size(218, 23);
+            nombreTextBox.Size = new Size(249, 27);
             nombreTextBox.TabIndex = 1;
             // 
             // apellidoLabel
             // 
             apellidoLabel.AutoSize = true;
-            apellidoLabel.Location = new Point(48, 64);
+            apellidoLabel.Location = new Point(55, 85);
             apellidoLabel.Name = "apellidoLabel";
-            apellidoLabel.Size = new Size(51, 15);
+            apellidoLabel.Size = new Size(66, 20);
             apellidoLabel.TabIndex = 2;
             apellidoLabel.Text = "Apellido";
             // 
             // emailLabel
             // 
             emailLabel.AutoSize = true;
-            emailLabel.Location = new Point(48, 107);
+            emailLabel.Location = new Point(55, 143);
             emailLabel.Name = "emailLabel";
-            emailLabel.Size = new Size(36, 15);
+            emailLabel.Size = new Size(46, 20);
             emailLabel.TabIndex = 3;
             emailLabel.Text = "Email";
             // 
             // telefonoLabel
             // 
             telefonoLabel.AutoSize = true;
-            telefonoLabel.Location = new Point(48, 146);
+            telefonoLabel.Location = new Point(55, 195);
             telefonoLabel.Name = "telefonoLabel";
-            telefonoLabel.Size = new Size(53, 15);
+            telefonoLabel.Size = new Size(67, 20);
             telefonoLabel.TabIndex = 4;
             telefonoLabel.Text = "Teléfono";
             // 
             // ApellidoTextBox
             // 
             ApellidoTextBox.Enabled = false;
-            ApellidoTextBox.Location = new Point(178, 64);
+            ApellidoTextBox.Location = new Point(203, 85);
+            ApellidoTextBox.Margin = new Padding(3, 4, 3, 4);
             ApellidoTextBox.Name = "ApellidoTextBox";
-            ApellidoTextBox.Size = new Size(218, 23);
+            ApellidoTextBox.Size = new Size(249, 27);
             ApellidoTextBox.TabIndex = 5;
             // 
             // emailTextBox
             // 
             emailTextBox.Enabled = false;
-            emailTextBox.Location = new Point(178, 107);
+            emailTextBox.Location = new Point(203, 143);
+            emailTextBox.Margin = new Padding(3, 4, 3, 4);
             emailTextBox.Name = "emailTextBox";
-            emailTextBox.Size = new Size(218, 23);
+            emailTextBox.Size = new Size(249, 27);
             emailTextBox.TabIndex = 6;
             // 
             // telefonoTextBox
             // 
             telefonoTextBox.Enabled = false;
-            telefonoTextBox.Location = new Point(178, 146);
+            telefonoTextBox.Location = new Point(203, 195);
+            telefonoTextBox.Margin = new Padding(3, 4, 3, 4);
             telefonoTextBox.Name = "telefonoTextBox";
-            telefonoTextBox.Size = new Size(218, 23);
+            telefonoTextBox.Size = new Size(249, 27);
             telefonoTextBox.TabIndex = 7;
             // 
             // cambiarContraseñaButton
             // 
-            cambiarContraseñaButton.Location = new Point(402, 340);
+            cambiarContraseñaButton.Location = new Point(237, 453);
+            cambiarContraseñaButton.Margin = new Padding(3, 4, 3, 4);
             cambiarContraseñaButton.Name = "cambiarContraseñaButton";
-            cambiarContraseñaButton.Size = new Size(137, 23);
+            cambiarContraseñaButton.Size = new Size(157, 31);
             cambiarContraseñaButton.TabIndex = 9;
             cambiarContraseñaButton.Text = "Cambiar Contraseña";
             cambiarContraseñaButton.UseVisualStyleBackColor = true;
@@ -130,9 +136,10 @@
             // 
             eliminarButton.BackColor = Color.Red;
             eliminarButton.ForeColor = SystemColors.ControlLightLight;
-            eliminarButton.Location = new Point(545, 340);
+            eliminarButton.Location = new Point(456, 453);
+            eliminarButton.Margin = new Padding(3, 4, 3, 4);
             eliminarButton.Name = "eliminarButton";
-            eliminarButton.Size = new Size(102, 23);
+            eliminarButton.Size = new Size(117, 31);
             eliminarButton.TabIndex = 10;
             eliminarButton.Text = "Eliminar Perfil";
             eliminarButton.UseVisualStyleBackColor = false;
@@ -141,76 +148,101 @@
             // contraseñaActualLabel
             // 
             contraseñaActualLabel.AutoSize = true;
-            contraseñaActualLabel.Location = new Point(48, 188);
+            contraseñaActualLabel.Location = new Point(55, 251);
             contraseñaActualLabel.Name = "contraseñaActualLabel";
-            contraseñaActualLabel.Size = new Size(102, 15);
+            contraseñaActualLabel.Size = new Size(127, 20);
             contraseñaActualLabel.TabIndex = 11;
             contraseñaActualLabel.Text = "Contraseña actual";
+            contraseñaActualLabel.Visible = false;
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(46, 230);
+            label1.Location = new Point(53, 307);
             label1.Name = "label1";
-            label1.Size = new Size(104, 15);
+            label1.Size = new Size(129, 20);
             label1.TabIndex = 12;
             label1.Text = "Nueva Contraseña";
+            label1.Visible = false;
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(178, 188);
+            textBox1.Location = new Point(203, 251);
+            textBox1.Margin = new Padding(3, 4, 3, 4);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(218, 23);
+            textBox1.Size = new Size(249, 27);
             textBox1.TabIndex = 13;
+            textBox1.Visible = false;
             // 
             // textBox2
             // 
-            textBox2.Location = new Point(178, 230);
+            textBox2.Location = new Point(203, 307);
+            textBox2.Margin = new Padding(3, 4, 3, 4);
             textBox2.Name = "textBox2";
-            textBox2.Size = new Size(218, 23);
+            textBox2.Size = new Size(249, 27);
             textBox2.TabIndex = 14;
+            textBox2.Visible = false;
             // 
             // textBox3
             // 
-            textBox3.Location = new Point(178, 273);
+            textBox3.Location = new Point(203, 364);
+            textBox3.Margin = new Padding(3, 4, 3, 4);
             textBox3.Name = "textBox3";
-            textBox3.Size = new Size(218, 23);
+            textBox3.Size = new Size(249, 27);
             textBox3.TabIndex = 15;
+            textBox3.Visible = false;
             // 
             // ConfirmarContraseñaLabel
             // 
             ConfirmarContraseñaLabel.AutoSize = true;
-            ConfirmarContraseñaLabel.Location = new Point(46, 273);
+            ConfirmarContraseñaLabel.Location = new Point(53, 364);
             ConfirmarContraseñaLabel.Name = "ConfirmarContraseñaLabel";
-            ConfirmarContraseñaLabel.Size = new Size(124, 15);
+            ConfirmarContraseñaLabel.Size = new Size(153, 20);
             ConfirmarContraseñaLabel.TabIndex = 16;
             ConfirmarContraseñaLabel.Text = "Confirmar Contraseña";
+            ConfirmarContraseñaLabel.Visible = false;
             // 
             // aceptarButton
             // 
-            aceptarButton.Location = new Point(178, 302);
+            aceptarButton.Location = new Point(203, 403);
+            aceptarButton.Margin = new Padding(3, 4, 3, 4);
             aceptarButton.Name = "aceptarButton";
-            aceptarButton.Size = new Size(94, 23);
+            aceptarButton.Size = new Size(107, 31);
             aceptarButton.TabIndex = 17;
             aceptarButton.Text = "Aceptar";
             aceptarButton.UseVisualStyleBackColor = true;
+            aceptarButton.Visible = false;
             aceptarButton.Click += aceptarButton_Click;
             // 
             // cancelButton
             // 
-            cancelButton.Location = new Point(311, 302);
+            cancelButton.Location = new Point(355, 403);
+            cancelButton.Margin = new Padding(3, 4, 3, 4);
             cancelButton.Name = "cancelButton";
-            cancelButton.Size = new Size(85, 23);
+            cancelButton.Size = new Size(97, 31);
             cancelButton.TabIndex = 18;
             cancelButton.Text = "Cancelar";
             cancelButton.UseVisualStyleBackColor = true;
+            cancelButton.Visible = false;
             cancelButton.Click += cancelButton_Click;
+            // 
+            // editarPerfilButton
+            // 
+            editarPerfilButton.Location = new Point(25, 453);
+            editarPerfilButton.Margin = new Padding(3, 4, 3, 4);
+            editarPerfilButton.Name = "editarPerfilButton";
+            editarPerfilButton.Size = new Size(157, 31);
+            editarPerfilButton.TabIndex = 19;
+            editarPerfilButton.Text = "Editar Datos";
+            editarPerfilButton.UseVisualStyleBackColor = true;
+            editarPerfilButton.Click += editarPerfilButton_Click;
             // 
             // PerfilCliente
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(659, 375);
+            ClientSize = new Size(610, 500);
+            Controls.Add(editarPerfilButton);
             Controls.Add(cancelButton);
             Controls.Add(aceptarButton);
             Controls.Add(ConfirmarContraseñaLabel);
@@ -229,21 +261,13 @@
             Controls.Add(apellidoLabel);
             Controls.Add(nombreTextBox);
             Controls.Add(nombreLabel);
-            // Ocultar controles de contraseña por defecto
-            contraseñaActualLabel.Visible = false;
-            label1.Visible = false;
-            ConfirmarContraseñaLabel.Visible = false;
-            textBox1.Visible = false;
-            textBox2.Visible = false;
-            textBox3.Visible = false;
-            aceptarButton.Visible = false;
-            cancelButton.Visible = false;
+            Margin = new Padding(3, 4, 3, 4);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "PerfilCliente";
             StartPosition = FormStartPosition.CenterParent;
             Text = "PerfilCliente";
-            this.Load += PerfilCliente_Load;
+            Load += PerfilCliente_Load;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -268,5 +292,6 @@
         private Label ConfirmarContraseñaLabel;
         private Button aceptarButton;
         private Button cancelButton;
+        private Button editarPerfilButton;
     }
 }

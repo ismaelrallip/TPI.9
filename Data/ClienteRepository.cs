@@ -20,17 +20,7 @@ namespace Data
             await context.SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteAsync(int id)
-        {
-            var cliente = await context.Clientes.FindAsync(id);
-            if (cliente != null)
-            {
-                context.Clientes.Remove(cliente);
-                await context.SaveChangesAsync();
-                return true;
-            }
-            return false;
-        }
+       
 
         public async Task<bool> DeactivateAsync(int id, string comentarioFinal)
         {
@@ -92,7 +82,8 @@ namespace Data
 
         public async Task<bool> EmailExistsAsync(string email, int? excludeId = null)
         {
-            var query = context.Clientes.Where(c => c.Email.ToLower() == email.ToLower());
+            // Agregamos c.Activo para que solo busque duplicados en cuentas activas
+            var query = context.Clientes.Where(c => c.Email.ToLower() == email.ToLower() && c.Activo);
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.Id != excludeId.Value);
@@ -102,7 +93,8 @@ namespace Data
 
         public async Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null)
         {
-            var query = context.Clientes.Where(c => c.Telefono == telefono);
+            // Agregamos c.Activo para que solo busque duplicados en cuentas activas
+            var query = context.Clientes.Where(c => c.Telefono == telefono && c.Activo);
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.Id != excludeId.Value);

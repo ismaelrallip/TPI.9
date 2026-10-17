@@ -413,13 +413,15 @@ string.IsNullOrWhiteSpace(formEmail))
 
         try
         {
-            await ClienteApiClient.DeleteAsync(clienteSeleccionado.Id);
+            
+            await ClienteApiClient.DeactivateAsync(clienteSeleccionado.Id);
             CerrarModales();
             await CargarClientes();
         }
         catch (Exception ex)
         {
-            errorModal = $"Error al eliminar cliente: {ex.Message}";
+            
+            errorModal = $"Error al dar de baja al cliente: {ex.Message}";
         }
         finally
         {

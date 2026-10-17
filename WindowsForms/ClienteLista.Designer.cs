@@ -89,12 +89,12 @@
             // eliminarButton
             // 
             eliminarButton.Enabled = false;
-            eliminarButton.Location = new Point(616, 620);
+            eliminarButton.Location = new Point(581, 620);
             eliminarButton.Margin = new Padding(2);
             eliminarButton.Name = "eliminarButton";
-            eliminarButton.Size = new Size(92, 29);
+            eliminarButton.Size = new Size(114, 29);
             eliminarButton.TabIndex = 9;
-            eliminarButton.Text = "Eliminar";
+            eliminarButton.Text = "Dar de Baja";
             eliminarButton.UseVisualStyleBackColor = true;
             eliminarButton.Click += eliminarButton_Click;
             // 

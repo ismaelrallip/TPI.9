@@ -97,7 +97,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(396, 81);
+            label3.Location = new Point(384, 81);
             label3.Name = "label3";
             label3.Size = new Size(50, 20);
             label3.TabIndex = 4;
@@ -106,7 +106,7 @@
             // lblFechaValor
             // 
             lblFechaValor.AutoSize = true;
-            lblFechaValor.Location = new Point(493, 81);
+            lblFechaValor.Location = new Point(444, 81);
             lblFechaValor.Name = "lblFechaValor";
             lblFechaValor.Size = new Size(85, 20);
             lblFechaValor.TabIndex = 5;

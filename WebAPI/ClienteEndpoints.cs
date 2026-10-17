@@ -84,24 +84,7 @@ namespace WebAPI
             .WithOpenApi();
 
 
-            app.MapDelete("/clientes/{id}", async (int id, ClaimsPrincipal user, IClienteService clienteService) =>
-            {
-                if (!PuedeAdministrarOAccederAlCliente(user, id))
-                    return Results.Forbid();
-                // Deprecated: prefer eliminar con verificación de contraseña desde el cliente.
-                var deleted = await clienteService.DeleteAsync(id);
-
-                if (!deleted)
-                {
-                    return Results.NotFound();
-                }
-
-                return Results.NoContent();
-            })
-            .WithName("DeleteCliente")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            
 
             app.MapPost("/clientes/{id}/change-password", async (int id, DTOs.ChangePasswordRequest req, ClaimsPrincipal user, IClienteService clienteService) =>
             {
@@ -132,8 +115,22 @@ namespace WebAPI
 
                 try
                 {
-                    var deleted = await clienteService.DeleteWithPasswordAsync(id, req.CurrentPassword);
-                    if (!deleted) return Results.NotFound();
+                    // Preguntamos si el usuario actual es Administrador
+                    bool esAdmin = user.IsInRole("Administrador");
+                    bool bajaLogicaExitosa;
+
+                    if (esAdmin)
+                    {
+                        // BAJA LÓGICA DE ADMIN: No valida clave, usa el nuevo método
+                        bajaLogicaExitosa = await clienteService.DeactivateByAdminAsync(id);
+                    }
+                    else
+                    {
+                        // BAJA LÓGICA DE CLIENTE: Valida clave con tu método existente
+                        bajaLogicaExitosa = await clienteService.DeleteWithPasswordAsync(id, req.CurrentPassword);
+                    }
+
+                    if (!bajaLogicaExitosa) return Results.NotFound();
                     return Results.NoContent();
                 }
                 catch (ArgumentException ex)
@@ -146,14 +143,13 @@ namespace WebAPI
                     return Results.UnprocessableEntity(new { mensaje = ex.Message });
                 }
             })
-            .WithName("DeleteClienteWithPassword")
+            .WithName("DeactivateCliente") 
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status422UnprocessableEntity)
             .RequireAuthorization()
             .WithOpenApi();
-
             app.MapGet("/clientes/criteria", async (string texto, IClienteService clienteService) =>
             {
                 var criteria = new ClienteCriteriaDTO { Texto = texto };

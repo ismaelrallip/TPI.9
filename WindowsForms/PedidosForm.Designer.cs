@@ -39,6 +39,7 @@
             btnCancelarPedido = new Button();
             btnNuevoPedido = new Button();
             btnModificarPedido = new Button();
+            btnCalificarPedido = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridViewPedidos).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewDetalle).BeginInit();
             SuspendLayout();
@@ -124,7 +125,7 @@
             // 
             // btnAsignarDelivery
             // 
-            btnAsignarDelivery.Location = new Point(317, 505);
+            btnAsignarDelivery.Location = new Point(273, 507);
             btnAsignarDelivery.Name = "btnAsignarDelivery";
             btnAsignarDelivery.Size = new Size(186, 30);
             btnAsignarDelivery.TabIndex = 21;
@@ -134,7 +135,7 @@
             // 
             // btnCancelarPedido
             // 
-            btnCancelarPedido.Location = new Point(657, 507);
+            btnCancelarPedido.Location = new Point(537, 506);
             btnCancelarPedido.Name = "btnCancelarPedido";
             btnCancelarPedido.Size = new Size(156, 29);
             btnCancelarPedido.TabIndex = 22;
@@ -144,7 +145,7 @@
             // 
             // btnNuevoPedido
             // 
-            btnNuevoPedido.Location = new Point(912, 507);
+            btnNuevoPedido.Location = new Point(933, 507);
             btnNuevoPedido.Name = "btnNuevoPedido";
             btnNuevoPedido.Size = new Size(145, 29);
             btnNuevoPedido.TabIndex = 23;
@@ -163,11 +164,24 @@
             btnModificarPedido.UseVisualStyleBackColor = true;
             btnModificarPedido.Click += btnModificarPedido_Click;
             // 
+            // btnCalificarPedido
+            // 
+            btnCalificarPedido.Enabled = false;
+            btnCalificarPedido.Location = new Point(744, 506);
+            btnCalificarPedido.Name = "btnCalificarPedido";
+            btnCalificarPedido.Size = new Size(145, 29);
+            btnCalificarPedido.TabIndex = 25;
+            btnCalificarPedido.Text = "Comentar/Calificar";
+            btnCalificarPedido.UseVisualStyleBackColor = true;
+            btnCalificarPedido.Visible = false;
+            btnCalificarPedido.Click += btnCalificarPedido_Click;
+            // 
             // PedidosForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1309, 557);
+            Controls.Add(btnCalificarPedido);
             Controls.Add(btnModificarPedido);
             Controls.Add(btnNuevoPedido);
             Controls.Add(btnCancelarPedido);
@@ -201,5 +215,6 @@
         private Button btnCancelarPedido;
         private Button btnNuevoPedido;
         private Button btnModificarPedido;
+        private Button btnCalificarPedido;
     }
 }

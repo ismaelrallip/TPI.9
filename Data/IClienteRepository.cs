@@ -5,7 +5,6 @@ namespace Data
     public interface IClienteRepository
     {
         Task AddAsync(Cliente cliente);
-        Task<bool> DeleteAsync(int id);
         Task<Cliente?> GetAsync(int id);
         Task<IEnumerable<Cliente>> GetAllAsync();
         Task<IEnumerable<Cliente>> GetByCriteriaAsync(ClienteCriteria criteria);

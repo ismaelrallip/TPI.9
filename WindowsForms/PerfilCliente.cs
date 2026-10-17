@@ -14,7 +14,7 @@ namespace WindowsForms
     public partial class PerfilCliente : Form
     {
         private int? _clienteId;
-        private enum Mode { None, ChangePassword, DeleteAccount }
+        private enum Mode { None, ChangePassword, DeleteAccount, EditProfile }
         private Mode _mode = Mode.None;
 
 
@@ -36,9 +36,26 @@ namespace WindowsForms
             // Inicialmente ocultamos campos y botones relacionados a contraseña
             SetPasswordControlsVisible(false);
 
+            SetProfileFieldsEditable(false);
+            SetPasswordControlsVisible(false);
+
             return true;
         }
+        private void SetProfileFieldsEditable(bool editable)
+        {
+            
+            nombreTextBox.Enabled = editable;
+            nombreTextBox.ReadOnly = !editable;
 
+            ApellidoTextBox.Enabled = editable;
+            ApellidoTextBox.ReadOnly = !editable;
+
+            emailTextBox.Enabled = editable;
+            emailTextBox.ReadOnly = !editable;
+
+            telefonoTextBox.Enabled = editable;
+            telefonoTextBox.ReadOnly = !editable;
+        }
         private void SetPasswordControlsVisible(bool visible)
         {
             contraseñaActualLabel.Visible = visible;
@@ -110,7 +127,8 @@ namespace WindowsForms
                     MessageBox.Show("La nueva contraseña y la confirmación no coinciden.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-
+                var confirmarPass = MessageBox.Show("¿Está seguro que desea cambiar su contraseña?", "Confirmar cambio", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (confirmarPass != DialogResult.Yes) return;
                 try
                 {
                     var req = new DTOs.ChangePasswordRequest { CurrentPassword = current, NewPassword = nw };
@@ -158,18 +176,57 @@ namespace WindowsForms
                 SetPasswordControlsVisible(false);
                 _mode = Mode.None;
             }
+            else if (_mode == Mode.EditProfile)
+            {
+                var confirmarEdicion = MessageBox.Show("¿Está seguro que desea guardar los cambios en su perfil?", "Confirmar edición", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (confirmarEdicion != DialogResult.Yes) return;
+                try
+                {
+                    var clienteDto = new DTOs.ClienteDTO
+                    {
+                        Id = _clienteId.Value,
+                        Nombre = nombreTextBox.Text.Trim(),
+                        Apellido = ApellidoTextBox.Text.Trim(),
+                        Email = emailTextBox.Text.Trim(),
+                        Telefono = telefonoTextBox.Text.Trim()
+                    };
+
+                    // Reutiliza el endpoint de actualización existente
+                    await API.Clients.ClienteApiClient.UpdateAsync(clienteDto);
+
+                    MessageBox.Show("Perfil actualizado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    SetProfileFieldsEditable(false);
+                    aceptarButton.Visible = false;
+                    cancelButton.Visible = false;
+                    _mode = Mode.None;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al actualizar: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
-        private void cancelButton_Click(object sender, EventArgs e)
-        {
-            // Ocultar campos y resetear modo
-            SetPasswordControlsVisible(false);
-            _mode = Mode.None;
-        }
+        
 
         private async void PerfilCliente_Load(object sender, EventArgs e)
         {
             await LoadClienteAsync();
+        }
+        private void editarPerfilButton_Click(object sender, EventArgs e)
+        {
+            _mode = Mode.EditProfile;
+            SetPasswordControlsVisible(false); // Ocultar inputs de contraseña
+            SetProfileFieldsEditable(true);    // Permitir escribir
+            aceptarButton.Visible = true;
+            cancelButton.Visible = true;
+        }
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            SetPasswordControlsVisible(false);
+            SetProfileFieldsEditable(false);
+            _mode = Mode.None;
         }
     }
 }

@@ -36,6 +36,7 @@ namespace WindowsForms
             ConfigurarControlesFiltro();
             btnAvanzarEstado.Visible = !_esVistaCliente;
             btnAsignarDelivery.Visible = !_esVistaCliente;
+            btnCalificarPedido.Visible = _esVistaCliente;
 
             if (_esVistaCliente)
             {
@@ -44,6 +45,7 @@ namespace WindowsForms
             }
 
             await LoadPedidos();
+
         }
         private void ConfigurarColumnas()
         {
@@ -219,6 +221,9 @@ namespace WindowsForms
             btnCancelarPedido.Enabled = false;
             btnAvanzarEstado.Text = "Avanzar Estado";
             btnModificarPedido.Enabled = false;
+            
+            btnCalificarPedido.Enabled = false;
+            btnCalificarPedido.Visible = _esVistaCliente;
             // Si esta vista es para cliente, ocultamos botones administrativos
             if (_esVistaCliente)
             {
@@ -236,8 +241,20 @@ namespace WindowsForms
         {
             DesactivarBotonera();
 
-            if (pedido.Estado == EstadoPedido.Cancelado || pedido.Estado == EstadoPedido.Entregado)
+           
+            if (pedido.Estado == EstadoPedido.Entregado)
+            {
+                if (_esVistaCliente)
+                {
+                    btnCalificarPedido.Enabled = true;
+                }
                 return;
+            }
+
+            if (pedido.Estado == EstadoPedido.Cancelado)
+            {
+                return;
+            }
 
             if (pedido.Estado == EstadoPedido.Pendiente)
             {
@@ -246,7 +263,6 @@ namespace WindowsForms
 
                 if (_esVistaCliente)
                 {
-                    // Clientes pueden cancelar/modificar solo si está pendiente, pero no otras acciones
                     btnAsignarDelivery.Enabled = false;
                     btnAvanzarEstado.Enabled = false;
                 }
@@ -254,7 +270,7 @@ namespace WindowsForms
                 if (pedido.Modalidad == ModalidadPedido.Delivery)
                 {
                     btnAsignarDelivery.Enabled = true;
-                    btnAsignarDelivery.Text = "Asignar Delivery"; // Lo forzamos por si había cambiado
+                    btnAsignarDelivery.Text = "Asignar Delivery";
                 }
                 else
                 {
@@ -286,7 +302,6 @@ namespace WindowsForms
                     btnAvanzarEstado.Text = "Avanzar a: En Camino";
                     btnAvanzarEstado.Tag = EstadoPedido.EnCamino;
 
-                   
                     btnAsignarDelivery.Enabled = true;
                     btnAsignarDelivery.Text = "Cambiar Delivery";
                 }
@@ -334,7 +349,18 @@ namespace WindowsForms
                 _estaCargando = false;
             }
         }
+        private async void btnCalificarPedido_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewPedidos.SelectedRows.Count == 0) return;
+            int idPedido = (int)dataGridViewPedidos.SelectedRows[0].Cells["Id"].Value;
+            var pedido = _pedidosCache.First(p => p.Id == idPedido);
 
+            using var formCalificar = new CalificarPedidoForm(pedido);
+            if (formCalificar.ShowDialog(this) == DialogResult.OK)
+            {
+                await LoadPedidos();
+            }
+        }
         private async void btnCancelarPedido_Click(object sender, EventArgs e)
         {
             if (dataGridViewPedidos.SelectedRows.Count == 0) return;

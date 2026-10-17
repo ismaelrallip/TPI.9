@@ -111,8 +111,10 @@ namespace Application.Services
             pedidoExistente.SetComentario(dto.Comentario);
             pedidoExistente.SetComentarioFinal(dto.ComentarioFinal);
             pedidoExistente.SetDelivery(dto.DeliveryId);
+            pedidoExistente.SetCalificacionPedido(dto.CalificacionPedido);
+            pedidoExistente.SetCalificacionDelivery(dto.CalificacionDelivery);
 
-            // <-- 1. AQUÍ AGREGAMOS LA ACTUALIZACIÓN DEL ESTADO -->
+            
             pedidoExistente.SetEstado(dto.Estado);
 
             // Los items y la dirección solo se pueden modificar mientras el pedido está Pendiente.

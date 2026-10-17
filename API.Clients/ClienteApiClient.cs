@@ -83,22 +83,7 @@ namespace API.Clients
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al actualizar el cliente.", ex); }
         }
 
-        public static async Task DeleteAsync(int id)
-        {
-            try
-            {
-                using var client = await CreateHttpClientAsync();
-                var response = await client.DeleteAsync("clientes/" + id);
-                await HandleAuthorizationAsync(response);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"Error al eliminar cliente {id}. Status: {response.StatusCode}. Detalle: {content}");
-                }
-            }
-            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al eliminar el cliente.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al eliminar el cliente.", ex); }
-        }
+       
 
         public static async Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(string texto)
         {
@@ -187,6 +172,44 @@ namespace API.Clients
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al eliminar la cuenta.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al eliminar la cuenta.", ex); }
+        }
+        public static async Task DeactivateAsync(int id)
+        {
+            try
+            {
+                
+                var req = new DTOs.DeleteAccountRequest { CurrentPassword = "" };
+
+                using var client = await CreateHttpClientAsync();
+                
+                var response = await client.PostAsJsonAsync($"clientes/{id}/delete", req);
+                await HandleAuthorizationAsync(response);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        var doc = System.Text.Json.JsonDocument.Parse(content);
+                        if (doc.RootElement.TryGetProperty("mensaje", out var msgEl))
+                        {
+                            throw new InvalidOperationException(msgEl.GetString() ?? content);
+                        }
+                        if (doc.RootElement.TryGetProperty("error", out var errEl))
+                        {
+                            throw new InvalidOperationException(errEl.GetString() ?? content);
+                        }
+                    }
+                    catch (System.Text.Json.JsonException)
+                    {
+                        
+                    }
+
+                    throw new InvalidOperationException($"Error al dar de baja la cuenta. Status: {response.StatusCode}. Detalle: {content}");
+                }
+            }
+            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al dar de baja la cuenta.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al dar de baja la cuenta.", ex); }
         }
     }
 }

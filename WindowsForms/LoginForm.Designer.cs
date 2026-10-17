@@ -84,7 +84,7 @@
             loginButton.Location = new Point(32, 181);
             loginButton.Margin = new Padding(1);
             loginButton.Name = "loginButton";
-            loginButton.Size = new Size(73, 28);
+            loginButton.Size = new Size(78, 28);
             loginButton.TabIndex = 5;
             loginButton.Text = "Iniciar Sesión";
             loginButton.UseVisualStyleBackColor = true;

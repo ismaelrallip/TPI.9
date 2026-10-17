@@ -76,26 +76,28 @@ namespace WindowsForms
             var seleccionado = ClienteSeleccionado();
             if (seleccionado == null) return;
 
-            var confirmar = MessageBox.Show($"¿Eliminar a {seleccionado.Nombre} {seleccionado.Apellido}?", "Confirmar",
+            var confirmar = MessageBox.Show($"¿Está seguro que desea dar de baja (desactivar) a {seleccionado.Nombre} {seleccionado.Apellido}?", "Confirmar Baja",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirmar != DialogResult.Yes) return;
 
             try
             {
                 DeshabilitarControles();
-                await ClienteApiClient.DeleteAsync(seleccionado.Id);
+
+                
+                await ClienteApiClient.DeactivateAsync(seleccionado.Id);
+
                 await CargarClientesAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al eliminar cliente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al dar de baja al cliente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 HabilitarControles();
             }
         }
-
         private async void buscarButton_Click(object sender, EventArgs e)
         {
             await CargarClientesAsync(buscarTextBox.Text.Trim());

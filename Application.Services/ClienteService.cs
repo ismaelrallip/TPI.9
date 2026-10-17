@@ -38,10 +38,7 @@ namespace Application.Services
             return dto;
         }
 
-        public async Task<bool> DeleteAsync(int id)
-        {
-            return await clienteRepository.DeleteAsync(id);
-        }
+       
 
         public async Task<ClienteDTO?> GetAsync(int id)
         {
@@ -109,6 +106,11 @@ namespace Application.Services
 
             // Persistir cambios
             return await clienteRepository.UpdateAsync(existing);
+        }
+        public async Task<bool> DeactivateByAdminAsync(int id)
+        {
+            
+            return await clienteRepository.DeactivateAsync(id, "Cuenta dada de baja por el administrador.");
         }
         public async Task ChangePasswordAsync(int id, string currentPassword, string newPassword)
         {

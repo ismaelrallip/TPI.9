@@ -160,9 +160,9 @@ namespace Domain.Model
             Estado = estado;
         }
 
-        public void SetCalificacionPedido(int calificacionPedido)
+        public void SetCalificacionPedido(int? calificacionPedido)
         {
-            if (calificacionPedido < 1 || calificacionPedido > 5)
+            if (calificacionPedido.HasValue && (calificacionPedido < 1 || calificacionPedido > 5))
                 throw new ArgumentException("La calificación del pedido debe estar entre 1 y 5.", nameof(calificacionPedido));
             CalificacionPedido = calificacionPedido;
         }
@@ -232,5 +232,6 @@ namespace Domain.Model
             SetCalificacionDelivery(calificacionDelivery);
             SetComentarioFinal(comentarioFinal);
         }
+
     }
 }
