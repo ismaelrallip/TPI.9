@@ -97,20 +97,24 @@ namespace WindowsForms
                 return;
 
             SetLoading(true);
+            bool registrado = false;
 
             try
             {
                 // ClienteDetalle ya devolvió los datos validados.
                 // Para el registro público usamos el endpoint público (no requiere token).
-                // Usamos el endpoint público para el registro (no requiere token).
                 await ClienteApiClient.RegisterAsync(registerForm.Cliente);
+                registrado = true;
 
                 MessageBox.Show(
                     "Registro exitoso. Ya podés iniciar sesión.",
                     "Registro",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
-                Close();
+
+                
+                // Se deja cargado el email que se acaba de registrar.
+                usernameTextBox.Text = registerForm.Cliente.Email;
             }
             catch (Exception ex)
             {
@@ -123,6 +127,14 @@ namespace WindowsForms
             finally
             {
                 SetLoading(false);
+            }
+
+            
+            // el cursor queda en la contraseña, listo para iniciar sesión.
+            if (registrado)
+            {
+                passwordTextBox.Clear();
+                passwordTextBox.Focus();
             }
         }
     }

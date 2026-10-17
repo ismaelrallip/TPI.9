@@ -34,13 +34,17 @@ namespace WindowsForms
         private async void PedidosForm_Load(object sender, EventArgs e)
         {
             ConfigurarControlesFiltro();
-            // Ajustar visibilidad de botones administrativos si esta es la vista de cliente
             btnAvanzarEstado.Visible = !_esVistaCliente;
             btnAsignarDelivery.Visible = !_esVistaCliente;
 
+            if (_esVistaCliente)
+            {
+                dataGridViewPedidos.Columns["Id"].Visible = false;
+                dataGridViewPedidos.Columns["Cliente"].Visible = false;
+            }
+
             await LoadPedidos();
         }
-
         private void ConfigurarColumnas()
         {
             dataGridViewPedidos.AutoGenerateColumns = false;
