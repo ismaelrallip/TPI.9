@@ -112,7 +112,6 @@ namespace WindowsForms
                 perfilToolStripMenuItem.Enabled = true;
             }
         }
-
         private void crearPedidoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -137,6 +136,26 @@ namespace WindowsForms
                 form.MdiParent = this;
                 form.FormBorderStyle = FormBorderStyle.None;
                 form.Dock = DockStyle.Fill;
+
+                //  Escuchamos cuando el formulario se cierra ---
+                form.FormClosed += async (s, ev) =>
+                {
+                    
+                    if (form.DialogResult == DialogResult.OK)
+                    {
+                        MessageBox.Show("Pedido creado correctamente.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Buscamos si "Mis Pedidos" está abierto en el fondo
+                        var pedidosForm = this.MdiChildren.OfType<PedidosForm>().FirstOrDefault(f => f.Tag?.ToString() == $"cliente_{session.ClienteId.Value}");
+
+                        if (pedidosForm != null)
+                        {
+                            // Forzamos la recarga de los datos
+                            await pedidosForm.LoadPedidos();
+                        }
+                    }
+                };
+
                 form.Show();
             }
             catch (Exception ex)
@@ -148,6 +167,8 @@ namespace WindowsForms
                 crearPedidoToolStripMenuItem.Enabled = true;
             }
         }
+
+
 
         private async void cerrarSesionToolStripMenuItem_Click(object sender, EventArgs e)
         {

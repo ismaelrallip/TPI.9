@@ -31,7 +31,7 @@ namespace WindowsForms
             _esVistaCliente = esVistaCliente;
         }
 
-        private async void PedidosForm_Load(object sender, EventArgs e)
+        public async void PedidosForm_Load(object sender, EventArgs e)
         {
             ConfigurarControlesFiltro();
             btnAvanzarEstado.Visible = !_esVistaCliente;
@@ -105,7 +105,7 @@ namespace WindowsForms
             _estaCargando = false;
         }
 
-        private async Task LoadPedidos()
+        public async Task LoadPedidos()
         {
             try
             {
