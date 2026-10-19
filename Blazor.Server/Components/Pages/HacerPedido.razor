@@ -1,0 +1,286 @@
+﻿@page "/cliente/hacer-pedido"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Cliente")]
+
+@using DTOs
+@using Domain.Model
+@using API.Clients
+
+<PageTitle>Hacer Pedido</PageTitle>
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4">Hacer Pedido</h3>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger" role="alert">
+            @mensajeError
+        </div>
+    }
+
+    <!-- Tarjeta de Datos del Pedido -->
+    <div class="card shadow-sm border mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Información del Envío</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Modalidad</label>
+                    <select class="form-select" @bind="modalidadSeleccionada">
+                        <option value="@ModalidadPedido.Delivery">Delivery</option>
+                        <option value="@ModalidadPedido.TakeAway">Retiro en Local (Take Away)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Fecha</label>
+                    <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" disabled />
+                </div>
+                @if (modalidadSeleccionada == ModalidadPedido.Delivery)
+                {
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Dirección de Envío</label>
+                        <input type="text" class="form-control" @bind="direccion" placeholder="Ej: Av. Pellegrini 1234" />
+                    </div>
+                }
+            </div>
+
+            <div class="mb-0">
+                <label class="form-label fw-bold">Comentario (Opcional)</label>
+                <input type="text" class="form-control" @bind="comentario" placeholder="Ej: Sin cebolla, tocar timbre..." />
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjeta de Selección de Hamburguesas -->
+    <div class="card shadow-sm border mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Hamburguesas</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-end g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Hamburguesa</label>
+                    <select class="form-select" @bind="hamburguesaIdSeleccionada">
+                        <option value="0">Seleccionar hamburguesa...</option>
+                        @foreach (var h in hamburguesasDisponibles)
+                        {
+                            var precio = h.Precios?.LastOrDefault()?.Monto ?? 0;
+                            <option value="@h.Id">@h.Nombre - $@precio.ToString("N2")</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Cantidad</label>
+                    <input type="number" class="form-control" min="1" max="50" @bind="cantidadSeleccionada" />
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100 fw-bold" @onclick="AgregarItem">
+                        Agregar al pedido
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grilla de Ítems -->
+            <div class="border rounded bg-white shadow-sm mb-3" style="max-height: 320px; overflow-y: auto;">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark position-sticky top-0">
+                        <tr>
+                            <th>Hamburguesa</th>
+                            <th class="text-end" style="width: 140px;">Precio Unit.</th>
+                            <th class="text-center" style="width: 110px;">Cant.</th>
+                            <th class="text-end" style="width: 140px;">Subtotal</th>
+                            <th style="width: 60px;" class="text-center"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!itemsPedido.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    No hay ítems agregados al pedido.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in itemsPedido)
+                            {
+                                <tr>
+                                    <td>@item.HamburguesaNombre</td>
+                                    <td class="text-end">$@item.PrecioUnitario.ToString("N2")</td>
+                                    <td class="text-center">
+                                        <input type="number" class="form-control form-control-sm text-center mx-auto"
+                                               style="max-width: 80px;" min="1" value="@item.Cantidad"
+                                               @onchange="(e) => ActualizarCantidadItem(item, e.Value)" />
+                                    </td>
+                                    <td class="text-end fw-bold">$@item.Subtotal.ToString("N2")</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => EliminarItem(item)">
+                                            ✕
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Acción e Importe Total -->
+    <div class="d-flex justify-content-between align-items-center">
+        <button class="btn btn-secondary px-4 fw-bold" @onclick="CancelarPedido">
+            Cancelar
+        </button>
+        <div class="d-flex align-items-center gap-4">
+            <h4 class="mb-0 fw-bold">Total: <span class="text-success">$@TotalPedido.ToString("N2")</span></h4>
+            <button class="btn btn-primary px-5 fw-bold" disabled="@(!itemsPedido.Any() || guardando)" @onclick="GuardarPedido">
+                @if (guardando)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Guardar Pedido
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    @inject IAuthService AuthService
+    @inject NavigationManager Navigation
+
+    private List<HamburguesaDTO> hamburguesasDisponibles = new();
+    private List<ItemPedidoTemp> itemsPedido = new();
+
+    private ModalidadPedido modalidadSeleccionada = ModalidadPedido.Delivery;
+    private string direccion = string.Empty;
+    private string comentario = string.Empty;
+
+    private int hamburguesaIdSeleccionada;
+    private int cantidadSeleccionada = 1;
+
+    private bool guardando;
+    private string? mensajeError;
+
+    private decimal TotalPedido => itemsPedido.Sum(i => i.Subtotal);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var res = await HamburguesaApiClient.GetAllAsync();
+            hamburguesasDisponibles = res.ToList();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar catálogo de hamburguesas: {ex.Message}";
+        }
+    }
+
+    private void AgregarItem()
+    {
+        if (hamburguesaIdSeleccionada <= 0) return;
+
+        var burger = hamburguesasDisponibles.FirstOrDefault(h => h.Id == hamburguesaIdSeleccionada);
+        if (burger == null) return;
+
+        var precio = burger.Precios?.LastOrDefault()?.Monto ?? 0;
+        var itemExistente = itemsPedido.FirstOrDefault(i => i.HamburguesaId == burger.Id);
+
+        if (itemExistente != null)
+        {
+            itemExistente.Cantidad += cantidadSeleccionada;
+        }
+        else
+        {
+            itemsPedido.Add(new ItemPedidoTemp
+            {
+                HamburguesaId = burger.Id,
+                HamburguesaNombre = burger.Nombre,
+                PrecioUnitario = precio,
+                Cantidad = cantidadSeleccionada
+            });
+        }
+
+        hamburguesaIdSeleccionada = 0;
+        cantidadSeleccionada = 1;
+    }
+
+    private void ActualizarCantidadItem(ItemPedidoTemp item, object? valor)
+    {
+        if (int.TryParse(valor?.ToString(), out int cant) && cant > 0)
+        {
+            item.Cantidad = cant;
+        }
+    }
+
+    private void EliminarItem(ItemPedidoTemp item)
+    {
+        itemsPedido.Remove(item);
+    }
+
+    private void CancelarPedido()
+    {
+        Navigation.NavigateTo("/cliente/mis-pedidos");
+    }
+
+    private async Task GuardarPedido()
+    {
+        if (!itemsPedido.Any()) return;
+
+        if (modalidadSeleccionada == ModalidadPedido.Delivery && string.IsNullOrWhiteSpace(direccion))
+        {
+            mensajeError = "Por favor ingrese una dirección para el envío por delivery.";
+            return;
+        }
+
+        guardando = true;
+        mensajeError = null;
+        try
+        {
+            var session = AuthService.CurrentSession;
+            if (session == null || !session.ClienteId.HasValue)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+
+            var pedidoDto = new PedidoDTO
+            {
+                ClienteId = session.ClienteId.Value,
+                Modalidad = modalidadSeleccionada,
+                Direccion = modalidadSeleccionada == ModalidadPedido.Delivery ? direccion.Trim() : null,
+                Comentario = comentario.Trim(),
+                PrecioTotal = TotalPedido,
+                DetallesPedido = itemsPedido.Select(i => new DetallePedidoDTO
+                {
+                    HamburguesaId = i.HamburguesaId,
+                    Cantidad = i.Cantidad,
+                    PrecioUnitario = i.PrecioUnitario
+                }).ToList()
+            };
+
+            await PedidoApiClient.AddAsync(pedidoDto);
+            Navigation.NavigateTo("/cliente/mis-pedidos");
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al registrar el pedido: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private class ItemPedidoTemp
+    {
+        public int HamburguesaId { get; set; }
+        public string HamburguesaNombre { get; set; } = string.Empty;
+        public decimal PrecioUnitario { get; set; }
+        public int Cantidad { get; set; }
+        public decimal Subtotal => PrecioUnitario * Cantidad;
+    }
+}

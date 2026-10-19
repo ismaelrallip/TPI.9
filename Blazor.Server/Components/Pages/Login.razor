@@ -9,7 +9,6 @@
     <div class="card shadow p-4" style="max-width: 400px; width: 100%;">
         <div class="text-center mb-4">
             <h3 class="fw-bold">Hamburguesería</h3>
-            
         </div>
 
         @if (!string.IsNullOrEmpty(mensajeError))
@@ -59,14 +58,16 @@
             var exito = await AuthService.LoginAsync(username, password);
             if (exito)
             {
-                if (AuthService.CurrentSession?.Role != "Administrador")
+                var role = AuthService.CurrentSession?.Role;
+                if (role == "Administrador")
                 {
-                    await AuthService.LogoutAsync();
-                    mensajeError = "La pantalla para Clientes todavia no esta disponible.";
-                    return;
+                    Navigation.NavigateTo("/hamburguesas");
                 }
-
-                Navigation.NavigateTo("/hamburguesas");
+                else
+                {
+                    // Redirigir al perfil del cliente
+                    Navigation.NavigateTo("/cliente/perfil");
+                }
             }
             else
             {

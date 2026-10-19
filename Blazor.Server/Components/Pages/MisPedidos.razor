@@ -1,0 +1,380 @@
+﻿@page "/cliente/mis-pedidos"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Cliente")]
+
+@using DTOs
+@using Domain.Model
+@using API.Clients
+
+<PageTitle>Mis Pedidos</PageTitle>
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4">Mis Pedidos</h3>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger" role="alert">
+            @mensajeError
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Listado de Pedidos (Izquierda) -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border mb-3">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Historial de Pedidos</h5>
+                    <button class="btn btn-sm btn-outline-light fw-bold" @onclick="CargarMisPedidos">Refrescar</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="border rounded bg-white shadow-sm" style="max-height: 420px; overflow-y: auto;">
+                        <table class="table table-hover table-striped mb-0 align-middle">
+                            <thead class="table-dark position-sticky top-0">
+                                <tr>
+                                    <th style="width: 40px;"></th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th>Modalidad</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-center">Calif.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (cargando)
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                                            <span class="ms-2">Cargando mis pedidos...</span>
+                                        </td>
+                                    </tr>
+                                }
+                                else if (!pedidosFiltrados.Any())
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No tenés pedidos registrados.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var p in pedidosFiltrados)
+                                    {
+                                        var selec = pedidoSeleccionado?.Id == p.Id;
+                                        <tr class="@(selec ? "table-primary fw-bold" : "")" style="cursor: pointer;" @onclick="() => SeleccionarPedido(p)">
+                                            <td class="text-center">@(selec ? "▶" : "")</td>
+                                            <td>@p.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="badge @ObtenerBadgeEstado(p.Estado)">@p.Estado</span>
+                                            </td>
+                                            <td>@p.Modalidad</td>
+                                            <td class="text-end fw-bold">$@p.PrecioTotal.ToString("N2")</td>
+                                            <td class="text-center">
+                                                @(p.CalificacionPedido.HasValue ? $"★ {p.CalificacionPedido}" : "-")
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-danger fw-bold px-4" disabled="@(pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Pendiente)" @onclick="CancelarPedido">
+                    Cancelar Pedido
+                </button>
+                <!-- Botón de calificar bloqueado si ya fue calificado previamente o no está Entregado -->
+                <button class="btn btn-outline-primary fw-bold px-4"
+                        disabled="@(pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Entregado || pedidoSeleccionado.CalificacionPedido.HasValue)"
+                        @onclick="AbrirModalCalificar">
+                    @(pedidoSeleccionado?.CalificacionPedido.HasValue == true ? "Ya Calificado" : "Comentar / Calificar")
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtros y Detalle (Derecha) -->
+        <div class="col-lg-5">
+            <!-- Card Filtros -->
+            <div class="card shadow-sm border mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Filtrar Pedidos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-0">
+                        <label class="form-label fw-bold">Estado</label>
+                        <select class="form-select" @bind="filtroEstadoStr" @bind:after="AplicarFiltros">
+                            <option value="Todos">Todos</option>
+                            <option value="@EstadoPedido.Pendiente">Pendiente</option>
+                            <option value="@EstadoPedido.EnProceso">En Proceso</option>
+                            <option value="@EstadoPedido.EnCamino">En Camino</option>
+                            <option value="@EstadoPedido.Entregado">Entregado</option>
+                            <option value="@EstadoPedido.Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Detalle del Pedido Seleccionado -->
+            <div class="card shadow-sm border mb-3">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        @(pedidoSeleccionado != null ? $"Detalle Pedido #{pedidoSeleccionado.Id}" : "Detalle del Pedido")
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="border rounded bg-white shadow-sm" style="max-height: 220px; overflow-y: auto;">
+                        <table class="table table-sm table-striped mb-0 align-middle">
+                            <thead class="table-dark position-sticky top-0">
+                                <tr>
+                                    <th>Hamburguesa</th>
+                                    <th class="text-center" style="width: 80px;">Cant.</th>
+                                    <th class="text-end" style="width: 120px;">Precio Unit.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (pedidoSeleccionado == null)
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-3">Selecciona un pedido de la lista.</td>
+                                    </tr>
+                                }
+                                else if (pedidoSeleccionado.DetallesPedido == null || !pedidoSeleccionado.DetallesPedido.Any())
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-3">Sin ítems detallados.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var det in pedidoSeleccionado.DetallesPedido)
+                                    {
+                                        <tr>
+                                            <td>@det.HamburguesaNombre</td>
+                                            <td class="text-center">@det.Cantidad</td>
+                                            <td class="text-end">$@det.PrecioUnitario.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary fw-bold px-4" @onclick="NavegarNuevoPedido">
+                    + Nuevo Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ==========================================
+   MODAL: CALIFICAR / COMENTAR PEDIDO
+   ========================================== *@
+@if (mostrarModalCalificar && pedidoSeleccionado != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Calificar Pedido #@pedidoSeleccionado.Id</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModales"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(errorModal))
+                    {
+                        <div class="alert alert-danger py-2">@errorModal</div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Calificación del Pedido (1 a 5 estrellas)</label>
+                        <select class="form-select" @bind="califPedido">
+                            <option value="5">5 ★★★★★ Excelente</option>
+                            <option value="4">4 ★★★★☆ Muy Bueno</option>
+                            <option value="3">3 ★★★☆☆ Bueno</option>
+                            <option value="2">2 ★★☆☆☆ Regular</option>
+                            <option value="1">1 ★☆☆☆☆ Malo</option>
+                        </select>
+                    </div>
+
+                    @if (pedidoSeleccionado.Modalidad == ModalidadPedido.Delivery)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Calificación del Delivery (1 a 5 estrellas)</label>
+                            <select class="form-select" @bind="califDelivery">
+                                <option value="5">5 ★★★★★ Excelente</option>
+                                <option value="4">4 ★★★★☆ Muy Bueno</option>
+                                <option value="3">3 ★★★☆☆ Bueno</option>
+                                <option value="2">2 ★★☆☆☆ Regular</option>
+                                <option value="1">1 ★☆☆☆☆ Malo</option>
+                            </select>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Comentario u Opinión</label>
+                        <textarea class="form-control" rows="3" @bind="comentarioFinal" placeholder="Escribí un comentario sobre tu experiencia..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardandoModal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarCalificacion" disabled="@guardandoModal">
+                        @if (guardandoModal)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Aceptar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    @inject IAuthService AuthService
+    @inject NavigationManager Navigation
+
+    private List<PedidoDTO> todosLosPedidos = new();
+    private List<PedidoDTO> pedidosFiltrados = new();
+    private PedidoDTO? pedidoSeleccionado;
+
+    private string filtroEstadoStr = "Todos";
+    private bool cargando = true;
+    private string? mensajeError;
+
+    private bool mostrarModalCalificar;
+    private int califPedido = 5;
+    private int califDelivery = 5;
+    private string comentarioFinal = string.Empty;
+    private bool guardandoModal;
+    private string? errorModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarMisPedidos();
+    }
+
+    private async Task CargarMisPedidos()
+    {
+        cargando = true;
+        mensajeError = null;
+        try
+        {
+            var session = AuthService.CurrentSession;
+            if (session == null || !session.ClienteId.HasValue) return;
+
+            var res = await PedidoApiClient.GetByClienteIdAsync(session.ClienteId.Value);
+            todosLosPedidos = res.ToList();
+            AplicarFiltros();
+            pedidoSeleccionado = null;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al obtener pedidos: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void AplicarFiltros()
+    {
+        if (filtroEstadoStr == "Todos")
+        {
+            pedidosFiltrados = todosLosPedidos.ToList();
+        }
+        else if (Enum.TryParse<EstadoPedido>(filtroEstadoStr, out var estadoEnum))
+        {
+            pedidosFiltrados = todosLosPedidos.Where(p => p.Estado == estadoEnum).ToList();
+        }
+    }
+
+    private void SeleccionarPedido(PedidoDTO p)
+    {
+        pedidoSeleccionado = (pedidoSeleccionado?.Id == p.Id) ? null : p;
+    }
+
+    private void AbrirModalCalificar()
+    {
+        // Validar explícitamente que esté Entregado y que aún NO haya sido calificado
+        if (pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Entregado || pedidoSeleccionado.CalificacionPedido.HasValue) return;
+
+        califPedido = 5;
+        califDelivery = 5;
+        comentarioFinal = string.Empty;
+        errorModal = null;
+        mostrarModalCalificar = true;
+    }
+
+    private void CerrarModales()
+    {
+        mostrarModalCalificar = false;
+        errorModal = null;
+    }
+
+    private async Task GuardarCalificacion()
+    {
+        if (pedidoSeleccionado == null) return;
+
+        guardandoModal = true;
+        errorModal = null;
+        try
+        {
+            pedidoSeleccionado.CalificacionPedido = califPedido;
+            if (pedidoSeleccionado.Modalidad == ModalidadPedido.Delivery)
+            {
+                pedidoSeleccionado.CalificacionDelivery = califDelivery;
+            }
+
+            pedidoSeleccionado.ComentarioFinal = comentarioFinal.Trim();
+
+            await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+            CerrarModales();
+            await CargarMisPedidos();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al guardar: {ex.Message}";
+        }
+        finally
+        {
+            guardandoModal = false;
+        }
+    }
+
+    private async Task CancelarPedido()
+    {
+        if (pedidoSeleccionado == null) return;
+
+        try
+        {
+            pedidoSeleccionado.Estado = EstadoPedido.Cancelado;
+            await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+            await CargarMisPedidos();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cancelar pedido: {ex.Message}";
+        }
+    }
+
+    private void NavegarNuevoPedido()
+    {
+        Navigation.NavigateTo("/cliente/hacer-pedido");
+    }
+
+    private string ObtenerBadgeEstado(EstadoPedido estado) => estado switch
+    {
+        EstadoPedido.Pendiente => "bg-warning text-dark",
+        EstadoPedido.EnProceso => "bg-info text-dark",
+        EstadoPedido.EnCamino => "bg-primary",
+        EstadoPedido.Entregado => "bg-success",
+        EstadoPedido.Cancelado => "bg-danger",
+        _ => "bg-secondary"
+    };
+}

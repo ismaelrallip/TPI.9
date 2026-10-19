@@ -1,0 +1,362 @@
+﻿@page "/cliente/perfil"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Cliente")]
+
+@using DTOs
+@using API.Clients
+
+<PageTitle>Perfil del Cliente</PageTitle>
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4">Mi Perfil</h3>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger" role="alert">
+            @mensajeError
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(mensajeExito))
+    {
+        <div class="alert alert-success" role="alert">
+            @mensajeExito
+        </div>
+    }
+
+    @if (cargando)
+    {
+        <div class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <span class="ms-2">Cargando...</span>
+        </div>
+    }
+    else
+    {
+        <!-- Tarjeta de Datos Personales -->
+        <div class="card shadow-sm border mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Información Personal</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nombre</label>
+                        <input type="text" class="form-control" @bind="formNombre" disabled="@(!editandoPerfil)" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Apellido</label>
+                        <input type="text" class="form-control" @bind="formApellido" disabled="@(!editandoPerfil)" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" @bind="formEmail" disabled="@(!editandoPerfil)" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Teléfono</label>
+                        <input type="text" class="form-control" @bind="formTelefono" disabled="@(!editandoPerfil)" />
+                    </div>
+                </div>
+
+                @if (editandoPerfil)
+                {
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-secondary px-4" @onclick="CancelarAccion" disabled="@guardando">Cancelar</button>
+                        <button class="btn btn-primary px-4 fw-bold" @onclick="GuardarPerfil" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            Guardar Cambios
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Botones de Acción Inferiores (Estilo Admin) -->
+        @if (!editandoPerfil)
+        {
+            <div class="d-flex justify-content-center gap-2">
+                <button class="btn btn-outline-danger px-4 fw-bold" @onclick="ActivarEliminarCuenta">
+                    Eliminar Perfil
+                </button>
+
+                <button class="btn btn-outline-warning px-4 fw-bold" @onclick="ActivarCambiarPassword">
+                    Cambiar Contraseña
+                </button>
+
+                <button class="btn btn-primary px-4 fw-bold" @onclick="ActivarEditarPerfil">
+                    Actualizar Datos
+                </button>
+            </div>
+        }
+
+        @* ==========================================
+           MODAL 1: CAMBIAR CONTRASEÑA
+           ========================================== *@
+        @if (modoCambiarPassword)
+        {
+            <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Cambiar Contraseña</h5>
+                            <button type="button" class="btn-close" @onclick="CancelarAccion"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Contraseña Actual</label>
+                                <input type="password" class="form-control" @bind="passActual" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nueva Contraseña</label>
+                                <input type="password" class="form-control" @bind="passNueva" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Confirmar Nueva Contraseña</label>
+                                <input type="password" class="form-control" @bind="passConfirmar" />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CancelarAccion" disabled="@guardando">Cancelar</button>
+                            <button type="button" class="btn btn-primary fw-bold" @onclick="EjecutarCambioPassword" disabled="@guardando">
+                                @if (guardando)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                Aceptar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* ==========================================
+           MODAL 2: CONFIRMAR ELIMINACIÓN / BAJA
+           ========================================== *@
+        @if (modoEliminarCuenta)
+        {
+            <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+                <div class="modal-dialog modal-sm modal-dialog-centered">
+                    <div class="modal-content shadow">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirmar</h5>
+                            <button type="button" class="btn-close" @onclick="CancelarAccion"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div class="display-6 text-primary mb-2">?</div>
+                            <p class="mb-3">¿Está seguro que desea dar de baja su perfil?</p>
+                            <div class="text-start">
+                                <label class="form-label fw-bold small">Contraseña Actual</label>
+                                <input type="password" class="form-control form-control-sm" @bind="passActual" placeholder="Ingrese contraseña" />
+                            </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-center">
+                            <button type="button" class="btn btn-primary px-3" @onclick="EjecutarEliminarCuenta" disabled="@guardando">
+                                @if (guardando)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                Sí
+                            </button>
+                            <button type="button" class="btn btn-secondary px-3" @onclick="CancelarAccion" disabled="@guardando">
+                                No
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    @inject IAuthService AuthService
+    @inject NavigationManager Navigation
+
+    private int clienteId;
+    private ClienteDTO cliente = new();
+    private bool cargando = true;
+    private bool guardando = false;
+    private string? mensajeError;
+    private string? mensajeExito;
+
+    private bool editandoPerfil;
+    private bool modoCambiarPassword;
+    private bool modoEliminarCuenta;
+
+    private string formNombre = string.Empty;
+    private string formApellido = string.Empty;
+    private string formEmail = string.Empty;
+    private string formTelefono = string.Empty;
+
+    private string passActual = string.Empty;
+    private string passNueva = string.Empty;
+    private string passConfirmar = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPerfil();
+    }
+
+    private async Task CargarPerfil()
+    {
+        cargando = true;
+        mensajeError = null;
+        try
+        {
+            var session = AuthService.CurrentSession;
+            if (session == null || !session.ClienteId.HasValue)
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+
+            clienteId = session.ClienteId.Value;
+            cliente = await ClienteApiClient.GetAsync(clienteId);
+
+            formNombre = cliente.Nombre;
+            formApellido = cliente.Apellido;
+            formEmail = cliente.Email;
+            formTelefono = cliente.Telefono;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar perfil: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void ActivarEditarPerfil()
+    {
+        CancelarAccion();
+        editandoPerfil = true;
+    }
+
+    private void ActivarCambiarPassword()
+    {
+        CancelarAccion();
+        modoCambiarPassword = true;
+    }
+
+    private void ActivarEliminarCuenta()
+    {
+        CancelarAccion();
+        modoEliminarCuenta = true;
+    }
+
+    private void CancelarAccion()
+    {
+        editandoPerfil = false;
+        modoCambiarPassword = false;
+        modoEliminarCuenta = false;
+        passActual = string.Empty;
+        passNueva = string.Empty;
+        passConfirmar = string.Empty;
+        mensajeError = null;
+        mensajeExito = null;
+    }
+
+    private async Task GuardarPerfil()
+    {
+        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formApellido) || string.IsNullOrWhiteSpace(formEmail))
+        {
+            mensajeError = "Nombre, apellido y email son requeridos.";
+            return;
+        }
+
+        guardando = true;
+        mensajeError = null;
+        try
+        {
+            cliente.Nombre = formNombre.Trim();
+            cliente.Apellido = formApellido.Trim();
+            cliente.Email = formEmail.Trim();
+            cliente.Telefono = formTelefono.Trim();
+
+            await ClienteApiClient.UpdateAsync(cliente);
+            mensajeExito = "Perfil actualizado correctamente.";
+            editandoPerfil = false;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al actualizar: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private async Task EjecutarCambioPassword()
+    {
+        if (string.IsNullOrWhiteSpace(passActual) || string.IsNullOrWhiteSpace(passNueva) || string.IsNullOrWhiteSpace(passConfirmar))
+        {
+            mensajeError = "Complete todos los campos de contraseña.";
+            return;
+        }
+
+        if (passNueva != passConfirmar)
+        {
+            mensajeError = "La nueva contraseña y la confirmación no coinciden.";
+            return;
+        }
+
+        guardando = true;
+        mensajeError = null;
+        try
+        {
+            var req = new ChangePasswordRequest { CurrentPassword = passActual, NewPassword = passNueva };
+            await ClienteApiClient.ChangePasswordAsync(clienteId, req);
+
+            mensajeExito = "Contraseña cambiada exitosamente.";
+            modoCambiarPassword = false;
+            passActual = string.Empty;
+            passNueva = string.Empty;
+            passConfirmar = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cambiar contraseña: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private async Task EjecutarEliminarCuenta()
+    {
+        if (string.IsNullOrWhiteSpace(passActual))
+        {
+            mensajeError = "Ingrese la contraseña actual para confirmar la baja.";
+            return;
+        }
+
+        guardando = true;
+        mensajeError = null;
+        try
+        {
+            var req = new DeleteAccountRequest { CurrentPassword = passActual };
+            await ClienteApiClient.DeleteWithPasswordAsync(clienteId, req);
+
+            await AuthService.LogoutAsync();
+            Navigation.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al eliminar cuenta: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

@@ -1,0 +1,701 @@
+﻿@page "/pedidos"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrador")]
+
+@using DTOs
+@using Domain.Model
+@using API.Clients
+
+<PageTitle>Gestión de Pedidos</PageTitle>
+
+<div class="container-fluid p-4">
+    <h3 class="mb-4">Gestión de Pedidos</h3>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger" role="alert">
+            @mensajeError
+        </div>
+    }
+
+    <!-- Barra de Filtros Superior -->
+    <div class="card shadow-sm border mb-4 bg-light">
+        <div class="card-body">
+            <div class="row align-items-end g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtrar por Fecha</label>
+                    <div class="input-group">
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0" type="checkbox" @bind="filtrarPorFecha" @bind:after="CargarPedidos" />
+                        </div>
+                        <input type="date" class="form-control" @bind="fechaFiltro" disabled="@(!filtrarPorFecha)" @bind:after="CargarPedidos" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Modalidad</label>
+                    <select class="form-select" @bind="modalidadFiltroStr" @bind:after="CargarPedidos">
+                        <option value="Todos">Todos</option>
+                        <option value="TakeAway">TakeAway</option>
+                        <option value="Delivery">Delivery</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-secondary w-100 fw-bold" @onclick="CargarPedidos">
+                        Actualizar / Refrescar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Grilla de Pedidos (Izquierda) -->
+        <div class="col-lg-7">
+            <div class="border rounded bg-white shadow-sm mb-3" style="max-height: 450px; overflow-y: auto;">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark position-sticky top-0">
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th>Id</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Modalidad</th>
+                            <th>Estado</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (cargando)
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    <span class="ms-2">Cargando pedidos...</span>
+                                </td>
+                            </tr>
+                        }
+                        else if (!listaPedidos.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">No se encontraron registros.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var p in listaPedidos)
+                            {
+                                var seleccionado = pedidoSeleccionado?.Id == p.Id;
+                                <tr class="@(seleccionado ? "table-primary fw-bold" : "")" style="cursor: pointer;" @onclick="() => SeleccionarPedido(p)">
+                                    <td class="text-center">@(seleccionado ? "▶" : "")</td>
+                                    <td>@p.Id</td>
+                                    <td>@p.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@p.ClienteNombre</td>
+                                    <td>@p.Modalidad</td>
+                                    <td><span class="badge @ObtenerBadgeEstado(p.Estado)">@p.Estado</span></td>
+                                    <td class="text-end fw-bold">$@p.PrecioTotal.ToString("N2")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Botones de Acción Administrativa -->
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <button class="btn btn-outline-danger px-3 fw-bold" disabled="@(!HabilitarBotonCancelar)" @onclick="CancelarPedido">
+                    Cancelar
+                </button>
+                <button class="btn btn-outline-warning px-3 fw-bold" disabled="@(!HabilitarBotonModificar)" @onclick="AbrirModalModificar">
+                    Modificar
+                </button>
+                <button class="btn btn-outline-info px-3 fw-bold" disabled="@(!HabilitarBotonDelivery)" @onclick="AbrirModalAsignarDelivery">
+                    @textoBotonDelivery
+                </button>
+                <button class="btn btn-success px-4 fw-bold" disabled="@(!HabilitarBotonAvanzar)" @onclick="AvanzarEstadoPedido">
+                    @textoBotonAvanzar
+                </button>
+            </div>
+        </div>
+
+        <!-- Detalle Ampliado del Pedido Seleccionado (Derecha) -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border mb-3">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">@(pedidoSeleccionado != null ? $"Detalle Ampliado #{pedidoSeleccionado.Id}" : "Detalle del Pedido")</h5>
+                </div>
+                <div class="card-body bg-light">
+                    @if (pedidoSeleccionado == null)
+                    {
+                        <p class="text-center text-muted my-3">Seleccione un pedido de la lista para ver su información completa.</p>
+                    }
+                    else
+                    {
+                        <div class="row g-2 small mb-3">
+                            <div class="col-12">
+                                <strong>Dirección:</strong> @(string.IsNullOrEmpty(pedidoSeleccionado.Direccion) ? "N/A (TakeAway)" : pedidoSeleccionado.Direccion)
+                            </div>
+                            <div class="col-12">
+                                <strong>Delivery Asignado:</strong> @(string.IsNullOrEmpty(pedidoSeleccionado.DeliveryNombre) ? "Sin asignar" : pedidoSeleccionado.DeliveryNombre)
+                            </div>
+                            <div class="col-12">
+                                <strong>Comentario del Cliente:</strong> @(string.IsNullOrEmpty(pedidoSeleccionado.Comentario) ? "-" : pedidoSeleccionado.Comentario)
+                            </div>
+                            <div class="col-12">
+                                <strong>Comentario Final / Opinión:</strong> @(string.IsNullOrEmpty(pedidoSeleccionado.ComentarioFinal) ? "-" : pedidoSeleccionado.ComentarioFinal)
+                            </div>
+                            <div class="col-6">
+                                <strong>Calif. Pedido:</strong> @(pedidoSeleccionado.CalificacionPedido.HasValue ? $"{pedidoSeleccionado.CalificacionPedido} ★" : "-")
+                            </div>
+                            <div class="col-6">
+                                <strong>Calif. Delivery:</strong> @(pedidoSeleccionado.CalificacionDelivery.HasValue ? $"{pedidoSeleccionado.CalificacionDelivery} ★" : "-")
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold text-muted small uppercase mb-2">Ítems del Pedido</h6>
+                        <div class="border rounded bg-white shadow-sm" style="max-height: 180px; overflow-y: auto;">
+                            <table class="table table-sm table-striped mb-0 align-middle">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Hamburguesa</th>
+                                        <th class="text-center" style="width: 50px;">Cant.</th>
+                                        <th class="text-end" style="width: 80px;">Unit.</th>
+                                        <th class="text-end" style="width: 80px;">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (pedidoSeleccionado.DetallesPedido == null || !pedidoSeleccionado.DetallesPedido.Any())
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-2">Sin ítems.</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var det in pedidoSeleccionado.DetallesPedido)
+                                        {
+                                            <tr>
+                                                <td>@det.HamburguesaNombre</td>
+                                                <td class="text-center">@det.Cantidad</td>
+                                                <td class="text-end">$@det.PrecioUnitario.ToString("N2")</td>
+                                                <td class="text-end fw-bold">$@((det.Cantidad * det.PrecioUnitario).ToString("N2"))</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ==========================================
+   MODAL: ASIGNAR / CAMBIAR DELIVERY
+   ========================================== *@
+@if (mostrarModalDelivery)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Asignar Delivery al Pedido #@pedidoSeleccionado?.Id</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModales"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(errorModal))
+                    {
+                        <div class="alert alert-danger py-2">@errorModal</div>
+                    }
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Seleccione un Delivery</label>
+                        <select class="form-select" @bind="deliveryIdSeleccionado">
+                            <option value="0">Seleccionar delivery...</option>
+                            @foreach (var d in listaDeliveries)
+                            {
+                                <option value="@d.IdDelivery">@d.Nombre @d.Apellido (DNI: @d.Dni)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardandoModal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarAsignacionDelivery" disabled="@guardandoModal">
+                        @if (guardandoModal)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Asignar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* ==========================================
+   MODAL: MODIFICAR PEDIDO (ESTADO PENDIENTE)
+   ========================================== *@
+@if (mostrarModalModificar && pedidoEditando != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold">Modificar Pedido #@pedidoEditando.Id</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModales"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(errorModal))
+                    {
+                        <div class="alert alert-danger py-2">@errorModal</div>
+                    }
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Modalidad</label>
+                            <select class="form-select" @bind="pedidoEditando.Modalidad">
+                                <option value="@ModalidadPedido.TakeAway">TakeAway</option>
+                                <option value="@ModalidadPedido.Delivery">Delivery</option>
+                            </select>
+                        </div>
+                        @if (pedidoEditando.Modalidad == ModalidadPedido.Delivery)
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Dirección de Envío</label>
+                                <input type="text" class="form-control" @bind="pedidoEditando.Direccion" placeholder="Dirección..." />
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Comentario</label>
+                        <input type="text" class="form-control" @bind="pedidoEditando.Comentario" placeholder="Comentario..." />
+                    </div>
+
+                    <!-- Gestión de Ítems dentro del Modal de Modificación -->
+                    <div class="card p-3 bg-light mb-3">
+                        <h6 class="fw-bold mb-2">Ítems del Pedido</h6>
+                        <div class="row align-items-end g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">Hamburguesa</label>
+                                <select class="form-select form-select-sm" @bind="hamburguesaIdSeleccionada">
+                                    <option value="0">Seleccionar hamburguesa...</option>
+                                    @foreach (var h in hamburguesasDisponibles)
+                                    {
+                                        var precio = h.Precios?.LastOrDefault()?.Monto ?? 0;
+                                        <option value="@h.Id">@h.Nombre - $@precio.ToString("N2")</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Cantidad</label>
+                                <input type="number" class="form-control form-control-sm" min="1" max="50" @bind="cantidadSeleccionada" />
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-primary btn-sm w-100 fw-bold" @onclick="AgregarItemEdicion">
+                                    + Agregar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive bg-white rounded border" style="max-height: 180px; overflow-y: auto;">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Hamburguesa</th>
+                                        <th class="text-end" style="width: 100px;">Precio Unit.</th>
+                                        <th class="text-center" style="width: 80px;">Cant.</th>
+                                        <th class="text-end" style="width: 100px;">Subtotal</th>
+                                        <th style="width: 40px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (pedidoEditando.DetallesPedido == null || !pedidoEditando.DetallesPedido.Any())
+                                    {
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-2">Sin ítems en el pedido.</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var det in pedidoEditando.DetallesPedido)
+                                        {
+                                            <tr>
+                                                <td>@det.HamburguesaNombre</td>
+                                                <td class="text-end">$@det.PrecioUnitario.ToString("N2")</td>
+                                                <td class="text-center">@det.Cantidad</td>
+                                                <td class="text-end fw-bold">$@((det.Cantidad * det.PrecioUnitario).ToString("N2"))</td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-sm btn-outline-danger py-0 px-1" @onclick="() => EliminarItemEdicion(det)">✕</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-end fw-bold fs-5">
+                        Total: <span class="text-success">$@pedidoEditando.DetallesPedido.Sum(d => d.Cantidad * d.PrecioUnitario).ToString("N2")</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardandoModal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarModificacionPedido" disabled="@guardandoModal">
+                        @if (guardandoModal)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<PedidoDTO> listaPedidos = new();
+    private List<DeliveryDTO> listaDeliveries = new();
+    private List<HamburguesaDTO> hamburguesasDisponibles = new();
+    private PedidoDTO? pedidoSeleccionado;
+
+    private bool filtrarPorFecha = false;
+    private DateTime fechaFiltro = DateTime.Today;
+    private string modalidadFiltroStr = "Todos";
+
+    private bool cargando = true;
+    private string? mensajeError;
+
+    private bool HabilitarBotonCancelar;
+    private bool HabilitarBotonModificar;
+    private bool HabilitarBotonDelivery;
+    private bool HabilitarBotonAvanzar;
+    private string textoBotonAvanzar = "Avanzar Estado";
+    private string textoBotonDelivery = "Asignar Delivery";
+    private EstadoPedido? estadoSiguiente;
+
+    // Modales
+    private bool mostrarModalDelivery;
+    private int deliveryIdSeleccionado;
+
+    private bool mostrarModalModificar;
+    private PedidoDTO? pedidoEditando;
+    private int hamburguesaIdSeleccionada;
+    private int cantidadSeleccionada = 1;
+
+    private bool guardandoModal;
+    private string? errorModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCatalogos();
+        await CargarPedidos();
+    }
+
+    private async Task CargarCatalogos()
+    {
+        try
+        {
+            var delTask = DeliveryApiClient.GetAllAsync();
+            var burgTask = HamburguesaApiClient.GetAllAsync();
+
+            listaDeliveries = (await delTask)?.ToList() ?? new();
+            hamburguesasDisponibles = (await burgTask)?.ToList() ?? new();
+        }
+        catch
+        {
+            listaDeliveries = new();
+            hamburguesasDisponibles = new();
+        }
+    }
+
+    private async Task CargarPedidos()
+    {
+        cargando = true;
+        mensajeError = null;
+        try
+        {
+            DateTime? fechaParam = filtrarPorFecha ? fechaFiltro.Date : null;
+            ModalidadPedido? modalidadParam = modalidadFiltroStr == "Todos" ? null : Enum.Parse<ModalidadPedido>(modalidadFiltroStr);
+
+            var resultado = await PedidoApiClient.GetByFiltroAsync(fechaParam, modalidadParam);
+            listaPedidos = resultado?.ToList() ?? new();
+            pedidoSeleccionado = null;
+            ActualizarBotonera();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar los pedidos: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void SeleccionarPedido(PedidoDTO p)
+    {
+        pedidoSeleccionado = (pedidoSeleccionado?.Id == p.Id) ? null : p;
+        ActualizarBotonera();
+    }
+
+    private void ActualizarBotonera()
+    {
+        HabilitarBotonCancelar = false;
+        HabilitarBotonModificar = false;
+        HabilitarBotonDelivery = false;
+        HabilitarBotonAvanzar = false;
+        textoBotonAvanzar = "Avanzar Estado";
+        textoBotonDelivery = "Asignar Delivery";
+        estadoSiguiente = null;
+
+        if (pedidoSeleccionado == null) return;
+
+        if (pedidoSeleccionado.Estado == EstadoPedido.Entregado || pedidoSeleccionado.Estado == EstadoPedido.Cancelado)
+        {
+            return;
+        }
+
+        if (pedidoSeleccionado.Estado == EstadoPedido.Pendiente)
+        {
+            HabilitarBotonCancelar = true;
+            HabilitarBotonModificar = true;
+
+            if (pedidoSeleccionado.Modalidad == ModalidadPedido.Delivery)
+            {
+                HabilitarBotonDelivery = true;
+                textoBotonDelivery = "Asignar Delivery";
+            }
+            else
+            {
+                HabilitarBotonAvanzar = true;
+                textoBotonAvanzar = "Avanzar a: En Proceso";
+                estadoSiguiente = EstadoPedido.EnProceso;
+            }
+        }
+        else if (pedidoSeleccionado.Modalidad == ModalidadPedido.TakeAway)
+        {
+            if (pedidoSeleccionado.Estado == EstadoPedido.EnProceso)
+            {
+                HabilitarBotonAvanzar = true;
+                textoBotonAvanzar = "Avanzar a: Listo";
+                estadoSiguiente = EstadoPedido.Listo;
+            }
+            else if (pedidoSeleccionado.Estado == EstadoPedido.Listo)
+            {
+                HabilitarBotonAvanzar = true;
+                textoBotonAvanzar = "Entregar al Cliente";
+                estadoSiguiente = EstadoPedido.Entregado;
+            }
+        }
+        else if (pedidoSeleccionado.Modalidad == ModalidadPedido.Delivery)
+        {
+            if (pedidoSeleccionado.Estado == EstadoPedido.Asignado)
+            {
+                HabilitarBotonAvanzar = true;
+                textoBotonAvanzar = "Avanzar a: En Camino";
+                estadoSiguiente = EstadoPedido.EnCamino;
+
+                HabilitarBotonDelivery = true;
+                textoBotonDelivery = "Cambiar Delivery";
+            }
+            else if (pedidoSeleccionado.Estado == EstadoPedido.EnCamino)
+            {
+                HabilitarBotonAvanzar = true;
+                textoBotonAvanzar = "Marcar como Entregado";
+                estadoSiguiente = EstadoPedido.Entregado;
+            }
+        }
+    }
+
+    private async Task AvanzarEstadoPedido()
+    {
+        if (pedidoSeleccionado == null || !estadoSiguiente.HasValue) return;
+
+        try
+        {
+            pedidoSeleccionado.Estado = estadoSiguiente.Value;
+            await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+            await CargarPedidos();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al avanzar estado: {ex.Message}";
+        }
+    }
+
+    private async Task CancelarPedido()
+    {
+        if (pedidoSeleccionado == null) return;
+
+        try
+        {
+            pedidoSeleccionado.Estado = EstadoPedido.Cancelado;
+            await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+            await CargarPedidos();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cancelar pedido: {ex.Message}";
+        }
+    }
+
+    private void AbrirModalModificar()
+    {
+        if (pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Pendiente) return;
+
+        // Clonamos el objeto para editar sin afectar la grilla en tiempo real si cancela
+        pedidoEditando = new PedidoDTO
+        {
+            Id = pedidoSeleccionado.Id,
+            Fecha = pedidoSeleccionado.Fecha,
+            ClienteId = pedidoSeleccionado.ClienteId,
+            Modalidad = pedidoSeleccionado.Modalidad,
+            Direccion = pedidoSeleccionado.Direccion,
+            Comentario = pedidoSeleccionado.Comentario,
+            Estado = pedidoSeleccionado.Estado,
+            PrecioTotal = pedidoSeleccionado.PrecioTotal,
+            DetallesPedido = pedidoSeleccionado.DetallesPedido?.Select(d => new DetallePedidoDTO
+            {
+                HamburguesaId = d.HamburguesaId,
+                HamburguesaNombre = d.HamburguesaNombre,
+                PrecioUnitario = d.PrecioUnitario,
+                Cantidad = d.Cantidad
+            }).ToList() ?? new()
+        };
+
+        errorModal = null;
+        mostrarModalModificar = true;
+    }
+
+    private void AgregarItemEdicion()
+    {
+        if (hamburguesaIdSeleccionada <= 0 || pedidoEditando == null) return;
+
+        var burger = hamburguesasDisponibles.FirstOrDefault(h => h.Id == hamburguesaIdSeleccionada);
+        if (burger == null) return;
+
+        var precio = burger.Precios?.LastOrDefault()?.Monto ?? 0;
+        var itemExistente = pedidoEditando.DetallesPedido.FirstOrDefault(i => i.HamburguesaId == burger.Id);
+
+        if (itemExistente != null)
+        {
+            itemExistente.Cantidad += cantidadSeleccionada;
+        }
+        else
+        {
+            pedidoEditando.DetallesPedido.Add(new DetallePedidoDTO
+            {
+                HamburguesaId = burger.Id,
+                HamburguesaNombre = burger.Nombre,
+                PrecioUnitario = precio,
+                Cantidad = cantidadSeleccionada
+            });
+        }
+
+        hamburguesaIdSeleccionada = 0;
+        cantidadSeleccionada = 1;
+    }
+
+    private void EliminarItemEdicion(DetallePedidoDTO item)
+    {
+        pedidoEditando?.DetallesPedido.Remove(item);
+    }
+
+    private async Task GuardarModificacionPedido()
+    {
+        if (pedidoEditando == null) return;
+
+        if (pedidoEditando.Modalidad == ModalidadPedido.Delivery && string.IsNullOrWhiteSpace(pedidoEditando.Direccion))
+        {
+            errorModal = "La dirección es obligatoria para pedidos con delivery.";
+            return;
+        }
+
+        if (!pedidoEditando.DetallesPedido.Any())
+        {
+            errorModal = "El pedido debe tener al menos un ítem.";
+            return;
+        }
+
+        guardandoModal = true;
+        errorModal = null;
+        try
+        {
+            pedidoEditando.PrecioTotal = pedidoEditando.DetallesPedido.Sum(d => d.Cantidad * d.PrecioUnitario);
+            if (pedidoEditando.Modalidad == ModalidadPedido.TakeAway) pedidoEditando.Direccion = null;
+
+            await PedidoApiClient.UpdateAsync(pedidoEditando);
+            CerrarModales();
+            await CargarPedidos();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al actualizar pedido: {ex.Message}";
+        }
+        finally
+        {
+            guardandoModal = false;
+        }
+    }
+
+    private void AbrirModalAsignarDelivery()
+    {
+        if (pedidoSeleccionado == null) return;
+        deliveryIdSeleccionado = pedidoSeleccionado.DeliveryId ?? 0;
+        errorModal = null;
+        mostrarModalDelivery = true;
+    }
+
+    private void CerrarModales()
+    {
+        mostrarModalDelivery = false;
+        mostrarModalModificar = false;
+        errorModal = null;
+    }
+
+    private async Task GuardarAsignacionDelivery()
+    {
+        if (pedidoSeleccionado == null || deliveryIdSeleccionado <= 0)
+        {
+            errorModal = "Debe seleccionar un delivery válido.";
+            return;
+        }
+
+        guardandoModal = true;
+        errorModal = null;
+        try
+        {
+            pedidoSeleccionado.DeliveryId = deliveryIdSeleccionado;
+            pedidoSeleccionado.Estado = EstadoPedido.Asignado;
+
+            await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+            CerrarModales();
+            await CargarPedidos();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al asignar delivery: {ex.Message}";
+        }
+        finally
+        {
+            guardandoModal = false;
+        }
+    }
+
+    private string ObtenerBadgeEstado(EstadoPedido estado) => estado switch
+    {
+        EstadoPedido.Pendiente => "bg-warning text-dark",
+        EstadoPedido.EnProceso => "bg-info text-dark",
+        EstadoPedido.Listo => "bg-primary",
+        EstadoPedido.Asignado => "bg-secondary",
+        EstadoPedido.EnCamino => "bg-primary",
+        EstadoPedido.Entregado => "bg-success",
+        EstadoPedido.Cancelado => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
