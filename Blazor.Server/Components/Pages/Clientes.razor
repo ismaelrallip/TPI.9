@@ -25,7 +25,7 @@
 
     <!-- Grilla tipo DataGridView -->
     <div class="border rounded bg-white shadow-sm mb-3" style="max-height: 450px; overflow-y: auto;">
-        <table class="table table-hover table-striped mb-0">
+        <table class="table table-hover table-striped mb-0 align-middle">
             <thead class="table-dark position-sticky top-0">
                 <tr>
                     <th style="width: 50px;"></th>
@@ -34,13 +34,14 @@
                     <th>Apellido</th>
                     <th>Email</th>
                     <th>Teléfono</th>
+                    <th style="width: 100px;" class="text-center">Estado</th>
                 </tr>
             </thead>
             <tbody>
                 @if (cargando)
                 {
                     <tr>
-                        <td colspan="6" class="text-center py-4">
+                        <td colspan="7" class="text-center py-4">
                             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                             <span class="ms-2">Cargando...</span>
                         </td>
@@ -49,7 +50,7 @@
                 else if (!listaClientes.Any())
                 {
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">
+                        <td colspan="7" class="text-center py-4 text-muted">
                             No se encontraron registros.
                         </td>
                     </tr>
@@ -73,6 +74,11 @@
                             <td>@c.Apellido</td>
                             <td>@c.Email</td>
                             <td>@c.Telefono</td>
+                            <td class="text-center">
+                                <span class="badge @(c.Activo ? "bg-success" : "bg-secondary")">
+                                    @(c.Activo ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
                         </tr>
                     }
                 }
@@ -249,7 +255,6 @@
         await CargarClientes();
     }
 
-    // Busca en el servidor cuando el usuario deja de escribir (evita una llamada por cada tecla)
     private async Task OnBusquedaInput(ChangeEventArgs e)
     {
         textoBusqueda = e.Value?.ToString() ?? string.Empty;
@@ -263,10 +268,7 @@
             await Task.Delay(350, token);
             await CargarClientes();
         }
-        catch (TaskCanceledException)
-        {
-            // llegó otra tecla: esta búsqueda se descarta
-        }
+        catch (TaskCanceledException) { }
     }
 
     private async Task CargarClientes()
@@ -339,8 +341,7 @@
 
     private async Task GuardarCliente()
     {
-        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formApellido) ||
-string.IsNullOrWhiteSpace(formEmail))
+        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formApellido) || string.IsNullOrWhiteSpace(formEmail))
         {
             errorModal = "Nombre, apellido y email son requeridos.";
             return;
@@ -372,7 +373,8 @@ string.IsNullOrWhiteSpace(formEmail))
                     Apellido = formApellido,
                     Email = formEmail,
                     Telefono = formTelefono,
-                    Password = string.IsNullOrEmpty(formPassword) ? clienteSeleccionado.Password : formPassword
+                    Password = string.IsNullOrEmpty(formPassword) ? clienteSeleccionado.Password : formPassword,
+                    Activo = clienteSeleccionado.Activo
                 };
 
                 await ClienteApiClient.UpdateAsync(dto);
@@ -385,7 +387,8 @@ string.IsNullOrWhiteSpace(formEmail))
                     Apellido = formApellido,
                     Email = formEmail,
                     Telefono = formTelefono,
-                    Password = formPassword
+                    Password = formPassword,
+                    Activo = true
                 };
 
                 await ClienteApiClient.AddAsync(dto);
@@ -413,14 +416,12 @@ string.IsNullOrWhiteSpace(formEmail))
 
         try
         {
-            
             await ClienteApiClient.DeactivateAsync(clienteSeleccionado.Id);
             CerrarModales();
             await CargarClientes();
         }
         catch (Exception ex)
         {
-            
             errorModal = $"Error al dar de baja al cliente: {ex.Message}";
         }
         finally
