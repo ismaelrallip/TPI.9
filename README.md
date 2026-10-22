@@ -32,7 +32,7 @@ Para ingresar al sistema como **Administrador**:
 - **Usuario:** `admin`
 - **Contraseña:** `admin`
 
-### Para ingresar al sistema como **Cliente ** (Datos de la seed 
+Para ingresar al sistema como **Cliente** (Datos de la seed)
 
 - **Email:** `prueba901@email.com`
 - **Contraseña:** `123456`
