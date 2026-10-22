@@ -32,6 +32,11 @@ Para ingresar al sistema como **Administrador**:
 - **Usuario:** `admin`
 - **Contraseña:** `admin`
 
+### Para ingresar al sistema como **Cliente ** (Datos de la seed 
+
+- **Email:** `prueba901@email.com`
+- **Contraseña:** `123456`
+
 ### 📋 Plantilla para el archivo `.env`
 
 Crea un archivo llamado `.env` en la raíz del proyecto utilizando el siguiente formato :
