@@ -89,10 +89,20 @@ namespace WebAPI
                 {
                     dto.ClienteId = pedidoGuardado.ClienteId;
                 }
+                // Capturamos el rol en una variable para reutilizarlo
+                
+                bool esAdmin = user.IsInRole("Administrador");
+
+                // Un cliente no puede cambiar el dueño del pedido; el administrador sí 
+                if (!esAdmin)
+                {
+                    dto.ClienteId = pedidoGuardado.ClienteId;
+                }
 
                 try
                 {
-                    var found = await pedidoService.UpdateAsync(dto);
+                    // Pasamos la variable esAdmin a la nueva firma del método
+                    var found = await pedidoService.UpdateAsync(dto, esAdmin);
                     if (!found)
                     {
                         return Results.NotFound();
