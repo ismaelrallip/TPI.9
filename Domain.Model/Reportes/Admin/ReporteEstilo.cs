@@ -19,6 +19,7 @@ namespace Domain.Model.Reportes.Admin
         public const string Gris = "#6B6B6B";
         public const string Verde = "#2B8A3E";
         public const string Rojo = "#C92A2A";
+        public const string Azul = "#1C7ED6";
 
         public static readonly CultureInfo Cultura = new("es-AR");
 

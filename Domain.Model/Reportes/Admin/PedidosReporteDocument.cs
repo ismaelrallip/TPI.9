@@ -164,14 +164,14 @@ namespace Domain.Model.Reportes.Admin
                                     {
                                         Value = _data.CantidadDelivery,
                                         FillColor = new ScottPlot.Color(
-                                            ReporteEstilo.Naranja),
+                                            ReporteEstilo.Rojo),
                                         Label = "Delivery"
                                     },
                                     new()
                                     {
                                         Value = _data.CantidadTakeAway,
                                         FillColor = new ScottPlot.Color(
-                                            ReporteEstilo.Marron),
+                                            ReporteEstilo.Azul),
                                         Label = "Take Away"
                                     }
                                 };
