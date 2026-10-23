@@ -183,10 +183,20 @@ namespace WebAPI
             .Produces<List<PedidoDTO>>(StatusCodes.Status200OK)
             .RequireAuthorization("AdminOnly")
             .WithOpenApi();
-            
-            app.MapGet("/pedidos/filtro", async (DateTime? fecha, ModalidadPedido? modalidad, IPedidoService pedidoService) =>
+
+            app.MapGet("/pedidos/filtro", async (
+                DateTime? desde,
+                DateTime? hasta,
+                ModalidadPedido? modalidad,
+                EstadoPedido? estado,
+                IPedidoService pedidoService) =>
             {
-                var dtos = await pedidoService.GetByFiltroAsync(fecha, modalidad);
+                var dtos = await pedidoService.GetByFiltroAsync(
+                    desde,
+                    hasta,
+                    modalidad,
+                    estado);
+
                 return Results.Ok(dtos);
             })
             .WithName("GetPedidosByFiltro")
