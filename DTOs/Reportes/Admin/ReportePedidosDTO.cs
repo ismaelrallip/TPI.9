@@ -17,7 +17,7 @@ namespace DTOs.Reportes.Admin
         public decimal PrecioTotal { get; set; }
     }
 
-    public class HistorialPedidosDTO
+    public class ReportePedidosDTO
     {
         public DateTime GeneradoEl { get; set; }
         public DateTime? Desde { get; set; }
