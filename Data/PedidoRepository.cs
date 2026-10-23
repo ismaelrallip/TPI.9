@@ -54,12 +54,12 @@ namespace Data
                 .Include(p => p.DetallePedido)
                 .FirstOrDefaultAsync(p => p.Id == pedido.Id);
 
-            
+
             if (existingPedido != null)
             {
                 existingPedido.SetCliente(pedido.ClienteId);
 
-               
+
                 existingPedido.SetDelivery(pedido.DeliveryId);
 
                 existingPedido.SetComentario(pedido.Comentario);
@@ -67,7 +67,7 @@ namespace Data
                 existingPedido.SetDireccion(pedido.Direccion);
                 existingPedido.SetFecha(pedido.Fecha);
 
-                
+
                 if (existingPedido.Estado == EstadoPedido.Pendiente)
                 {
                     var itemsToDelete = existingPedido.DetallePedido
@@ -91,13 +91,13 @@ namespace Data
                         }
                         else
                         {
-                           
+
                             existingPedido.AddItem(new DetallePedido(0, nuevoItem.Cantidad, nuevoItem.PrecioUnitario, nuevoItem.HamburguesaId, existingPedido.Id));
                         }
                     }
                 }
 
-               
+
                 if (existingPedido.Estado != pedido.Estado)
                 {
                     existingPedido.SetEstado(pedido.Estado);
@@ -199,6 +199,46 @@ namespace Data
             }
 
             return await query.OrderByDescending(p => p.Fecha).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Pedido>> GetByRangoAsync
+            (DateTime? desde, DateTime? hasta, ModalidadPedido? modalidad, EstadoPedido? estado,int? deliveryId = null, CancellationToken cancellationToken = default)
+        {
+            // Solo lectura para reportes: sin tracking y con filtros resueltos en la base de datos
+            var query = context.Pedidos
+                .AsNoTracking()
+                .Include(p => p.Cliente)
+                .Include(p => p.Delivery)
+                .AsQueryable();
+
+            if (desde.HasValue)
+            {
+                var inicio = desde.Value.Date;
+                query = query.Where(p => p.Fecha >= inicio);
+            }
+
+            if (hasta.HasValue)
+            {
+                var finExclusivo = hasta.Value.Date.AddDays(1);
+                query = query.Where(p => p.Fecha < finExclusivo);
+            }
+
+            if (modalidad.HasValue)
+            {
+                query = query.Where(p => p.Modalidad == modalidad.Value);
+            }
+
+            if (estado.HasValue)
+            {
+                query = query.Where(p => p.Estado == estado.Value);
+            }
+
+            if (deliveryId.HasValue)
+            {
+                query = query.Where(p => p.DeliveryId == deliveryId.Value);
+            }
+
+            return await query.OrderByDescending(p => p.Fecha).ToListAsync(cancellationToken);
         }
     }
 }
