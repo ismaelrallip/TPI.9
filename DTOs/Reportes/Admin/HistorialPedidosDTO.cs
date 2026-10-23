@@ -28,6 +28,10 @@ namespace DTOs.Reportes.Admin
 
         public int CantidadPedidos => Pedidos.Count;
 
+        // propiedades para el grafico de torta
+        public int CantidadDelivery => Pedidos.Count(p => p.Modalidad == ModalidadPedido.Delivery);
+        public int CantidadTakeAway => Pedidos.Count(p => p.Modalidad == ModalidadPedido.TakeAway);
+
         /// <summary>Suma de los pedidos no cancelados.</summary>
         public decimal MontoTotal => Pedidos
             .Where(p => p.Estado != EstadoPedido.Cancelado)

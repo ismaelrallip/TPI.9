@@ -39,11 +39,11 @@ namespace WebAPI
                 .WithOpenApi();
 
             group.MapGet("/delivery/{deliveryId:int}", async (
-                    int deliveryId,
-                    DateTime? desde,
-                    DateTime? hasta,
-                    IAdminReportService reportService,
-                    CancellationToken cancellationToken) =>
+                int deliveryId,
+                DateTime? desde,
+                DateTime? hasta,
+                IAdminReportService reportService,
+                CancellationToken cancellationToken) =>
             {
                 try
                 {
@@ -58,12 +58,11 @@ namespace WebAPI
                 {
                     return Results.BadRequest(new { error = ex.Message });
                 }
-            })
-                .WithName("GetReporteDeliveryPdf")
-                .Produces(StatusCodes.Status200OK, typeof(byte[]), PdfContentType)
-                .Produces(StatusCodes.Status400BadRequest)
-                .Produces(StatusCodes.Status404NotFound)
-                .WithOpenApi();
+            }).WithName("GetReporteDeliveryPdf")
+            .Produces(StatusCodes.Status200OK, typeof(byte[]), PdfContentType)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithOpenApi();
         }
     }
 }

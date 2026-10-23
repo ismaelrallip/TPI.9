@@ -74,7 +74,12 @@ namespace Application.Services.Reportes
                     p.Delivery, p.CalificacionPedido, p.PrecioTotal)).ToList(),
                 CantidadPedidos: historial.CantidadPedidos,
                 MontoTotal: historial.MontoTotal,
-                PromedioCalificacion: historial.PromedioCalificacion);
+                PromedioCalificacion: historial.PromedioCalificacion,
+                CantidadDelivery: historial.Pedidos.Count(
+                    p => p.Modalidad == ModalidadPedido.Delivery),
+                 CantidadTakeAway: historial.Pedidos.Count(
+                     p => p.Modalidad == ModalidadPedido.TakeAway)
+            );
 
             return new PedidosReporteDocument(data).GeneratePdf();
         }
