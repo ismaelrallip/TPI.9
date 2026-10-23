@@ -8,12 +8,12 @@ namespace Application.Services.Reportes
 {
     public interface IAdminReportService
     {
-        Task<HistorialPedidosDTO> ObtenerHistorialPedidosAsync(
+        Task<ReportePedidosDTO> ObtenerHistorialPedidosAsync(
             DateTime? desde, DateTime? hasta, ModalidadPedido? modalidad, EstadoPedido? estado,
             CancellationToken cancellationToken = default);
 
         /// <returns>null si el delivery no existe.</returns>
-        Task<HistrorialDeliveryDTO?> ObtenerHistorialDeliveryAsync(
+        Task<ReporteDeliveryDTO?> ObtenerHistorialDeliveryAsync(
             int deliveryId, DateTime? desde, DateTime? hasta,
             CancellationToken cancellationToken = default);
 

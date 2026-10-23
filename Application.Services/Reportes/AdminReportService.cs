@@ -30,16 +30,16 @@ namespace Application.Services.Reportes
 
         // ---------------------------------------------------------------- Pedidos
 
-        public async Task<HistorialPedidosDTO> ObtenerHistorialPedidosAsync(
+        public async Task<ReportePedidosDTO> ObtenerHistorialPedidosAsync(
             DateTime? desde, DateTime? hasta, ModalidadPedido? modalidad, EstadoPedido? estado,
             CancellationToken cancellationToken = default)
         {
             ValidarRango(desde, hasta);
 
-            var pedidos = await _pedidoRepository.GetByRangoAsync(
+            var pedidos = await _pedidoRepository.GetByFiltroAsync(
                 desde, hasta, modalidad, estado, deliveryId: null, cancellationToken);
 
-            return new HistorialPedidosDTO
+            return new ReportePedidosDTO
             {
                 GeneradoEl = DateTime.Now,
                 Desde = desde,
@@ -86,7 +86,7 @@ namespace Application.Services.Reportes
 
         // ---------------------------------------------------------------- Delivery
 
-        public async Task<HistrorialDeliveryDTO?> ObtenerHistorialDeliveryAsync(
+        public async Task<ReporteDeliveryDTO?> ObtenerHistorialDeliveryAsync(
             int deliveryId, DateTime? desde, DateTime? hasta,
             CancellationToken cancellationToken = default)
         {
@@ -95,10 +95,10 @@ namespace Application.Services.Reportes
             var delivery = await _deliveryRepository.GetAsync(deliveryId);
             if (delivery == null) return null;
 
-            var pedidos = await _pedidoRepository.GetByRangoAsync(
+            var pedidos = await _pedidoRepository.GetByFiltroAsync(
                 desde, hasta, modalidad: null, estado: null, deliveryId, cancellationToken);
 
-            return new HistrorialDeliveryDTO
+            return new ReporteDeliveryDTO
             {
                 GeneradoEl = DateTime.Now,
                 Desde = desde,
