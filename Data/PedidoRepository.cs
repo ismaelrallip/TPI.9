@@ -201,7 +201,7 @@ namespace Data
             return await query.OrderByDescending(p => p.Fecha).ToListAsync();
         }
 
-        public async Task<IEnumerable<Pedido>> GetByRangoAsync
+        public async Task<IEnumerable<Pedido>> GetByFiltroAsync
             (DateTime? desde, DateTime? hasta, ModalidadPedido? modalidad, EstadoPedido? estado,int? deliveryId = null, CancellationToken cancellationToken = default)
         {
             // Solo lectura para reportes: sin tracking y con filtros resueltos en la base de datos

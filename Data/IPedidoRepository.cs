@@ -20,7 +20,7 @@ namespace Data
         Task<IEnumerable<Pedido>> GetByDeliveryIdAsync(int deliveryId);
         Task<IEnumerable<Pedido>> GetByEstadoAsync(EstadoPedido estado);
         Task<IEnumerable<Pedido>> GetByFiltroAsync(DateTime? fecha, ModalidadPedido? modalidad);
-        Task<IEnumerable<Pedido>> GetByRangoAsync(DateTime? desde, DateTime? hasta, ModalidadPedido? modalidad, 
+        Task<IEnumerable<Pedido>> GetByFiltroAsync(DateTime? desde, DateTime? hasta, ModalidadPedido? modalidad, 
             EstadoPedido? estado, int? deliveryId = null, CancellationToken cancellationToken = default);
     }
 }
