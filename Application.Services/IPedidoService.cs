@@ -14,7 +14,7 @@ namespace Application.Services
         Task<bool> DeleteAsync(int id);
         Task<PedidoDTO?> GetAsync(int id);
         Task<IEnumerable<PedidoDTO>> GetAllAsync();
-        Task<bool> UpdateAsync(PedidoDTO dto);
+        public Task<bool> UpdateAsync(PedidoDTO dto, bool esAdmin);
         Task<IEnumerable<PedidoDTO>> GetByClienteIdAsync(int clienteId);
         Task<IEnumerable<PedidoDTO>> GetByClienteIdAsync(int clienteId, DateTime? fecha, ModalidadPedido? modalidad);
         Task<IEnumerable<PedidoDTO>> GetByDeliveryIdAsync(int deliveryId);

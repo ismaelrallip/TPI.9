@@ -13,20 +13,29 @@ namespace Application.Services
         private readonly IPedidoRepository _pedidoRepository;
         private readonly IHamburguesaRepository _hamburguesaRepository;
         private readonly IPrecioDeliveryRepository _precioDeliveryRepository;
+        private readonly IClienteRepository _clienteRepository;
 
         public PedidoService(IPedidoRepository pedidoRepository,
                              IHamburguesaRepository hamburguesaRepository,
-                             IPrecioDeliveryRepository precioDeliveryRepository)
+                             IPrecioDeliveryRepository precioDeliveryRepository,
+                             IClienteRepository clienteRepository)
         {
             _pedidoRepository = pedidoRepository;
             _hamburguesaRepository = hamburguesaRepository;
             _precioDeliveryRepository = precioDeliveryRepository;
+            _clienteRepository = clienteRepository;
         }
 
         public async Task<PedidoDTO> AddAsync(PedidoDTO dto)
         {
+            var clienteExistente = await _clienteRepository.GetAsync(dto.ClienteId);
+            if (clienteExistente == null)
+                throw new ArgumentException($"El cliente con ID {dto.ClienteId} no existe.");
+
             if (dto.DetallesPedido == null || dto.DetallesPedido.Count == 0)
                 throw new ArgumentException("El pedido debe tener al menos una hamburguesa.");
+
+            
 
             var fechaPedido = DateTime.Now;
 
@@ -40,7 +49,7 @@ namespace Application.Services
                 direccionFinal = dto.Direccion.Trim();
             }
 
-            var pedido = new Pedido(0, fechaPedido, direccionFinal, dto.Modalidad, dto.ClienteId);
+            var pedido = new Pedido(0, fechaPedido, dto.Comentario, direccionFinal, dto.Modalidad, dto.ClienteId);
 
             // Asignar comentario si viene desde DTO
             if (!string.IsNullOrWhiteSpace(dto.Comentario))
@@ -96,7 +105,7 @@ namespace Application.Services
             return pedidos.Select(pedido => MapToDTO(pedido)).ToList();
         }
 
-        public async Task<bool> UpdateAsync(PedidoDTO dto)
+        public async Task<bool> UpdateAsync(PedidoDTO dto, bool esAdmin)
         {
             var pedidoExistente = await _pedidoRepository.GetByIdWithDetailsAsync(dto.Id);
             if (pedidoExistente == null) return false;
@@ -108,18 +117,41 @@ namespace Application.Services
 
             var fechaPedido = pedidoExistente.Fecha;
 
-            pedidoExistente.SetComentario(dto.Comentario);
-            pedidoExistente.SetComentarioFinal(dto.ComentarioFinal);
-            pedidoExistente.SetDelivery(dto.DeliveryId);
-            pedidoExistente.SetCalificacionPedido(dto.CalificacionPedido);
-            pedidoExistente.SetCalificacionDelivery(dto.CalificacionDelivery);
+            // Control Estricto de Estado: El cliente solo puede pasar de Pendiente a Cancelado
+            if (dto.Estado != pedidoExistente.Estado)
+            {
+                if (!esAdmin)
+                {
+                    // Reglas estrictas para el Cliente
+                    if (pedidoExistente.Estado == EstadoPedido.Pendiente && dto.Estado == EstadoPedido.Cancelado)
+                    {
+                        pedidoExistente.SetEstado(EstadoPedido.Cancelado);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Operación no autorizada. El cliente solo puede cancelar un pedido pendiente.");
+                    }
+                }
+                else
+                {
+                    // El administrador puede cambiar los estados normalmente
+                    pedidoExistente.SetEstado(dto.Estado);
+                }
+            }
 
-            
-            pedidoExistente.SetEstado(dto.Estado);
+            // Regla: Calificaciones y comentarios finales SOLO aplican si el pedido ya fue entregado
+            if (pedidoExistente.Estado == EstadoPedido.Entregado)
+            {
+                pedidoExistente.SetComentarioFinal(dto.ComentarioFinal);
+                pedidoExistente.SetCalificacionPedido(dto.CalificacionPedido);
+                pedidoExistente.SetCalificacionDelivery(dto.CalificacionDelivery);
+            }
 
-            // Los items y la dirección solo se pueden modificar mientras el pedido está Pendiente.
+            // Los items, comentarios y la dirección solo se pueden modificar mientras el pedido está Pendiente.
             if (pedidoExistente.Estado == EstadoPedido.Pendiente)
             {
+                pedidoExistente.SetComentario(dto.Comentario);
+
                 // Primero se aplican cliente y modalidad: SetDireccion valida según la modalidad que tiene el propio pedido
                 pedidoExistente.SetCliente(dto.ClienteId);
                 pedidoExistente.SetModalidad(dto.Modalidad);
@@ -131,6 +163,7 @@ namespace Application.Services
                         throw new ArgumentException("La dirección es obligatoria para pedidos con delivery.");
 
                     pedidoExistente.SetDireccion(dto.Direccion.Trim());
+                    pedidoExistente.SetDelivery(dto.DeliveryId);
                 }
                 else
                 {

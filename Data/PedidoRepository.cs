@@ -97,8 +97,11 @@ namespace Data
                     }
                 }
 
-                
-                existingPedido.SetEstado(pedido.Estado);
+               
+                if (existingPedido.Estado != pedido.Estado)
+                {
+                    existingPedido.SetEstado(pedido.Estado);
+                }
 
                 await context.SaveChangesAsync();
                 return true;

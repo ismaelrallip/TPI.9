@@ -405,7 +405,7 @@ namespace WindowsForms
         {
             // Si estamos en vista de cliente, preseleccionamos y bloqueamos el cliente
             using var form = _clienteIdFilter.HasValue ? new AgregarEditarPedidoForm(_clienteIdFilter.Value) : new AgregarEditarPedidoForm();
-            if (form.ShowDialog() == DialogResult.OK)
+            if (form.ShowDialog(this) == DialogResult.OK)
             {
                 await LoadPedidos();
             }
@@ -431,7 +431,7 @@ namespace WindowsForms
             if (_esVistaCliente)
             {
                 using var form = new AgregarEditarPedidoForm(pedidoSeleccionado, true);
-                if (form.ShowDialog() == DialogResult.OK)
+                if (form.ShowDialog(this) == DialogResult.OK)
                 {
                     await LoadPedidos();
                 }

@@ -22,6 +22,7 @@ Una vez que el sistema haya creado la base de datos, existe un archivo SQL llama
 
 ## 📄 Documentación
 
+- [Consigna del Trabajo Práctico](https://docs.google.com/document/d/1aHfNGXIkrtZoeUvli5Xmhj6I-O33DrE1/edit)
 - [Documentación con requisitos, reglas de negocio y modelo de datos](https://docs.google.com/document/d/1YfdhHR1HZWSLFLJvm5I7DLrj5C67ysH38pvzBC0-3eA/edit?tab=t.0)
 - [Informe Uso de IA Entrega 1](https://docs.google.com/document/d/1Tp7xP2-oaNi9mdo0L2RLI9TjgrSsXH8p6cauEkaLaj8/edit?usp=sharing)
 
@@ -31,6 +32,11 @@ Para ingresar al sistema como **Administrador**:
 
 - **Usuario:** `admin`
 - **Contraseña:** `admin`
+
+Para ingresar al sistema como **Cliente** (Datos de la seed):
+
+- **Email:** `prueba901@email.com`
+- **Contraseña:** `123456`
 
 ### 📋 Plantilla para el archivo `.env`
 

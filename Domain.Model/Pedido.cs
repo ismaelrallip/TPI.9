@@ -65,10 +65,11 @@ namespace Domain.Model
 
         private Pedido() { } // Para EF Core
         // Constructor público para crear un pedido con los campos obligatorios
-        public Pedido(int id, DateTime fecha, string direccion, ModalidadPedido modalidad, int clienteId)
+        public Pedido(int id, DateTime fecha, string? comentario, string direccion, ModalidadPedido modalidad, int clienteId)
         {
             SetId(id);
             SetFecha(fecha);
+            SetComentario(comentario); 
             SetModalidad(modalidad);
             SetDireccion(direccion);
             SetCliente(clienteId);
@@ -157,6 +158,10 @@ namespace Domain.Model
 
         public void SetEstado(EstadoPedido estado)
         {
+           
+            if (Estado == EstadoPedido.Cancelado || Estado == EstadoPedido.Entregado)
+                throw new InvalidOperationException("El pedido ya está en un estado final y no se puede modificar su estado.");
+
             Estado = estado;
         }
 
