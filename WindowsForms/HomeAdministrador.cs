@@ -81,6 +81,17 @@ namespace WindowsForms
             if (r == DialogResult.Yes && AuthServiceProvider.Current != null)
                 await AuthServiceProvider.Current.LogoutAsync();
         }
+
+        private void reporteDeliveryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MostrarFormulario<ReporteDelivery>();
+        }
+
+        private void reportePedidosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MostrarFormulario<ReportePedido>();
+        }
+
         private void MostrarFormulario<T>() where T : Form, new()
         {
             var formularioExistente = this.MdiChildren.OfType<T>().FirstOrDefault();

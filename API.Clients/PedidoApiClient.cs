@@ -157,28 +157,168 @@ namespace API.Clients
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al obtener los pedidos por estado.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al obtener los pedidos por estado.", ex); }
         }
-        public static async Task<IEnumerable<PedidoDTO>> GetByFiltroAsync(DateTime? fecha, ModalidadPedido? modalidad)
+
+        // Para los formularios existentes: filtra desde una fecha en adelante
+        // y, opcionalmente, por modalidad.
+        public static async Task<IEnumerable<PedidoDTO>> GetByFiltroAsync(
+            DateTime? fecha,
+            ModalidadPedido? modalidad)
+        {
+            return await GetByFiltroAsync(
+                fecha,       // desde
+                null,        // sin fecha hasta
+                modalidad,
+                null);       // sin filtro de estado
+        }
+
+        public static async Task<IEnumerable<PedidoDTO>> GetByFiltroAsync(
+            DateTime? desde,
+            DateTime? hasta,
+            ModalidadPedido? modalidad,
+            EstadoPedido? estado)
         {
             try
             {
                 var parametros = new List<string>();
-                if (fecha.HasValue) parametros.Add($"fecha={fecha.Value:yyyy-MM-dd}");
-                if (modalidad.HasValue) parametros.Add($"modalidad={modalidad.Value}");
-                var url = "pedidos/filtro" + (parametros.Count > 0 ? "?" + string.Join("&", parametros) : string.Empty);
 
-                using var client = await CreateHttpClientAsync();
-                var response = await client.GetAsync(url);
-                await HandleAuthorizationAsync(response);
-                if (!response.IsSuccessStatusCode)
+                if (desde.HasValue)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"Error al obtener los pedidos filtrados. Status: {response.StatusCode}. Detalle: {content}");
+                    parametros.Add(
+                        $"desde={Uri.EscapeDataString(desde.Value.ToString("yyyy-MM-dd"))}");
                 }
 
-                return await response.Content.ReadFromJsonAsync<IEnumerable<PedidoDTO>>() ?? Enumerable.Empty<PedidoDTO>();
+                if (hasta.HasValue)
+                {
+                    parametros.Add(
+                        $"hasta={Uri.EscapeDataString(hasta.Value.ToString("yyyy-MM-dd"))}");
+                }
+
+                if (modalidad.HasValue)
+                {
+                    parametros.Add(
+                        $"modalidad={Uri.EscapeDataString(modalidad.Value.ToString())}");
+                }
+
+                if (estado.HasValue)
+                {
+                    parametros.Add(
+                        $"estado={Uri.EscapeDataString(estado.Value.ToString())}");
+                }
+
+                string url = "pedidos/filtro";
+
+                if (parametros.Count > 0)
+                {
+                    url += "?" + string.Join("&", parametros);
+                }
+
+                using var client = await CreateHttpClientAsync();
+                using var response = await client.GetAsync(url);
+
+                await HandleAuthorizationAsync(response);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+
+                    throw new Exception(
+                        $"Error al obtener los pedidos filtrados. " +
+                        $"Status: {response.StatusCode}. Detalle: {content}");
+                }
+
+                return await response.Content
+                    .ReadFromJsonAsync<IEnumerable<PedidoDTO>>()
+                    ?? Enumerable.Empty<PedidoDTO>();
             }
-            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al obtener los pedidos filtrados.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al obtener los pedidos filtrados.", ex); }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception(
+                    "No se pudo conectar con la API al obtener los pedidos filtrados.", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                throw new Exception(
+                    "La API tardó demasiado en responder al obtener los pedidos filtrados.", ex);
+            }
+        }
+
+
+        public static async Task<byte[]> DescargarReportePdfAsync(
+            DateTime? desde,
+            DateTime? hasta,
+            ModalidadPedido? modalidad,
+            EstadoPedido? estado)
+        {
+            try
+            {
+                var parametros = new List<string>();
+
+                if (desde.HasValue)
+                {
+                    parametros.Add(
+                        $"desde={Uri.EscapeDataString(desde.Value.ToString("yyyy-MM-dd"))}");
+                }
+
+                if (hasta.HasValue)
+                {
+                    parametros.Add(
+                        $"hasta={Uri.EscapeDataString(hasta.Value.ToString("yyyy-MM-dd"))}");
+                }
+
+                if (modalidad.HasValue)
+                {
+                    parametros.Add(
+                        $"modalidad={Uri.EscapeDataString(modalidad.Value.ToString())}");
+                }
+
+                if (estado.HasValue)
+                {
+                    parametros.Add(
+                        $"estado={Uri.EscapeDataString(estado.Value.ToString())}");
+                }
+
+                string url = "admin/reportes/pedidos";
+
+                if (parametros.Count > 0)
+                {
+                    url += "?" + string.Join("&", parametros);
+                }
+
+                using var client = await CreateHttpClientAsync();
+                using var response = await client.GetAsync(url);
+
+                await HandleAuthorizationAsync(response);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string detalle = await response.Content.ReadAsStringAsync();
+
+                    throw new Exception(
+                        $"Error al descargar el reporte de pedidos. " +
+                        $"Status: {response.StatusCode}. Detalle: {detalle}"
+                    );
+                }
+
+                byte[] pdf = await response.Content.ReadAsByteArrayAsync();
+
+                if (pdf.Length == 0)
+                {
+                    throw new InvalidOperationException(
+                        "La API devolvió un archivo PDF vacío.");
+                }
+
+                return pdf;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception(
+                    "No se pudo conectar con la API para descargar el reporte.", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                throw new Exception(
+                    "La API tardó demasiado en generar el reporte.", ex);
+            }
         }
     }
 }

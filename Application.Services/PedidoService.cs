@@ -307,5 +307,11 @@ namespace Application.Services
             var pedidos = await _pedidoRepository.GetByFiltroAsync(fecha, modalidad);
             return pedidos.Select(pedido => MapToDTO(pedido)).ToList();
         }
+
+        public async Task<IEnumerable<PedidoDTO>> GetByFiltroAsync(DateTime? desde,DateTime? hasta,ModalidadPedido? modalidad,EstadoPedido? estado)
+        {
+            var pedidos = await _pedidoRepository.GetByFiltroAsync(desde, hasta, modalidad, estado);
+            return pedidos.Select(pedido => MapToDTO(pedido)).ToList();
+        }
     }
 }

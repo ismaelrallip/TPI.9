@@ -1,10 +1,11 @@
-using WebAPI;
 using Application.Services;
+using Application.Services.Reportes;
 using Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using WebAPI;
 
 DotNetEnv.Env.TraversePath().Load();
 
@@ -108,6 +109,8 @@ builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<IAdminReportService, AdminReportService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -137,5 +140,6 @@ app.MapHamburguesaEndpoints();
 app.MapIngredienteEndpoints();
 app.MapPrecioDeliveryEndpoints();
 app.MapPedidoEndpoints();
+app.MapAdminReportesEndpoints();
 
 app.Run();
