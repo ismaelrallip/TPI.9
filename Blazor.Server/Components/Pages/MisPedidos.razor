@@ -1,7 +1,8 @@
 ﻿@page "/cliente/mis-pedidos"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Cliente")]
-
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 @using Application.Services
 @inject NotificatorService Notificator
 @implements IDisposable
@@ -83,19 +84,27 @@
                 </div>
             </div>
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-danger fw-bold px-4" disabled="@(pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Pendiente)" @onclick="CancelarPedido">
+
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-danger fw-bold px-4"
+                        disabled="@(pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Pendiente)"
+                        @onclick="CancelarPedido">
                     Cancelar Pedido
                 </button>
-                <!-- Botón de calificar bloqueado si ya fue calificado previamente o no está Entregado -->
+
+                <button class="btn btn-outline-warning fw-bold px-4"
+                        disabled="@(pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Pendiente)"
+                        @onclick="EditarPedido">
+                    Editar Pedido
+                </button>
+
                 <button class="btn btn-outline-primary fw-bold px-4"
                         disabled="@(pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Entregado || pedidoSeleccionado.CalificacionPedido.HasValue)"
                         @onclick="AbrirModalCalificar">
                     @(pedidoSeleccionado?.CalificacionPedido.HasValue == true ? "Ya Calificado" : "Comentar / Calificar")
                 </button>
             </div>
-        </div>
-
+        </div> <!-- Cierra col-lg-7 -->
         <!-- Filtros y Detalle (Derecha) -->
         <div class="col-lg-5">
             <!-- Card Filtros -->
@@ -237,10 +246,187 @@
     </div>
 }
 
+@* ==========================================
+   MODAL: EDITAR PEDIDO
+   ========================================== *@
+@if (mostrarModalEditar && pedidoSeleccionado != null)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        Editar Pedido #@pedidoSeleccionado.Id
+                    </h5>
+                    <button type="button" class="btn-close"
+                            disabled="@guardandoEdicion"
+                            @onclick="CerrarModalEdicion">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    @if (!string.IsNullOrWhiteSpace(errorEdicion))
+                    {
+                        <div class="alert alert-danger py-2">
+                            @errorEdicion
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Modalidad</label>
+                        <select class="form-select" @bind="modalidadEdicion">
+                            <option value="@ModalidadPedido.TakeAway">
+                                Retiro en local
+                            </option>
+                            <option value="@ModalidadPedido.Delivery">
+                                Delivery
+                            </option>
+                        </select>
+                    </div>
+
+                    @if (modalidadEdicion == ModalidadPedido.Delivery)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                Dirección de entrega
+                            </label>
+                            <input class="form-control"
+                                   @bind="direccionEdicion"
+                                   placeholder="Ingresá la dirección" />
+                            <div class="form-text">
+                                Costo de delivery:
+                                @precioDeliveryEdicion.ToString("C")
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            Comentario del pedido
+                        </label>
+                        <textarea class="form-control" rows="2"
+                                  @bind="comentarioEdicion"
+                                  placeholder="Comentario opcional">
+                            </textarea>
+                    </div>
+
+                    <hr />
+
+                    <h6 class="fw-bold">Agregar hamburguesas</h6>
+
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-7">
+                            <label class="form-label">Hamburguesa</label>
+                            <select class="form-select"
+                                    @bind="hamburguesaIdEdicion">
+                                @foreach (var h in hamburguesasEdicion)
+                                {
+                                    <option value="@h.Id">@h.Nombre</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number"
+                                   class="form-control"
+                                   min="1" max="50"
+                                   @bind="cantidadEdicion" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <button type="button"
+                                    class="btn btn-success w-100"
+                                    disabled="@(hamburguesasEdicion.Count == 0 || guardandoEdicion)"
+                                    @onclick="AgregarItemEdicion">
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold">Productos del pedido</h6>
+
+                    @if (itemsEdicion.Count == 0)
+                    {
+                        <p class="text-muted">
+                            Todavía no hay productos en el pedido.
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Hamburguesa</th>
+                                        <th style="width: 100px;">Cantidad</th>
+                                        <th>Precio unitario</th>
+                                        <th>Subtotal</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in itemsEdicion)
+                                    {
+                                        <tr @key="item.HamburguesaId">
+                                            <td>@item.HamburguesaNombre</td>
+                                            <td>
+                                                <input type="number"
+                                                       class="form-control form-control-sm"
+                                                       min="1" max="50"
+                                                       @bind="item.Cantidad"
+                                                       disabled="@guardandoEdicion" />
+                                            </td>
+                                            <td>
+                                                @item.PrecioUnitario.ToString("C")
+                                            </td>
+                                            <td>
+                                                @((item.Cantidad * item.PrecioUnitario).ToString("C"))
+                                            </td>
+                                            <td>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        disabled="@guardandoEdicion"
+                                                        @onclick="() => EliminarItemEdicion(item)">
+                                                    Quitar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <div class="text-end fs-5 fw-bold mt-3">
+                        Total: @TotalEdicion.ToString("C")
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            disabled="@guardandoEdicion"
+                            @onclick="CerrarModalEdicion">
+                        Volver
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-primary fw-bold"
+                            disabled="@guardandoEdicion"
+                            @onclick="GuardarEdicionPedido">
+                        @(guardandoEdicion ? "Guardando..." : "Guardar cambios")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
-    @inject Application.Services.IAuthService AuthService
-    @inject AuthenticationStateProvider AuthStateProvider
-    @inject NavigationManager Navigation
+    
+    
 
     private List<PedidoDTO> todosLosPedidos = new();
     private List<PedidoDTO> pedidosFiltrados = new();
@@ -287,15 +473,25 @@
             var user = authState.User;
             var clienteIdClaim = user.FindFirst("clienteId")?.Value;
 
-            if (string.IsNullOrEmpty(clienteIdClaim) || !int.TryParse(clienteIdClaim, out int clienteId))
+            if (string.IsNullOrWhiteSpace(clienteIdClaim) ||
+                !int.TryParse(clienteIdClaim, out int clienteId))
             {
+                mensajeError = "No se pudo identificar al cliente en la sesión.";
+                todosLosPedidos.Clear();
+                pedidosFiltrados.Clear();
                 return;
             }
 
             var res = await PedidoApiClient.GetByClienteIdAsync(clienteId);
-            todosLosPedidos = res.ToList();
+
+            var idSeleccionadoAnterior = pedidoSeleccionado?.Id;
+
+            todosLosPedidos = res?.ToList() ?? new List<PedidoDTO>();
             AplicarFiltros();
-            pedidoSeleccionado = null;
+
+            pedidoSeleccionado = idSeleccionadoAnterior.HasValue
+                ? pedidosFiltrados.FirstOrDefault(p => p.Id == idSeleccionadoAnterior.Value)
+                : null;
         }
         catch (Exception ex)
         {
@@ -410,4 +606,281 @@
         EstadoPedido.Cancelado => "bg-danger",
         _ => "bg-secondary"
     };
+    // Estado de la ventana de edición
+private bool mostrarModalEditar;
+private bool guardandoEdicion;
+private string? errorEdicion;
+
+private ModalidadPedido modalidadEdicion = ModalidadPedido.TakeAway;
+private string direccionEdicion = string.Empty;
+private string comentarioEdicion = string.Empty;
+
+private List<HamburguesaDTO> hamburguesasEdicion = new();
+private List<ItemEdicionPedido> itemsEdicion = new();
+private List<PrecioDeliveryDTO> preciosDeliveryEdicion = new();
+
+private int hamburguesaIdEdicion;
+private int cantidadEdicion = 1;
+private decimal precioDeliveryEdicion;
+
+private decimal TotalEdicion =>
+    itemsEdicion.Sum(i => i.Cantidad * i.PrecioUnitario) +
+    (modalidadEdicion == ModalidadPedido.Delivery ? precioDeliveryEdicion : 0m);
+
+// Abre la ventana y carga los datos del pedido seleccionado
+private async Task EditarPedido()
+{
+    if (pedidoSeleccionado == null ||
+        pedidoSeleccionado.Estado != EstadoPedido.Pendiente)
+        return;
+
+    errorEdicion = null;
+
+    try
+    {
+        var pedido = pedidoSeleccionado;
+
+        modalidadEdicion = pedido.Modalidad;
+        direccionEdicion = pedido.Direccion ?? string.Empty;
+        comentarioEdicion = pedido.Comentario ?? string.Empty;
+
+        // Copiamos los detalles y mantenemos sus precios históricos.
+        itemsEdicion = pedido.DetallesPedido.Select(d => new ItemEdicionPedido
+        {
+            HamburguesaId = d.HamburguesaId,
+            HamburguesaNombre = d.HamburguesaNombre,
+            Cantidad = d.Cantidad,
+            PrecioUnitario = d.PrecioUnitario
+        }).ToList();
+
+        var hamburguesas = await HamburguesaApiClient.GetAllAsync();
+        hamburguesasEdicion = hamburguesas?
+            .Where(h => h.Activo || itemsEdicion.Any(i => i.HamburguesaId == h.Id))
+            .ToList() ?? new List<HamburguesaDTO>();
+
+        var preciosDelivery = await PrecioDeliveryApiClient.GetByCriteriaAsync(null);
+        preciosDeliveryEdicion = preciosDelivery?.ToList() ?? new List<PrecioDeliveryDTO>();
+
+        precioDeliveryEdicion = ObtenerPrecioDelivery(
+            pedido.Fecha,
+            preciosDeliveryEdicion);
+
+        hamburguesaIdEdicion = hamburguesasEdicion.FirstOrDefault()?.Id ?? 0;
+        cantidadEdicion = 1;
+
+        mostrarModalEditar = true;
+    }
+    catch (Exception ex)
+    {
+        errorEdicion = $"No se pudo cargar el pedido para editar: {ex.Message}";
+    }
+}
+
+// Agrega una hamburguesa nueva o suma unidades si ya está en el pedido.
+private void AgregarItemEdicion()
+{
+    if (pedidoSeleccionado == null)
+        return;
+
+    errorEdicion = null;
+
+    if (hamburguesaIdEdicion <= 0)
+    {
+        errorEdicion = "Seleccioná una hamburguesa.";
+        return;
+    }
+
+    if (cantidadEdicion < 1 || cantidadEdicion > 50)
+    {
+        errorEdicion = "La cantidad debe estar entre 1 y 50.";
+        return;
+    }
+
+    var hamburguesa = hamburguesasEdicion
+        .FirstOrDefault(h => h.Id == hamburguesaIdEdicion);
+
+    if (hamburguesa == null)
+    {
+        errorEdicion = "No se encontró la hamburguesa seleccionada.";
+        return;
+    }
+
+    var itemExistente = itemsEdicion
+        .FirstOrDefault(i => i.HamburguesaId == hamburguesa.Id);
+
+    if (itemExistente != null)
+    {
+        if (itemExistente.Cantidad + cantidadEdicion > 50)
+        {
+            errorEdicion = "No podés superar las 50 unidades de una hamburguesa.";
+            return;
+        }
+
+        itemExistente.Cantidad += cantidadEdicion;
+        return;
+    }
+
+    // Para los productos nuevos, usamos el precio correspondiente a la
+    // fecha original del pedido, no el precio actual.
+        var preciosHamburguesa = hamburguesa.Precios?.ToList()
+        ?? new List<PrecioDTO>();
+        var precioAplicable = hamburguesa.Precios?
+            .Where(p => p.FechaDesde.Date <= pedidoSeleccionado.Fecha.Date)
+            .OrderByDescending(p => p.FechaDesde)
+            .FirstOrDefault();
+
+        if (precioAplicable == null)
+        {
+            precioAplicable = hamburguesa.Precios?
+                .Where(p => p.FechaDesde.Date > pedidoSeleccionado.Fecha.Date)
+                .OrderBy(p => p.FechaDesde)
+                .FirstOrDefault();
+        }
+
+        if (precioAplicable == null)
+        {
+            errorEdicion = "No hay precios registrados para esta hamburguesa.";
+            return;
+        }
+
+    itemsEdicion.Add(new ItemEdicionPedido
+    {
+        HamburguesaId = hamburguesa.Id,
+        HamburguesaNombre = hamburguesa.Nombre,
+        Cantidad = cantidadEdicion,
+        PrecioUnitario = precioAplicable.Monto
+    });
+
+    cantidadEdicion = 1;
+}
+
+private void EliminarItemEdicion(ItemEdicionPedido item)
+{
+    itemsEdicion.Remove(item);
+    errorEdicion = null;
+}
+
+private void CerrarModalEdicion()
+{
+    if (guardandoEdicion)
+        return;
+
+    mostrarModalEditar = false;
+    errorEdicion = null;
+}
+
+// Guarda los cambios utilizando el endpoint existente.
+private async Task GuardarEdicionPedido()
+{
+    if (pedidoSeleccionado == null)
+        return;
+
+    if (pedidoSeleccionado.Estado != EstadoPedido.Pendiente)
+    {
+        errorEdicion = "Solo se pueden editar pedidos pendientes.";
+        return;
+    }
+
+    if (itemsEdicion.Count == 0)
+    {
+        errorEdicion = "El pedido debe tener al menos una hamburguesa.";
+        return;
+    }
+
+    if (itemsEdicion.Any(i => i.Cantidad < 1 || i.Cantidad > 50))
+    {
+        errorEdicion = "Cada cantidad debe estar entre 1 y 50.";
+        return;
+    }
+
+    if (modalidadEdicion == ModalidadPedido.Delivery &&
+        string.IsNullOrWhiteSpace(direccionEdicion))
+    {
+        errorEdicion = "Ingresá la dirección de entrega.";
+        return;
+    }
+
+    guardandoEdicion = true;
+    errorEdicion = null;
+
+    // Guardamos una copia de los datos actuales por si falla la actualización.
+    var pedido = pedidoSeleccionado;
+    var modalidadAnterior = pedido.Modalidad;
+    var direccionAnterior = pedido.Direccion;
+    var comentarioAnterior = pedido.Comentario;
+    var totalAnterior = pedido.PrecioTotal;
+        var detallesAnteriores = pedido.DetallesPedido?.ToList()
+        ?? new List<DetallePedidoDTO>();
+
+    try
+    {
+        pedido.Modalidad = modalidadEdicion;
+        pedido.Direccion = modalidadEdicion == ModalidadPedido.Delivery
+            ? direccionEdicion.Trim()
+            : null;
+        pedido.Comentario = comentarioEdicion.Trim();
+        pedido.DetallesPedido = itemsEdicion.Select(i => new DetallePedidoDTO
+        {
+            HamburguesaId = i.HamburguesaId,
+            HamburguesaNombre = i.HamburguesaNombre,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.PrecioUnitario
+        }).ToList();
+        pedido.PrecioTotal = TotalEdicion;
+
+        await PedidoApiClient.UpdateAsync(pedido);
+
+        Notificator.NotificarCambioPedidos();
+        mostrarModalEditar = false;
+        await CargarMisPedidos();
+    }
+    catch (Exception ex)
+    {
+        // Restauramos los datos visibles si la API devuelve un error.
+        pedido.Modalidad = modalidadAnterior;
+        pedido.Direccion = direccionAnterior;
+        pedido.Comentario = comentarioAnterior;
+        pedido.PrecioTotal = totalAnterior;
+        pedido.DetallesPedido = detallesAnteriores;
+
+        errorEdicion = $"Error al guardar los cambios: {ex.Message}";
+    }
+    finally
+    {
+        guardandoEdicion = false;
+    }
+}
+
+// Representa una línea editable de la ventana.
+private sealed class ItemEdicionPedido
+{
+    public int HamburguesaId { get; set; }
+    public string HamburguesaNombre { get; set; } = string.Empty;
+    public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; }
+}
+private decimal ObtenerPrecioDelivery(
+    DateTime fechaPedido,
+    List<PrecioDeliveryDTO> precios)
+{
+    if (precios == null || precios.Count == 0)
+        return 0m;
+
+    var precioAplicable = precios
+        .Where(p => p.FechaDesde.Date <= fechaPedido.Date)
+        .OrderByDescending(p => p.FechaDesde)
+        .FirstOrDefault();
+
+    if (precioAplicable != null)
+        return precioAplicable.Monto;
+
+    // Si no hay un precio anterior a la fecha del pedido,
+    // tomamos el primer precio futuro disponible.
+    var primerPrecioFuturo = precios
+        .Where(p => p.FechaDesde.Date > fechaPedido.Date)
+        .OrderBy(p => p.FechaDesde)
+        .FirstOrDefault();
+
+    return primerPrecioFuturo?.Monto ?? 0m;
+}
 }

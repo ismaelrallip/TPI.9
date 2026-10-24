@@ -158,7 +158,11 @@
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label fw-bold">DNI</label>
                         <div class="col-sm-8">
-                            <input type="text" inputmode="numeric" pattern="[0-9]*" class="form-control" @bind="formDni" />
+                            <input type="number"
+                                   class="form-control"
+                                   @bind="formDni"
+                                   min="1000000"
+                                   max="99999999" />
                         </div>
                     </div>
                 </div>
@@ -336,15 +340,37 @@
 
     private async Task GuardarDelivery()
     {
-        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formApellido))
+        var nombre = formNombre.Trim();
+        var apellido = formApellido.Trim();
+        var telefono = formTelefono.Trim();
+
+        if (nombre.Length < 2 || nombre.Length > 50)
         {
-            errorModal = "El nombre y el apellido son obligatorios.";
+            errorModal = "El nombre debe tener entre 2 y 50 caracteres.";
             return;
         }
 
-        if (formDni <= 0)
+        if (apellido.Length < 2 || apellido.Length > 50)
         {
-            errorModal = "Debe ingresar un DNI válido mayor a 0.";
+            errorModal = "El apellido debe tener entre 2 y 50 caracteres.";
+            return;
+        }
+
+        if (telefono.Length <= 8 || !telefono.All(char.IsDigit))
+        {
+            errorModal = "El teléfono debe tener más de 8 dígitos y contener solo números.";
+            return;
+        }
+
+        if (formDni < 1_000_000 || formDni > 99_999_999)
+        {
+            errorModal = "El DNI debe tener entre 7 y 8 dígitos.";
+            return;
+        }
+
+        if (esEdicion && deliverySeleccionado == null)
+        {
+            errorModal = "No hay un delivery seleccionado para modificar.";
             return;
         }
 
@@ -353,29 +379,21 @@
 
         try
         {
-            if (esEdicion && deliverySeleccionado != null)
+            var dto = new DeliveryDTO
             {
-                var dto = new DeliveryDTO
-                {
-                    IdDelivery = deliverySeleccionado.IdDelivery,
-                    Nombre = formNombre,
-                    Apellido = formApellido,
-                    Telefono = formTelefono,
-                    Dni = formDni
-                };
+                Nombre = nombre,
+                Apellido = apellido,
+                Telefono = telefono,
+                Dni = formDni
+            };
 
+            if (esEdicion)
+            {
+                dto.IdDelivery = deliverySeleccionado!.IdDelivery;
                 await DeliveryApiClient.UpdateAsync(dto);
             }
             else
             {
-                var dto = new DeliveryDTO
-                {
-                    Nombre = formNombre,
-                    Apellido = formApellido,
-                    Telefono = formTelefono,
-                    Dni = formDni
-                };
-
                 await DeliveryApiClient.AddAsync(dto);
             }
 

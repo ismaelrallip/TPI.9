@@ -4,6 +4,11 @@
 
 @using DTOs
 @using API.Clients
+@using Application.Services
+
+@inject API.Clients.IAuthService AuthService
+@inject NavigationManager Navigation
+@inject Application.Services.NotificatorService Notificator
 
 <PageTitle>Perfil del Cliente</PageTitle>
 
@@ -175,8 +180,11 @@
 </div>
 
 @code {
-    @inject IAuthService AuthService
+    @inject API.Clients.IAuthService AuthService
+
     @inject NavigationManager Navigation
+
+    @inject Application.Services.NotificatorService Notificator
 
     private int clienteId;
     private ClienteDTO cliente = new();
@@ -282,6 +290,8 @@
             cliente.Telefono = formTelefono.Trim();
 
             await ClienteApiClient.UpdateAsync(cliente);
+            Notificator.NotificarCambioPerfil();
+
             mensajeExito = "Perfil actualizado correctamente.";
             editandoPerfil = false;
         }

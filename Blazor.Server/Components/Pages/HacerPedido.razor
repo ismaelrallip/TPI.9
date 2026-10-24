@@ -67,7 +67,7 @@
                         <option value="0">Seleccionar hamburguesa...</option>
                         @foreach (var h in hamburguesasDisponibles)
                         {
-                            var precio = h.Precios?.LastOrDefault()?.Monto ?? 0;
+                            var precio = ObtenerPrecioHamburguesa(h, DateTime.Now);
                             <option value="@h.Id">@h.Nombre - $@precio.ToString("N2")</option>
                         }
                     </select>
@@ -113,7 +113,10 @@
                                     <td class="text-end">$@item.PrecioUnitario.ToString("N2")</td>
                                     <td class="text-center">
                                         <input type="number" class="form-control form-control-sm text-center mx-auto"
-                                               style="max-width: 80px;" min="1" value="@item.Cantidad"
+                                               style="max-width: 80px;"
+                                               min="1"
+                                               max="50"
+                                               value="@item.Cantidad"
                                                @onchange="(e) => ActualizarCantidadItem(item, e.Value)" />
                                     </td>
                                     <td class="text-end fw-bold">$@item.Subtotal.ToString("N2")</td>
@@ -170,6 +173,7 @@
 
     private decimal TotalPedido => itemsPedido.Sum(i => i.Subtotal) + (modalidadSeleccionada == ModalidadPedido.Delivery ? precioDelivery : 0);
 
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -178,11 +182,14 @@
             var preciosDeliveryTask = PrecioDeliveryApiClient.GetByCriteriaAsync(null);
 
             var res = await hamburguesasTask;
-            hamburguesasDisponibles = res.Where(h => h.Activo).ToList();
+            hamburguesasDisponibles = res?
+                .Where(h => h.Activo)
+                .ToList() ?? new List<HamburguesaDTO>();
 
-            var preciosDel = await preciosDeliveryTask;
-            var precioVigente = preciosDel?.OrderByDescending(p => p.FechaDesde).FirstOrDefault();
-            precioDelivery = precioVigente?.Monto ?? 0;
+            var preciosDel = (await preciosDeliveryTask)?.ToList()
+                ?? new List<PrecioDeliveryDTO>();
+
+            precioDelivery = ObtenerPrecioDelivery(DateTime.Now, preciosDel);
         }
         catch (Exception ex)
         {
@@ -190,18 +197,52 @@
         }
     }
 
+
+
     private void AgregarItem()
     {
-        if (hamburguesaIdSeleccionada <= 0) return;
+        mensajeError = null;
 
-        var burger = hamburguesasDisponibles.FirstOrDefault(h => h.Id == hamburguesaIdSeleccionada);
-        if (burger == null) return;
+        if (hamburguesaIdSeleccionada <= 0)
+        {
+            mensajeError = "Debe seleccionar una hamburguesa.";
+            return;
+        }
 
-        var precio = burger.Precios?.LastOrDefault()?.Monto ?? 0;
-        var itemExistente = itemsPedido.FirstOrDefault(i => i.HamburguesaId == burger.Id);
+        if (cantidadSeleccionada < 1 || cantidadSeleccionada > 50)
+        {
+            mensajeError = "La cantidad debe estar entre 1 y 50.";
+            return;
+        }
+
+        var burger = hamburguesasDisponibles
+            .FirstOrDefault(h => h.Id == hamburguesaIdSeleccionada && h.Activo);
+
+        if (burger == null)
+        {
+            mensajeError = "La hamburguesa seleccionada no está disponible.";
+            return;
+        }
+
+        var precio = ObtenerPrecioHamburguesa(burger, DateTime.Now);
+
+        if (precio <= 0)
+        {
+            mensajeError = $"La hamburguesa {burger.Nombre} no tiene un precio válido.";
+            return;
+        }
+
+        var itemExistente = itemsPedido
+            .FirstOrDefault(i => i.HamburguesaId == burger.Id);
 
         if (itemExistente != null)
         {
+            if (itemExistente.Cantidad + cantidadSeleccionada > 50)
+            {
+                mensajeError = "La cantidad total de una hamburguesa no puede superar 50.";
+                return;
+            }
+
             itemExistente.Cantidad += cantidadSeleccionada;
         }
         else
@@ -217,15 +258,30 @@
 
         hamburguesaIdSeleccionada = 0;
         cantidadSeleccionada = 1;
+        mensajeError = null;
     }
+
+
 
     private void ActualizarCantidadItem(ItemPedidoTemp item, object? valor)
     {
-        if (int.TryParse(valor?.ToString(), out int cant) && cant > 0)
+        mensajeError = null;
+
+        if (!int.TryParse(valor?.ToString(), out int cant))
         {
-            item.Cantidad = cant;
+            mensajeError = "Ingrese una cantidad válida.";
+            return;
         }
+
+        if (cant < 1 || cant > 50)
+        {
+            mensajeError = "La cantidad debe estar entre 1 y 50.";
+            return;
+        }
+
+        item.Cantidad = cant;
     }
+
 
     private void EliminarItem(ItemPedidoTemp item)
     {
@@ -239,9 +295,30 @@
 
     private async Task GuardarPedido()
     {
-        if (!itemsPedido.Any()) return;
+        if (!itemsPedido.Any())
+        {
+            mensajeError = "Debe agregar al menos una hamburguesa al pedido.";
+            return;
+        }
 
-        if (modalidadSeleccionada == ModalidadPedido.Delivery && string.IsNullOrWhiteSpace(direccion))
+        if (itemsPedido.Any(i => i.Cantidad < 1 || i.Cantidad > 50))
+        {
+            mensajeError = "Cada hamburguesa debe tener una cantidad entre 1 y 50.";
+            return;
+        }
+        if (itemsPedido.Any(i => i.PrecioUnitario <= 0))
+        {
+            mensajeError = "Hay una hamburguesa con un precio inválido. Quitala y volvé a agregarla.";
+            return;
+        }
+
+        if (modalidadSeleccionada == ModalidadPedido.Delivery && precioDelivery < 0)
+        {
+            mensajeError = "El precio del delivery no es válido.";
+            return;
+        }
+        if (modalidadSeleccionada == ModalidadPedido.Delivery &&
+            string.IsNullOrWhiteSpace(direccion))
         {
             mensajeError = "Por favor ingrese una dirección para el envío por delivery.";
             return;
@@ -285,6 +362,58 @@
             guardando = false;
         }
     }
+
+
+    private decimal ObtenerPrecioHamburguesa(
+        HamburguesaDTO hamburguesa,
+        DateTime fechaPedido)
+    {
+        var precios = hamburguesa.Precios?.ToList() ?? new();
+
+        if (!precios.Any())
+            return 0m;
+
+        var precioAplicable = precios
+            .Where(p => p.FechaDesde.Date <= fechaPedido.Date)
+            .OrderByDescending(p => p.FechaDesde)
+            .FirstOrDefault();
+
+        if (precioAplicable != null)
+            return precioAplicable.Monto;
+
+        var primerPrecioFuturo = precios
+            .Where(p => p.FechaDesde.Date > fechaPedido.Date)
+            .OrderBy(p => p.FechaDesde)
+            .FirstOrDefault();
+
+        return primerPrecioFuturo?.Monto ?? 0m;
+    }
+
+
+
+    private decimal ObtenerPrecioDelivery(
+        DateTime fechaPedido,
+        List<PrecioDeliveryDTO> precios)
+    {
+        if (precios == null || !precios.Any())
+            return 0m;
+
+        var precioAplicable = precios
+            .Where(p => p.FechaDesde.Date <= fechaPedido.Date)
+            .OrderByDescending(p => p.FechaDesde)
+            .FirstOrDefault();
+
+        if (precioAplicable != null)
+            return precioAplicable.Monto;
+
+        var primerPrecioFuturo = precios
+            .Where(p => p.FechaDesde.Date > fechaPedido.Date)
+            .OrderBy(p => p.FechaDesde)
+            .FirstOrDefault();
+
+        return primerPrecioFuturo?.Monto ?? 0m;
+    }
+
 
     private class ItemPedidoTemp
     {

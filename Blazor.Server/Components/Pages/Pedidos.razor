@@ -104,6 +104,11 @@
 
             <!-- Botones de Acción Administrativa -->
             <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <button class="btn btn-primary px-3 fw-bold"
+                        @onclick="AbrirModalNuevo"
+                        disabled="@cargando">
+                    + Nuevo pedido
+                </button>
                 <button class="btn btn-outline-danger px-3 fw-bold" disabled="@(!HabilitarBotonCancelar)" @onclick="CancelarPedido">
                     Cancelar
                 </button>
@@ -116,6 +121,7 @@
                 <button class="btn btn-success px-4 fw-bold" disabled="@(!HabilitarBotonAvanzar)" @onclick="AvanzarEstadoPedido">
                     @textoBotonAvanzar
                 </button>
+
             </div>
         </div>
 
@@ -245,7 +251,9 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content shadow">
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title fw-bold">Modificar Pedido #@pedidoEditando.Id</h5>
+                    <h5 class="modal-title fw-bold">
+                        @(esNuevoPedido ? "Nuevo Pedido" : $"Modificar Pedido #{pedidoEditando.Id}")
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" @onclick="CerrarModales"></button>
                 </div>
                 <div class="modal-body">
@@ -253,7 +261,27 @@
                     {
                         <div class="alert alert-danger py-2">@errorModal</div>
                     }
-
+                    @if (esNuevoPedido)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Cliente</label>
+                            <select class="form-select" @bind="clienteIdSeleccionado">
+                                <option value="0">Seleccionar cliente...</option>
+                                @foreach (var cliente in clientesActivos)
+                                {
+                                    <option value="@cliente.Id">
+                                        @cliente.Nombre @cliente.Apellido
+                                    </option>
+                                }
+                            </select>
+                            @if (!clientesActivos.Any())
+                            {
+                                <div class="text-danger small mt-1">
+                                    No hay clientes activos disponibles.
+                                </div>
+                            }
+                        </div>
+                    }
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Modalidad</label>
@@ -286,7 +314,7 @@
                                     <option value="0">Seleccionar hamburguesa...</option>
                                     @foreach (var h in hamburguesasDisponibles)
                                     {
-                                        var precio = h.Precios?.LastOrDefault()?.Monto ?? 0;
+                                        var precio = ObtenerPrecioHamburguesa(h, pedidoEditando.Fecha);
                                         <option value="@h.Id">@h.Nombre - $@precio.ToString("N2")</option>
                                     }
                                 </select>
@@ -341,17 +369,30 @@
                     </div>
 
                     <div class="text-end fw-bold fs-5">
-                        Total: <span class="text-success">$@pedidoEditando.DetallesPedido.Sum(d => d.Cantidad * d.PrecioUnitario).ToString("N2")</span>
+                        @if (pedidoEditando.Modalidad == ModalidadPedido.Delivery)
+                        {
+                            <div class="small text-muted">
+                                Envío: $@ObtenerPrecioDelivery(pedidoEditando.Fecha).ToString("N2")
+                            </div>
+                        }
+                        <div>
+                            Total: <span class="text-success">
+                                $@CalcularTotalPedido(pedidoEditando).ToString("N2")
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CerrarModales" disabled="@guardandoModal">Cancelar</button>
-                    <button type="button" class="btn btn-primary fw-bold" @onclick="GuardarModificacionPedido" disabled="@guardandoModal">
+                    <button type="button"
+                            class="btn btn-primary fw-bold"
+                            @onclick="GuardarModificacionPedido"
+                            disabled="@guardandoModal">
                         @if (guardandoModal)
                         {
                             <span class="spinner-border spinner-border-sm me-1"></span>
                         }
-                        Guardar Cambios
+                        @(esNuevoPedido ? "Crear Pedido" : "Guardar Cambios")
                     </button>
                 </div>
             </div>
@@ -363,6 +404,11 @@
     private List<PedidoDTO> listaPedidos = new();
     private List<DeliveryDTO> listaDeliveries = new();
     private List<HamburguesaDTO> hamburguesasDisponibles = new();
+    private List<ClienteDTO> clientesActivos = new();
+    private List<PrecioDeliveryDTO> preciosDelivery = new();
+
+    private bool esNuevoPedido;
+    private int clienteIdSeleccionado;
     private PedidoDTO? pedidoSeleccionado;
 
     private bool filtrarPorFecha = false;
@@ -417,23 +463,34 @@
     {
         try
         {
-            var delTask = DeliveryApiClient.GetAllAsync();
-            var burgTask = HamburguesaApiClient.GetAllAsync();
+            var clientesTask = ClienteApiClient.GetAllAsync();
+            var deliveriesTask = DeliveryApiClient.GetAllAsync();
+            var hamburguesasTask = HamburguesaApiClient.GetAllAsync();
+            var preciosDeliveryTask = PrecioDeliveryApiClient.GetAllAsync();
 
-            var todosDeliveries = (await delTask)?.ToList() ?? new();
-            // Filtramos deliveries para mostrar solo los activos, o el que ya tenga asignado el pedido actual si estuviera inactivo
-            listaDeliveries = todosDeliveries.Where(d => d.Activo || (pedidoSeleccionado != null && d.IdDelivery == pedidoSeleccionado.DeliveryId)).ToList();
+            var todosClientes = (await clientesTask)?.ToList() ?? new();
+            clientesActivos = todosClientes.Where(c => c.Activo).ToList();
 
-            var todasBurgs = (await burgTask)?.ToList() ?? new();
-            // Filtramos hamburguesas activas para nuevos pedidos
-            hamburguesasDisponibles = todasBurgs.Where(h => h.Activo).ToList();
+            var todosDeliveries = (await deliveriesTask)?.ToList() ?? new();
+            listaDeliveries = todosDeliveries.Where(d => d.Activo).ToList();
+
+            var todasHamburguesas = (await hamburguesasTask)?.ToList() ?? new();
+            hamburguesasDisponibles = todasHamburguesas
+                .Where(h => h.Activo)
+                .ToList();
+
+            preciosDelivery = (await preciosDeliveryTask)?.ToList() ?? new();
         }
-        catch
+        catch (Exception ex)
         {
+            mensajeError = $"Error al cargar los catálogos: {ex.Message}";
+            clientesActivos = new();
             listaDeliveries = new();
             hamburguesasDisponibles = new();
+            preciosDelivery = new();
         }
     }
+
 
     private async Task CargarPedidos()
     {
@@ -566,107 +623,220 @@
         }
     }
 
+
     private async Task AbrirModalModificar()
     {
-        if (pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Pendiente) return;
-
-        // Asegurarnos de que las hamburguesas del pedido actual (incluso si se dieron de baja) estén en la lista disponible para edición
-        var burgsService = await HamburguesaApiClient.GetAllAsync();
-        hamburguesasDisponibles = burgsService.Where(h => h.Activo || pedidoSeleccionado.DetallesPedido.Any(d => d.HamburguesaId == h.Id)).ToList();
-
-        pedidoEditando = new PedidoDTO
-        {
-            Id = pedidoSeleccionado.Id,
-            Fecha = pedidoSeleccionado.Fecha,
-            ClienteId = pedidoSeleccionado.ClienteId,
-            Modalidad = pedidoSeleccionado.Modalidad,
-            Direccion = pedidoSeleccionado.Direccion,
-            Comentario = pedidoSeleccionado.Comentario,
-            Estado = pedidoSeleccionado.Estado,
-            PrecioTotal = pedidoSeleccionado.PrecioTotal,
-            DetallesPedido = pedidoSeleccionado.DetallesPedido?.Select(d => new DetallePedidoDTO
-            {
-                HamburguesaId = d.HamburguesaId,
-                HamburguesaNombre = d.HamburguesaNombre,
-                PrecioUnitario = d.PrecioUnitario,
-                Cantidad = d.Cantidad
-            }).ToList() ?? new()
-        };
+        if (pedidoSeleccionado == null ||
+            pedidoSeleccionado.Estado != EstadoPedido.Pendiente)
+            return;
 
         errorModal = null;
-        mostrarModalModificar = true;
+        esNuevoPedido = false;
+        hamburguesaIdSeleccionada = 0;
+        cantidadSeleccionada = 1;
+
+        try
+        {
+            await CargarCatalogos();
+
+            pedidoEditando = new PedidoDTO
+            {
+                Id = pedidoSeleccionado.Id,
+                Fecha = pedidoSeleccionado.Fecha,
+                ClienteId = pedidoSeleccionado.ClienteId,
+                ClienteNombre = pedidoSeleccionado.ClienteNombre,
+                Modalidad = pedidoSeleccionado.Modalidad,
+                Direccion = pedidoSeleccionado.Direccion,
+                Comentario = pedidoSeleccionado.Comentario,
+                Estado = pedidoSeleccionado.Estado,
+                PrecioTotal = pedidoSeleccionado.PrecioTotal,
+                DeliveryId = pedidoSeleccionado.DeliveryId,
+                DetallesPedido = pedidoSeleccionado.DetallesPedido?
+                    .Select(d => new DetallePedidoDTO
+                    {
+                        Id = d.Id,
+                        PedidoId = d.PedidoId,
+                        HamburguesaId = d.HamburguesaId,
+                        HamburguesaNombre = d.HamburguesaNombre,
+                        PrecioUnitario = d.PrecioUnitario,
+                        Cantidad = d.Cantidad
+                    }).ToList() ?? new()
+            };
+
+            // En edición solo se ofrecen hamburguesas activas para agregar.
+            mostrarModalModificar = true;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al preparar la modificación: {ex.Message}";
+        }
     }
+
+
 
     private void AgregarItemEdicion()
     {
-        if (hamburguesaIdSeleccionada <= 0 || pedidoEditando == null) return;
+        if (pedidoEditando == null)
+            return;
 
-        var burger = hamburguesasDisponibles.FirstOrDefault(h => h.Id == hamburguesaIdSeleccionada);
-        if (burger == null) return;
+        if (hamburguesaIdSeleccionada <= 0)
+        {
+            errorModal = "Debe seleccionar una hamburguesa.";
+            return;
+        }
 
-        var precio = burger.Precios?.LastOrDefault()?.Monto ?? 0;
-        var itemExistente = pedidoEditando.DetallesPedido.FirstOrDefault(i => i.HamburguesaId == burger.Id);
+        if (cantidadSeleccionada < 1 || cantidadSeleccionada > 50)
+        {
+            errorModal = "La cantidad debe estar entre 1 y 50.";
+            return;
+        }
+
+        var hamburguesa = hamburguesasDisponibles
+            .FirstOrDefault(h => h.Id == hamburguesaIdSeleccionada && h.Activo);
+
+        if (hamburguesa == null)
+        {
+            errorModal = "La hamburguesa seleccionada no está disponible.";
+            return;
+        }
+
+        var precio = ObtenerPrecioHamburguesa(hamburguesa, pedidoEditando.Fecha);
+
+        if (precio <= 0)
+        {
+            errorModal = $"La hamburguesa {hamburguesa.Nombre} no tiene un precio válido.";
+            return;
+        }
+
+        var itemExistente = pedidoEditando.DetallesPedido
+            .FirstOrDefault(i => i.HamburguesaId == hamburguesa.Id);
 
         if (itemExistente != null)
         {
+            if (itemExistente.Cantidad + cantidadSeleccionada > 50)
+            {
+                errorModal = "La cantidad total de una hamburguesa no puede superar 50.";
+                return;
+            }
+
             itemExistente.Cantidad += cantidadSeleccionada;
         }
         else
         {
             pedidoEditando.DetallesPedido.Add(new DetallePedidoDTO
             {
-                HamburguesaId = burger.Id,
-                HamburguesaNombre = burger.Nombre,
+                HamburguesaId = hamburguesa.Id,
+                HamburguesaNombre = hamburguesa.Nombre,
                 PrecioUnitario = precio,
                 Cantidad = cantidadSeleccionada
             });
         }
 
+        errorModal = null;
         hamburguesaIdSeleccionada = 0;
         cantidadSeleccionada = 1;
     }
+
 
     private void EliminarItemEdicion(DetallePedidoDTO item)
     {
         pedidoEditando?.DetallesPedido.Remove(item);
     }
 
+
     private async Task GuardarModificacionPedido()
     {
-        if (pedidoEditando == null) return;
+        if (pedidoEditando == null || guardandoModal)
+            return;
 
-        if (pedidoEditando.Modalidad == ModalidadPedido.Delivery && string.IsNullOrWhiteSpace(pedidoEditando.Direccion))
+        errorModal = null;
+
+        if (esNuevoPedido)
+        {
+            if (!clientesActivos.Any(c => c.Id == clienteIdSeleccionado && c.Activo))
+            {
+                errorModal = "Debe seleccionar un cliente activo.";
+                return;
+            }
+        }
+
+        if (pedidoEditando.Modalidad == ModalidadPedido.Delivery &&
+            string.IsNullOrWhiteSpace(pedidoEditando.Direccion))
         {
             errorModal = "La dirección es obligatoria para pedidos con delivery.";
             return;
         }
 
-        if (!pedidoEditando.DetallesPedido.Any())
+        if (pedidoEditando.DetallesPedido == null ||
+            !pedidoEditando.DetallesPedido.Any())
         {
             errorModal = "El pedido debe tener al menos un ítem.";
             return;
         }
 
+        if (pedidoEditando.DetallesPedido.Any(d => d.Cantidad < 1 || d.Cantidad > 50))
+        {
+            errorModal = "Cada ítem debe tener una cantidad entre 1 y 50.";
+            return;
+        }
+
+        if (pedidoEditando.Modalidad == ModalidadPedido.Delivery &&
+            !preciosDelivery.Any())
+        {
+            errorModal = "No hay precios de delivery configurados.";
+            return;
+        }
+
         guardandoModal = true;
-        errorModal = null;
+
         try
         {
-            pedidoEditando.PrecioTotal = pedidoEditando.DetallesPedido.Sum(d => d.Cantidad * d.PrecioUnitario);
-            if (pedidoEditando.Modalidad == ModalidadPedido.TakeAway) pedidoEditando.Direccion = null;
+            if (esNuevoPedido)
+            {
+                pedidoEditando.ClienteId = clienteIdSeleccionado;
+                pedidoEditando.Estado = EstadoPedido.Pendiente;
+                pedidoEditando.Fecha = DateTime.Now;
+                pedidoEditando.DeliveryId = null;
+            }
 
-            await PedidoApiClient.UpdateAsync(pedidoEditando);
+            if (pedidoEditando.Modalidad == ModalidadPedido.TakeAway)
+            {
+                pedidoEditando.Direccion = null;
+                pedidoEditando.DeliveryId = null;
+            }
+            else
+            {
+                pedidoEditando.Direccion = pedidoEditando.Direccion?.Trim();
+            }
+
+            pedidoEditando.PrecioTotal = CalcularTotalPedido(pedidoEditando);
+
+            if (esNuevoPedido)
+            {
+                await PedidoApiClient.AddAsync(pedidoEditando);
+            }
+            else
+            {
+                await PedidoApiClient.UpdateAsync(pedidoEditando);
+            }
+
             CerrarModales();
             await CargarPedidos();
+
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
-            errorModal = $"Error al actualizar pedido: {ex.Message}";
+            errorModal = esNuevoPedido
+                ? $"Error al crear el pedido: {ex.Message}"
+                : $"Error al actualizar el pedido: {ex.Message}";
         }
         finally
         {
             guardandoModal = false;
         }
     }
+
 
     private async Task AbrirModalAsignarDelivery()
     {
@@ -676,7 +846,9 @@
         {
             
             var todosDeliveries = (await DeliveryApiClient.GetAllAsync())?.ToList() ?? new();
-            listaDeliveries = todosDeliveries.Where(d => d.Activo || d.IdDelivery == pedidoSeleccionado.DeliveryId).ToList();
+            listaDeliveries = todosDeliveries
+    .Where(d => d.Activo)
+    .ToList();
         }
         catch
         {
@@ -693,7 +865,13 @@
         mostrarModalDelivery = false;
         mostrarModalModificar = false;
         errorModal = null;
+        esNuevoPedido = false;
+        pedidoEditando = null;
+        clienteIdSeleccionado = 0;
+        hamburguesaIdSeleccionada = 0;
+        cantidadSeleccionada = 1;
     }
+
 
     private async Task GuardarAsignacionDelivery()
     {
@@ -703,14 +881,26 @@
             return;
         }
 
+        // Verificar que el delivery seleccionado esté activo.
+        var deliveryActivo = listaDeliveries.Any(d =>
+            d.IdDelivery == deliveryIdSeleccionado && d.Activo);
+
+        if (!deliveryActivo)
+        {
+            errorModal = "Debe seleccionar un delivery activo.";
+            return;
+        }
+
         guardandoModal = true;
         errorModal = null;
+
         try
         {
             pedidoSeleccionado.DeliveryId = deliveryIdSeleccionado;
             pedidoSeleccionado.Estado = EstadoPedido.Asignado;
 
             await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+
             CerrarModales();
             await CargarPedidos();
         }
@@ -722,6 +912,102 @@
         {
             guardandoModal = false;
         }
+    }
+
+    private async Task AbrirModalNuevo()
+    {
+        errorModal = null;
+        mensajeError = null;
+        hamburguesaIdSeleccionada = 0;
+        cantidadSeleccionada = 1;
+        clienteIdSeleccionado = 0;
+        esNuevoPedido = true;
+
+        try
+        {
+            await CargarCatalogos();
+
+            if (!clientesActivos.Any())
+            {
+                errorModal = "No hay clientes activos para crear un pedido.";
+            }
+
+            if (!hamburguesasDisponibles.Any())
+            {
+                errorModal = "No hay hamburguesas activas disponibles.";
+            }
+
+            pedidoEditando = new PedidoDTO
+            {
+                Fecha = DateTime.Now,
+                Estado = EstadoPedido.Pendiente,
+                Modalidad = ModalidadPedido.TakeAway,
+                Direccion = null,
+                Comentario = string.Empty,
+                DetallesPedido = new List<DetallePedidoDTO>()
+            };
+
+            mostrarModalModificar = true;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al preparar el nuevo pedido: {ex.Message}";
+        }
+    }
+    private decimal ObtenerPrecioHamburguesa(HamburguesaDTO hamburguesa, DateTime fechaPedido)
+    {
+        var precios = hamburguesa.Precios?.ToList() ?? new();
+
+        if (!precios.Any())
+            return 0m;
+
+        var precioAnterior = precios
+            .Where(p => p.FechaDesde.Date <= fechaPedido.Date)
+            .OrderByDescending(p => p.FechaDesde)
+            .FirstOrDefault();
+
+        if (precioAnterior != null)
+            return precioAnterior.Monto;
+
+        // Si no existe un precio anterior, elegir el posterior más cercano.
+        return precios
+            .Where(p => p.FechaDesde.Date > fechaPedido.Date)
+            .OrderBy(p => p.FechaDesde)
+            .First()
+            .Monto;
+    }
+
+    private decimal ObtenerPrecioDelivery(DateTime fechaPedido)
+    {
+        if (!preciosDelivery.Any())
+            return 0m;
+
+        var precioAnterior = preciosDelivery
+            .Where(p => p.FechaDesde.Date <= fechaPedido.Date)
+            .OrderByDescending(p => p.FechaDesde)
+            .FirstOrDefault();
+
+        if (precioAnterior != null)
+            return precioAnterior.Monto;
+
+        // Si no existe un precio anterior, elegir el posterior más cercano.
+        return preciosDelivery
+            .Where(p => p.FechaDesde.Date > fechaPedido.Date)
+            .OrderBy(p => p.FechaDesde)
+            .First()
+            .Monto;
+    }
+
+    private decimal CalcularTotalPedido(PedidoDTO pedido)
+    {
+        var totalHamburguesas = pedido.DetallesPedido?
+            .Sum(d => d.Cantidad * d.PrecioUnitario) ?? 0m;
+
+        var envio = pedido.Modalidad == ModalidadPedido.Delivery
+            ? ObtenerPrecioDelivery(pedido.Fecha)
+            : 0m;
+
+        return totalHamburguesas + envio;
     }
 
     private string ObtenerBadgeEstado(EstadoPedido estado) => estado switch

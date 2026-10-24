@@ -1,6 +1,7 @@
 
 using API.Clients;
 using API.Auth.Blazor.Server;
+using Application.Services;
 using Blazor.Server.Components;
 using Blazor.Server;
 using Microsoft.AspNetCore.Authentication;
@@ -13,7 +14,7 @@ builder.Services.AddRazorComponents()
 
 // Autenticacion de la catedra activa
 // un servicio por circuito/navegador
-builder.Services.AddScoped<IAuthService, BlazorServerAuthService>();
+builder.Services.AddScoped<API.Clients.IAuthService, BlazorServerAuthService>();
 builder.Services.AddScoped<AuthenticationStateProvider, BlazorAuthenticationStateProvider>();
 
 // permite que los ApiClients (estaticos) lleguen al servicio de autenticacion del circuito actual
@@ -24,10 +25,12 @@ builder.Services.AddAuthentication(SessionAuthenticationHandler.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(SessionAuthenticationHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<NotificatorService>();
 var app = builder.Build();
 
 // ya no se registra una instancia global. Los ApiClients piden el servicio del circuito del usuario actual.
-AuthServiceProvider.RegisterResolver(() => CircuitServicesAccessor.Current?.GetService<IAuthService>());
+AuthServiceProvider.RegisterResolver(
+    () => CircuitServicesAccessor.Current?.GetService<API.Clients.IAuthService>());
 
 if (!app.Environment.IsDevelopment())
 {

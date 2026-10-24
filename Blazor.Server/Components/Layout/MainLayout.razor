@@ -1,4 +1,9 @@
 ﻿@inherits LayoutComponentBase
+@using API.Clients
+@using Microsoft.AspNetCore.Components.Authorization
+@inject API.Clients.IAuthService AuthService
+@inject Application.Services.NotificatorService Notificator
+@implements IDisposable
 
 <div class="page">
     <div class="sidebar">
@@ -9,7 +14,9 @@
         <div class="top-row px-4">
             <AuthorizeView>
                 <Authorized>
-                    <span class="fw-bold text-secondary">Bienvenido, @context.User.Identity?.Name</span>
+                    <span class="fw-bold text-secondary">
+                        Bienvenido, @nombreCompleto
+                    </span>
                 </Authorized>
             </AuthorizeView>
         </div>
@@ -25,3 +32,80 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private string nombreCompleto = "Usuario";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Escuchar cambios en la sesión, como el inicio o cierre de sesión.
+        AuthService.AuthenticationStateChanged += AlCambiarAutenticacion;
+
+        // Escuchar cuando se guarda el perfil.
+        Notificator.OnPerfilChanged += ActualizarPerfilNotificado;
+
+        await ActualizarNombre();
+    }
+
+    private void AlCambiarAutenticacion(bool isAuthenticated)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            if (isAuthenticated)
+            {
+                await ActualizarNombre();
+            }
+            else
+            {
+                nombreCompleto = "Usuario";
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    private void ActualizarPerfilNotificado()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await ActualizarNombre();
+            StateHasChanged();
+        });
+    }
+
+    private async Task ActualizarNombre()
+    {
+        try
+        {
+            var session = AuthService.CurrentSession;
+
+            // Igual que en HomeCliente_Load del WinForms.
+            if (session?.ClienteId == null)
+            {
+                nombreCompleto = "Usuario";
+                return;
+            }
+
+            var cliente = await ClienteApiClient.GetAsync(
+                session.ClienteId.Value);
+
+            nombreCompleto = $"{cliente.Nombre} {cliente.Apellido}".Trim();
+
+            if (string.IsNullOrWhiteSpace(nombreCompleto))
+            {
+                nombreCompleto = session.Username;
+            }
+        }
+        catch
+        {
+            nombreCompleto =
+                AuthService.CurrentSession?.Username ?? "Usuario";
+        }
+    }
+
+    public void Dispose()
+    {
+        AuthService.AuthenticationStateChanged -= AlCambiarAutenticacion;
+        Notificator.OnPerfilChanged -= ActualizarPerfilNotificado;
+    }
+}

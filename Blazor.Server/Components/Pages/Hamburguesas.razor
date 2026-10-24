@@ -4,7 +4,7 @@
 @using Application.Services
 @inject NotificatorService Notificator
 @implements IDisposable
-
+@inject Microsoft.JSInterop.IJSRuntime JS
 <PageTitle>Gestión de Hamburguesas</PageTitle>
 
 <div class="container-fluid p-4">
@@ -43,7 +43,7 @@
                 @if (cargando)
                 {
                     <tr>
-                        <td colspan="6" class="text-center py-4">
+                        <td colspan="7" class="text-center py-4">
                             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                             <span class="ms-2">Cargando...</span>
                         </td>
@@ -52,7 +52,7 @@
                 else if (!listaHamburguesas.Any())
                 {
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">
+                        <td colspan="7" class="text-center py-4 text-muted">
                             No se encontraron registros.
                         </td>
                     </tr>
@@ -62,7 +62,9 @@
                     @foreach (var burger in listaHamburguesas)
                     {
                         var seleccionado = hamburguesaSeleccionada?.Id == burger.Id;
-                        var ultimoPrecio = burger.Precios?.LastOrDefault();
+                        var ultimoPrecio = burger.Precios?
+                        .OrderByDescending(p => p.FechaDesde)
+                        .FirstOrDefault();
 
                         <tr class="@(seleccionado ? "table-primary fw-bold" : "")" style="cursor: pointer;"
                             @onclick="() => SeleccionarHamburguesa(burger)">
@@ -117,7 +119,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow">
                 <div class="modal-header">
-                    <h5 class="modal-title">@(esEdicion ? "ActualizarHamburguesaForm" : "AgregarHamburguesaForm")</h5>
+                    <h5 class="modal-title">@(esEdicion ? "Modificar hamburguesa" : "Agregar hamburguesa")</h5>
                     <button type="button" class="btn-close" @onclick="CerrarModales"></button>
                 </div>
                 <div class="modal-body">
@@ -160,7 +162,9 @@
                             }
                             else
                             {
-                                <small class="text-muted">No hay ingredientes cargados.</small>
+                            <small class="@(errorIngredientes != null ? "text-danger" : "text-muted")">
+                                @(errorIngredientes ?? "No hay ingredientes disponibles.")
+                            </small>
                             }
                         </div>
                     </div>
@@ -202,13 +206,15 @@
    ========================================== *@
 @if (mostrarModalResumen && hamburguesaSeleccionada != null)
 {
-    var ultimoPrecio = hamburguesaSeleccionada.Precios?.LastOrDefault();
+    var ultimoPrecio = hamburguesaSeleccionada.Precios?
+    .OrderByDescending(p => p.FechaDesde)
+    .FirstOrDefault();
 
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content shadow">
                 <div class="modal-header">
-                    <h5 class="modal-title">ResumenHamburguesaForm</h5>
+                    <h5 class="modal-title">Resumen de hamburguesa</h5>
                     <button type="button" class="btn-close" @onclick="CerrarModales"></button>
                 </div>
                 <div class="modal-body">
@@ -318,7 +324,7 @@
     private bool esEdicion;
     private bool guardando;
     private string? errorModal;
-
+    private string? errorIngredientes;
     // Campos del formulario
     private string formNombre = string.Empty;
     private string formDescripcion = string.Empty;
@@ -387,16 +393,24 @@
     }
 
     private async Task CargarIngredientesDisponibles()
+{
+    errorIngredientes = null;
+
+    try
     {
-        try
+        todosLosIngredientes = (await IngredienteApiClient.GetAllAsync()).ToList();
+
+        if (!todosLosIngredientes.Any())
         {
-            todosLosIngredientes = (await IngredienteApiClient.GetAllAsync()).ToList();
-        }
-        catch
-        {
-            todosLosIngredientes = new();
+            errorIngredientes = "No hay ingredientes disponibles.";
         }
     }
+    catch (Exception ex)
+    {
+        todosLosIngredientes = new();
+        errorIngredientes = $"Error al cargar los ingredientes: {ex.Message}";
+    }
+}
 
     private void SeleccionarHamburguesa(HamburguesaDTO burger)
     {
@@ -421,7 +435,9 @@
         esEdicion = true;
         formNombre = hamburguesaSeleccionada.Nombre;
         formDescripcion = hamburguesaSeleccionada.Descripcion;
-        formPrecio = hamburguesaSeleccionada.Precios?.LastOrDefault()?.Monto ?? 0;
+        formPrecio = hamburguesaSeleccionada.Precios?
+    .OrderByDescending(p => p.FechaDesde)
+    .FirstOrDefault()?.Monto ?? 0;
         idsIngredientesSeleccionados = hamburguesaSeleccionada.Ingredientes?.Select(i => i.Id).ToHashSet() ?? new();
         errorModal = null;
         mostrarModalFormulario = true;
@@ -460,43 +476,63 @@
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(formDescripcion))
+        {
+            errorModal = "La descripción es obligatoria.";
+            return;
+        }
+
+        if (formPrecio < 0)
+        {
+            errorModal = "El precio no puede ser negativo.";
+            return;
+        }
+        if (errorIngredientes != null)
+        {
+            errorModal = "No se pudieron cargar los ingredientes. Cerrá el formulario e intentá nuevamente.";
+            return;
+        }
+        var ingredientesSeleccionados = todosLosIngredientes
+            .Where(i => idsIngredientesSeleccionados.Contains(i.Id))
+            .ToList();
+
+        if (!ingredientesSeleccionados.Any())
+        {
+            errorModal = "Debe seleccionar al menos un ingrediente.";
+            return;
+        }
+
+        if (esEdicion && hamburguesaSeleccionada == null)
+        {
+            errorModal = "No hay una hamburguesa seleccionada para modificar.";
+            return;
+        }
+
         guardando = true;
         errorModal = null;
 
         try
         {
-            var ingredientesSeleccionados = todosLosIngredientes
-                .Where(i => idsIngredientesSeleccionados.Contains(i.Id))
-                .ToList();
-
-            if (esEdicion && hamburguesaSeleccionada != null)
+            var dto = new HamburguesaDTO
             {
-                var dto = new HamburguesaDTO
-                {
-                    Id = hamburguesaSeleccionada.Id,
-                    Nombre = formNombre,
-                    Descripcion = formDescripcion,
-                    Ingredientes = ingredientesSeleccionados,
-                    // El servicio compara con el precio vigente y decide si es un precio nuevo (con fecha de hoy)
-                    Precios = formPrecio > 0
-                        ? new List<PrecioDTO> { new PrecioDTO { Monto = formPrecio } }
-                        : new List<PrecioDTO>()
-                };
+                Nombre = formNombre.Trim(),
+                Descripcion = formDescripcion.Trim(),
+                Ingredientes = ingredientesSeleccionados,
+                // Se envía también cuando el precio es 0.
+                // El servicio decide si debe agregar un nuevo precio al histórico.
+                Precios = new List<PrecioDTO>
+            {
+                new PrecioDTO { Monto = formPrecio }
+            }
+            };
 
+            if (esEdicion)
+            {
+                dto.Id = hamburguesaSeleccionada!.Id;
                 await HamburguesaApiClient.UpdateAsync(dto);
             }
             else
             {
-                var dto = new HamburguesaDTO
-                {
-                    Nombre = formNombre,
-                    Descripcion = formDescripcion,
-                    Ingredientes = ingredientesSeleccionados,
-                    Precios = formPrecio > 0
-                        ? new List<PrecioDTO> { new PrecioDTO { Monto = formPrecio } }
-                        : new List<PrecioDTO>()
-                };
-
                 await HamburguesaApiClient.AddAsync(dto);
             }
 
@@ -515,7 +551,16 @@
 
     private async Task EliminarHamburguesa()
     {
-        if (hamburguesaSeleccionada == null) return;
+        if (hamburguesaSeleccionada == null)
+            return;
+
+        var confirmar = await JS.InvokeAsync<bool>(
+            "confirm",
+            $"¿Está seguro de dar de baja la hamburguesa '{hamburguesaSeleccionada.Nombre}'?"
+        );
+
+        if (!confirmar)
+            return;
 
         guardando = true;
         errorModal = null;
@@ -524,7 +569,7 @@
         {
             await HamburguesaApiClient.DeleteAsync(hamburguesaSeleccionada.Id);
 
-            // Notificamos a la pantalla de pedidos abierta
+            // Actualiza las pantallas de pedidos que estén suscriptas.
             Notificator.NotificarCambioPedidos();
 
             CerrarModales();

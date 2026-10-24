@@ -381,41 +381,87 @@
         errorModal = null;
     }
 
+
     private async Task GuardarCliente()
     {
-        if (string.IsNullOrWhiteSpace(formNombre) || string.IsNullOrWhiteSpace(formApellido) || string.IsNullOrWhiteSpace(formEmail))
+        errorModal = null;
+
+        if (guardando)
+            return;
+
+        var nombre = formNombre.Trim();
+        var apellido = formApellido.Trim();
+        var email = formEmail.Trim();
+        var telefono = formTelefono.Trim();
+
+        if (nombre.Length < 2 || nombre.Length > 50)
         {
-            errorModal = "Nombre, apellido y email son requeridos.";
+            errorModal = "El nombre debe tener entre 2 y 50 caracteres.";
             return;
         }
 
-        if (!esEdicion && string.IsNullOrWhiteSpace(formPassword))
+        if (apellido.Length < 2 || apellido.Length > 50)
+        {
+            errorModal = "El apellido debe tener entre 2 y 50 caracteres.";
+            return;
+        }
+
+        if (!EsEmailValido(email))
+        {
+            errorModal = "Debe ingresar un email válido.";
+            return;
+        }
+
+        if (telefono.Length <= 8 || !telefono.All(char.IsDigit))
+        {
+            errorModal = "El teléfono debe tener más de 8 dígitos y contener solo números.";
+            return;
+        }
+        bool ingresoAlgunaPassword =
+            !string.IsNullOrEmpty(formPassword) ||
+            !string.IsNullOrEmpty(formConfirmarPassword);
+
+        if (!esEdicion && string.IsNullOrEmpty(formPassword))
         {
             errorModal = "La contraseña es requerida para dar de alta un nuevo cliente.";
             return;
         }
 
-        if (!string.IsNullOrEmpty(formPassword) && formPassword != formConfirmarPassword)
+        if (ingresoAlgunaPassword)
         {
-            errorModal = "Las contraseñas no coinciden.";
+            if (formPassword.Length < 6)
+            {
+                errorModal = "La contraseña debe tener al menos 6 caracteres.";
+                return;
+            }
+
+            if (formPassword != formConfirmarPassword)
+            {
+                errorModal = "Las contraseñas no coinciden.";
+                return;
+            }
+        }
+
+        if (esEdicion && clienteSeleccionado == null)
+        {
+            errorModal = "No hay un cliente seleccionado para modificar.";
             return;
         }
 
         guardando = true;
-        errorModal = null;
 
         try
         {
-            if (esEdicion && clienteSeleccionado != null)
+            if (esEdicion)
             {
                 var dto = new ClienteDTO
                 {
-                    Id = clienteSeleccionado.Id,
-                    Nombre = formNombre,
-                    Apellido = formApellido,
-                    Email = formEmail,
-                    Telefono = formTelefono,
-                    Password = string.IsNullOrEmpty(formPassword) ? clienteSeleccionado.Password : formPassword,
+                    Id = clienteSeleccionado!.Id,
+                    Nombre = nombre,
+                    Apellido = apellido,
+                    Email = email,
+                    Telefono = telefono,
+                    Password = string.IsNullOrEmpty(formPassword) ? null : formPassword,
                     Activo = clienteSeleccionado.Activo
                 };
 
@@ -425,10 +471,10 @@
             {
                 var dto = new ClienteDTO
                 {
-                    Nombre = formNombre,
-                    Apellido = formApellido,
-                    Email = formEmail,
-                    Telefono = formTelefono,
+                    Nombre = nombre,
+                    Apellido = apellido,
+                    Email = email,
+                    Telefono = telefono,
                     Password = formPassword,
                     Activo = true
                 };
@@ -449,4 +495,24 @@
         }
     }
 
+    private static bool EsEmailValido(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        try
+        {
+            var direccion = new System.Net.Mail.MailAddress(email);
+
+            return string.Equals(
+                direccion.Address,
+                email,
+                StringComparison.OrdinalIgnoreCase
+            );
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
 }

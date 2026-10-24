@@ -1,7 +1,9 @@
 ﻿@page "/login"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components
 @inject NavigationManager Navigation
 @inject API.Clients.IAuthService AuthService
+@using Microsoft.AspNetCore.Components.Web
 
 <PageTitle>Iniciar Sesión</PageTitle>
 
@@ -10,7 +12,12 @@
         <div class="text-center mb-4">
             <h3 class="fw-bold">Hamburguesería</h3>
         </div>
-
+        @if (registrado)
+        {
+            <div class="alert alert-success py-2" role="alert">
+                Registro exitoso. Ya podés iniciar sesión.
+            </div>
+        }
         @if (!string.IsNullOrEmpty(mensajeError))
         {
             <div class="alert alert-danger py-2" role="alert">
@@ -19,64 +26,128 @@
         }
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Usuario</label>
-            <input type="text" class="form-control" @bind="username" placeholder="Ingresá tu usuario" />
+            <label class="form-label fw-bold">Email</label>
+            <input type="email"
+                   class="form-control"
+                   @bind="username"
+                   @bind:event="oninput"
+                   placeholder="Ingresá tu email"
+                   disabled="@cargando" />
         </div>
 
         <div class="mb-4">
             <label class="form-label fw-bold">Contraseña</label>
-            <input type="password" class="form-control" @bind="password" placeholder="Ingresá tu contraseña" />
+            <input type="password"
+                   class="form-control"
+                   @bind="password"
+                   @bind:event="oninput"
+                   @onkeydown="ManejarEnter"
+                   placeholder="Ingresá tu contraseña"
+                   disabled="@cargando" />
         </div>
 
-        <button class="btn btn-primary w-100 py-2 fw-bold" @onclick="IniciarSesion" disabled="@cargando">
+        <button class="btn btn-primary w-100 py-2 fw-bold"
+                @onclick="IniciarSesion"
+                disabled="@cargando">
             @if (cargando)
             {
                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                <span>Ingresando...</span>
+                <span>Verificando...</span>
             }
             else
             {
                 <span>INGRESAR</span>
             }
         </button>
+
+        <div class="text-center mt-3">
+            <span class="text-muted">¿Todavía no tenés cuenta?</span>
+            <button class="btn btn-link fw-bold text-decoration-none"
+                    @onclick="IrARegistro"
+                    disabled="@cargando">
+                Crear cuenta
+            </button>
+        </div>
     </div>
 </div>
 
 @code {
+    [SupplyParameterFromQuery(Name = "email")]
+    private string? emailParametro { get; set; }
+    
+
+    [SupplyParameterFromQuery(Name = "registrado")]
+    private bool registrado { get; set; }
     private string username = string.Empty;
     private string password = string.Empty;
     private string? mensajeError;
     private bool cargando;
 
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(emailParametro))
+        {
+            username = emailParametro;
+        }
+    }
+    private void IrARegistro()
+    {
+        Navigation.NavigateTo("/registrar");
+    }
+
+    private async Task ManejarEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !cargando)
+        {
+            await IniciarSesion();
+        }
+    }
+
     private async Task IniciarSesion()
     {
-        cargando = true;
         mensajeError = null;
+
+        if (string.IsNullOrWhiteSpace(username) ||
+            string.IsNullOrWhiteSpace(password))
+        {
+            mensajeError = "Debe completar email y contraseña.";
+            return;
+        }
+
+        cargando = true;
 
         try
         {
-            var exito = await AuthService.LoginAsync(username, password);
+            var exito = await AuthService.LoginAsync(
+                username.Trim(),
+                password);
+
             if (exito)
             {
                 var role = AuthService.CurrentSession?.Role;
+
                 if (role == "Administrador")
                 {
                     Navigation.NavigateTo("/hamburguesas");
                 }
+                else if (role == "Cliente")
+                {
+                    Navigation.NavigateTo("/cliente/perfil");
+                }
                 else
                 {
-                    // Redirigir al perfil del cliente
-                    Navigation.NavigateTo("/cliente/perfil");
+                    mensajeError = "No se pudo determinar el tipo de usuario.";
                 }
             }
             else
             {
                 mensajeError = "Usuario o contraseña incorrectos.";
+                password = string.Empty;
             }
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al conectar con la API: {ex.Message}";
+            mensajeError = $"No se pudo iniciar sesión: {ex.Message}";
         }
         finally
         {
