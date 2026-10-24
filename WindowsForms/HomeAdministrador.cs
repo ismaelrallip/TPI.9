@@ -84,7 +84,7 @@ namespace WindowsForms
 
         private void reporteDeliveryToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            MostrarFormulario<ReporteDelivery>();
         }
 
         private void reportePedidosToolStripMenuItem_Click(object sender, EventArgs e)
