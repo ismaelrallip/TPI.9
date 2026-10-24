@@ -28,9 +28,14 @@ namespace WindowsForms
             {
                 var deliveries = await DeliveryApiClient.GetAllAsync();
 
+                // Solo deliveries activos, o el que ya está asignado al pedido
+                var deliveriesFiltrados = deliveries
+                    .Where(d => d.Activo || d.IdDelivery == _pedido.DeliveryId)
+                    .ToList();
+
                 comboRepartidores.DisplayMember = "Nombre";
                 comboRepartidores.ValueMember = "IdDelivery";
-                comboRepartidores.DataSource = deliveries.Select(d => new
+                comboRepartidores.DataSource = deliveriesFiltrados.Select(d => new
                 {
                     d.IdDelivery,
                     Nombre = $"{d.Nombre} {d.Apellido} - DNI: {d.Dni}"

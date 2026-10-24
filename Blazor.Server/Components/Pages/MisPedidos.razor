@@ -2,6 +2,9 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Cliente")]
 
+@using Application.Services
+@inject NotificatorService Notificator
+@implements IDisposable
 @using DTOs
 @using Domain.Model
 @using API.Clients
@@ -235,7 +238,8 @@
 }
 
 @code {
-    @inject IAuthService AuthService
+    @inject Application.Services.IAuthService AuthService
+    @inject AuthenticationStateProvider AuthStateProvider
     @inject NavigationManager Navigation
 
     private List<PedidoDTO> todosLosPedidos = new();
@@ -255,7 +259,22 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Notificator.OnPedidosChanged += StateHasChangedCallback;
         await CargarMisPedidos();
+    }
+
+    private void StateHasChangedCallback()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await CargarMisPedidos();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        Notificator.OnPedidosChanged -= StateHasChangedCallback;
     }
 
     private async Task CargarMisPedidos()
@@ -264,10 +283,16 @@
         mensajeError = null;
         try
         {
-            var session = AuthService.CurrentSession;
-            if (session == null || !session.ClienteId.HasValue) return;
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var clienteIdClaim = user.FindFirst("clienteId")?.Value;
 
-            var res = await PedidoApiClient.GetByClienteIdAsync(session.ClienteId.Value);
+            if (string.IsNullOrEmpty(clienteIdClaim) || !int.TryParse(clienteIdClaim, out int clienteId))
+            {
+                return;
+            }
+
+            var res = await PedidoApiClient.GetByClienteIdAsync(clienteId);
             todosLosPedidos = res.ToList();
             AplicarFiltros();
             pedidoSeleccionado = null;
@@ -334,6 +359,10 @@
             pedidoSeleccionado.ComentarioFinal = comentarioFinal.Trim();
 
             await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+
+            // Notificamos cambios
+            Notificator.NotificarCambioPedidos();
+
             CerrarModales();
             await CargarMisPedidos();
         }
@@ -355,6 +384,10 @@
         {
             pedidoSeleccionado.Estado = EstadoPedido.Cancelado;
             await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+
+            // Notificamos cambios
+            Notificator.NotificarCambioPedidos();
+
             await CargarMisPedidos();
         }
         catch (Exception ex)

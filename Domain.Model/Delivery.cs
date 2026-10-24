@@ -16,6 +16,7 @@ namespace Domain.Model
         public string Telefono { get; private set; }
         public int Dni { get; private set; }
         public ICollection<Pedido> Pedidos { get; private set; } = new List<Pedido>();
+        public bool Activo { get; private set; } = true;
 
         public Delivery(int idDelivery, string nombre, string apellido, string telefono, int dni)
         {
@@ -52,6 +53,11 @@ namespace Domain.Model
             if (string.IsNullOrWhiteSpace(telefono) || telefono.Length <= 8 || !telefono.All(char.IsDigit))
                 throw new ArgumentException("El teléfono es obligatorio, debe tener más de 8 dígitos y contener solo números.", nameof(telefono));
             Telefono = telefono;
+        }
+
+        public void SetActivo(bool activo)
+        {
+            Activo = activo;
         }
 
         public void SetDni(int dni)

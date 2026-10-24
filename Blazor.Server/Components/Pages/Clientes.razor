@@ -1,6 +1,9 @@
 ﻿@page "/clientes"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Administrador")]
+@using Application.Services
+@inject NotificatorService Notificator
+@implements IDisposable
 
 <PageTitle>Gestión de Clientes</PageTitle>
 
@@ -88,12 +91,13 @@
 
     <!-- Botones de Acción -->
     <div class="d-flex justify-content-center gap-2">
-        <button class="btn btn-outline-danger px-4 fw-bold" disabled="@(clienteSeleccionado == null)"
+       
+        <button class="btn btn-outline-danger px-4 fw-bold" disabled="@(clienteSeleccionado == null || !clienteSeleccionado.Activo)"
                 @onclick="AbrirModalConfirmarEliminar">
-            Eliminar
+            Dar de baja
         </button>
 
-        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(clienteSeleccionado == null)"
+        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(clienteSeleccionado == null || !clienteSeleccionado.Activo)"
                 @onclick="AbrirModalModificar">
             Actualizar
         </button>
@@ -206,7 +210,7 @@
                 </div>
                 <div class="modal-body text-center">
                     <div class="display-6 text-primary mb-2">?</div>
-                    <p class="mb-0">¿Eliminar a @clienteSeleccionado.Nombre @clienteSeleccionado.Apellido?</p>
+                    <p class="mb-0">¿Dar de baja a @clienteSeleccionado.Nombre @clienteSeleccionado.Apellido?</p>
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
                     <button type="button" class="btn btn-primary px-3" @onclick="EliminarClienteConfirmado"
@@ -252,7 +256,45 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Notificator.OnPedidosChanged += StateHasChangedCallback;
         await CargarClientes();
+    }
+
+    private void StateHasChangedCallback()
+    {
+        _ = InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        Notificator.OnPedidosChanged -= StateHasChangedCallback;
+    }
+
+    private async Task EliminarClienteConfirmado()
+    {
+        if (clienteSeleccionado == null) return;
+
+        guardando = true;
+        errorModal = null;
+
+        try
+        {
+            await ClienteApiClient.DeactivateAsync(clienteSeleccionado.Id);
+
+            // Notificamos cambios para sincronizar grillas
+            Notificator.NotificarCambioPedidos();
+
+            CerrarModales();
+            await CargarClientes();
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"Error al dar de baja al cliente: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
     }
 
     private async Task OnBusquedaInput(ChangeEventArgs e)
@@ -407,26 +449,4 @@
         }
     }
 
-    private async Task EliminarClienteConfirmado()
-    {
-        if (clienteSeleccionado == null) return;
-
-        guardando = true;
-        errorModal = null;
-
-        try
-        {
-            await ClienteApiClient.DeactivateAsync(clienteSeleccionado.Id);
-            CerrarModales();
-            await CargarClientes();
-        }
-        catch (Exception ex)
-        {
-            errorModal = $"Error al dar de baja al cliente: {ex.Message}";
-        }
-        finally
-        {
-            guardando = false;
-        }
-    }
 }

@@ -41,6 +41,8 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Dirección de Envío</label>
                         <input type="text" class="form-control" @bind="direccion" placeholder="Ej: Av. Pellegrini 1234" />
+                        <!-- Aquí puedes mostrar el costo de envío sutilmente -->
+                        <small class="text-muted d-mt-1">Costo de envío: $@precioDelivery.ToString("N2")</small>
                     </div>
                 }
             </div>
@@ -164,18 +166,27 @@
     private bool guardando;
     private string? mensajeError;
 
-    private decimal TotalPedido => itemsPedido.Sum(i => i.Subtotal);
+    private decimal precioDelivery = 0;
+
+    private decimal TotalPedido => itemsPedido.Sum(i => i.Subtotal) + (modalidadSeleccionada == ModalidadPedido.Delivery ? precioDelivery : 0);
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var res = await HamburguesaApiClient.GetAllAsync();
-            hamburguesasDisponibles = res.ToList();
+            var hamburguesasTask = HamburguesaApiClient.GetAllAsync();
+            var preciosDeliveryTask = PrecioDeliveryApiClient.GetByCriteriaAsync(null);
+
+            var res = await hamburguesasTask;
+            hamburguesasDisponibles = res.Where(h => h.Activo).ToList();
+
+            var preciosDel = await preciosDeliveryTask;
+            var precioVigente = preciosDel?.OrderByDescending(p => p.FechaDesde).FirstOrDefault();
+            precioDelivery = precioVigente?.Monto ?? 0;
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al cargar catálogo de hamburguesas: {ex.Message}";
+            mensajeError = $"Error al cargar catálogo: {ex.Message}";
         }
     }
 

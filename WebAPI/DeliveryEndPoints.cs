@@ -81,18 +81,27 @@ namespace WebAPI
 
             app.MapDelete("/deliveries/{id}", async (int id, IDeliveryService deliveryService) =>
             {
-                var deleted = await deliveryService.DeleteAsync(id);
-
-                if (!deleted)
+                try
                 {
-                    return Results.NotFound();
-                }
+                    var deleted = await deliveryService.DeleteAsync(id);
 
-                return Results.NoContent();
+                    if (!deleted)
+                    {
+                        return Results.NotFound();
+                    }
+
+                    return Results.NoContent();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    
+                    return Results.UnprocessableEntity(new { mensaje = ex.Message });
+                }
             })
             .WithName("DeleteDelivery")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status422UnprocessableEntity)
             .RequireAuthorization("AdminOnly")
             .WithOpenApi();
         }

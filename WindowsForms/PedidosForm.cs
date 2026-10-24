@@ -61,8 +61,9 @@ namespace WindowsForms
             AgregarColumna(dataGridViewPedidos, "PrecioTotal", "Total", 90);
             AgregarColumna(dataGridViewPedidos, "CalifPedido", "Calif. pedido", 80);
             AgregarColumna(dataGridViewPedidos, "CalifDelivery", "Calif. delivery", 80);
-            AgregarColumna(dataGridViewPedidos, "Comentario", "Comentario", 150);
-            AgregarColumna(dataGridViewPedidos, "ComentarioFinal", "Comentario final", 150);
+            AgregarColumna(dataGridViewPedidos, "Comentario", "Comentario", 180);
+            // Hacemos que ComentarioFinal se expanda automáticamente para ocupar el ancho sobrante
+            AgregarColumna(dataGridViewPedidos, "ComentarioFinal", "Comentario final", 220, null, DataGridViewAutoSizeColumnMode.Fill);
 
             dataGridViewDetalle.AutoGenerateColumns = false;
             AgregarColumna(dataGridViewDetalle, "Hamburguesa", "Hamburguesa", 150);
@@ -71,7 +72,7 @@ namespace WindowsForms
             AgregarColumna(dataGridViewDetalle, "Subtotal", "Subtotal", 100, "C2");
         }
 
-        private static void AgregarColumna(DataGridView grid, string propiedad, string titulo, int minimo, string? formato = null)
+        private static void AgregarColumna(DataGridView grid, string propiedad, string titulo, int minimo, string? formato = null, DataGridViewAutoSizeColumnMode? autoSize = null)
         {
             var columna = new DataGridViewTextBoxColumn
             {
@@ -82,6 +83,8 @@ namespace WindowsForms
             };
             if (formato != null)
                 columna.DefaultCellStyle = new DataGridViewCellStyle { Format = formato };
+            if (autoSize.HasValue)
+                columna.AutoSizeMode = autoSize.Value;
             grid.Columns.Add(columna);
         }
 
@@ -442,6 +445,17 @@ namespace WindowsForms
                 if (form.ShowDialog() == DialogResult.OK)
                 {
                     await LoadPedidos();
+                }
+            }
+        }
+        public static void RefrescarSiEstaAbierto()
+        {
+            foreach (Form form in Application.OpenForms)
+            {
+                if (form is PedidosForm pedidosForm)
+                {
+                    _ = pedidosForm.LoadPedidos();
+                    break;
                 }
             }
         }

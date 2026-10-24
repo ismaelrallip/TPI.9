@@ -89,6 +89,10 @@ namespace Application.Services
 
             var existing = await clienteRepository.GetAsync(dto.Id);
             if (existing == null) return false;
+            if (!existing.Activo)
+            {
+                throw new InvalidOperationException("No se puede modificar un cliente que se encuentra dado de baja.");
+            }
 
             // Las validaciones de formato saltarán aquí dentro al construirlo
 

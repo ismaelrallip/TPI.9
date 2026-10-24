@@ -1,7 +1,9 @@
 ﻿@page "/pedidos"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Administrador")]
-
+@using Application.Services
+@inject NotificatorService Notificator
+@implements IDisposable
 @using DTOs
 @using Domain.Model
 @using API.Clients
@@ -392,8 +394,23 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Notificator.OnPedidosChanged += StateHasChangedCallback; 
         await CargarCatalogos();
         await CargarPedidos();
+    }
+
+    private void StateHasChangedCallback()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await CargarPedidos();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        Notificator.OnPedidosChanged -= StateHasChangedCallback; 
     }
 
     private async Task CargarCatalogos()
@@ -403,8 +420,13 @@
             var delTask = DeliveryApiClient.GetAllAsync();
             var burgTask = HamburguesaApiClient.GetAllAsync();
 
-            listaDeliveries = (await delTask)?.ToList() ?? new();
-            hamburguesasDisponibles = (await burgTask)?.ToList() ?? new();
+            var todosDeliveries = (await delTask)?.ToList() ?? new();
+            // Filtramos deliveries para mostrar solo los activos, o el que ya tenga asignado el pedido actual si estuviera inactivo
+            listaDeliveries = todosDeliveries.Where(d => d.Activo || (pedidoSeleccionado != null && d.IdDelivery == pedidoSeleccionado.DeliveryId)).ToList();
+
+            var todasBurgs = (await burgTask)?.ToList() ?? new();
+            // Filtramos hamburguesas activas para nuevos pedidos
+            hamburguesasDisponibles = todasBurgs.Where(h => h.Activo).ToList();
         }
         catch
         {
@@ -544,11 +566,14 @@
         }
     }
 
-    private void AbrirModalModificar()
+    private async Task AbrirModalModificar()
     {
         if (pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Pendiente) return;
 
-        // Clonamos el objeto para editar sin afectar la grilla en tiempo real si cancela
+        // Asegurarnos de que las hamburguesas del pedido actual (incluso si se dieron de baja) estén en la lista disponible para edición
+        var burgsService = await HamburguesaApiClient.GetAllAsync();
+        hamburguesasDisponibles = burgsService.Where(h => h.Activo || pedidoSeleccionado.DetallesPedido.Any(d => d.HamburguesaId == h.Id)).ToList();
+
         pedidoEditando = new PedidoDTO
         {
             Id = pedidoSeleccionado.Id,
@@ -643,9 +668,21 @@
         }
     }
 
-    private void AbrirModalAsignarDelivery()
+    private async Task AbrirModalAsignarDelivery()
     {
         if (pedidoSeleccionado == null) return;
+
+        try
+        {
+            
+            var todosDeliveries = (await DeliveryApiClient.GetAllAsync())?.ToList() ?? new();
+            listaDeliveries = todosDeliveries.Where(d => d.Activo || d.IdDelivery == pedidoSeleccionado.DeliveryId).ToList();
+        }
+        catch
+        {
+            listaDeliveries = new();
+        }
+
         deliveryIdSeleccionado = pedidoSeleccionado.DeliveryId ?? 0;
         errorModal = null;
         mostrarModalDelivery = true;

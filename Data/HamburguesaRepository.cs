@@ -71,10 +71,15 @@ namespace Data
 
             if (existingHamburguesa == null)
                 return false;
+            if (!existingHamburguesa.Activo)
+            {
+                throw new InvalidOperationException("No se puede modificar una hamburguesa que se encuentra dada de baja.");
+            }
 
             // 1. Actualizar datos simples
             existingHamburguesa.SetNombre(hamburguesa.Nombre);
             existingHamburguesa.SetDescripcion(hamburguesa.Descripcion);
+            
 
             // 2. Actualizar ingredientes
             var idsIngredientes = hamburguesa.Ingredientes
@@ -114,15 +119,50 @@ namespace Data
             return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        // Baja lógica. Reglas:
+        //  - Si está en un pedido en curso (EnProceso, Listo, Asignado o EnCamino), no se puede dar de baja.
+        //  - Los pedidos Pendientes que la incluyen se cancelan y quedan con un comentario final.
+        //  - Los pedidos Entregados / Cancelados conservan la hamburguesa (es historial).
+        public async Task<bool> DeactivateAsync(int id, string comentarioFinal)
         {
-            var hamburguesa = await context.Hamburguesas.FindAsync(id);
-            if (hamburguesa == null)
-                return false;
+            var hamburguesa = await context.Hamburguesas.FirstOrDefaultAsync(h => h.Id == id);
+            if (hamburguesa == null) return false;
+            if (!hamburguesa.Activo)
+            {
+                throw new InvalidOperationException("La hamburguesa ya se encuentra dada de baja.");
+            }
 
-            context.Hamburguesas.Remove(hamburguesa);
+            var idsPedidos = await context.DetallesPedido
+                .Where(d => d.HamburguesaId == id)
+                .Select(d => d.PedidoId)
+                .Distinct()
+                .ToListAsync();
+
+            var pedidos = await context.Pedidos
+                .Where(p => idsPedidos.Contains(p.Id))
+                .ToListAsync();
+
+            var estadosEnCurso = new[] { EstadoPedido.EnProceso, EstadoPedido.Listo, EstadoPedido.Asignado, EstadoPedido.EnCamino };
+            if (pedidos.Any(p => estadosEnCurso.Contains(p.Estado)))
+            {
+                throw new InvalidOperationException("No se puede eliminar la hamburguesa porque está en pedidos en curso.");
+            }
+
+            foreach (var pedido in pedidos.Where(p => p.Estado == EstadoPedido.Pendiente))
+            {
+                pedido.SetEstado(EstadoPedido.Cancelado);
+                var texto = string.IsNullOrWhiteSpace(pedido.ComentarioFinal)
+                    ? comentarioFinal
+                    : pedido.ComentarioFinal + " | " + comentarioFinal;
+                pedido.SetComentarioFinal(texto);
+            }
+
+            hamburguesa.SetActivo(false);
+
             await context.SaveChangesAsync();
             return true;
         }
+
+        
     }
 }

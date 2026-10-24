@@ -80,16 +80,28 @@ namespace WindowsForms
         }
 
         private async void AgregarEditarPedidoForm_Load(object sender, EventArgs e)
+
         {
+
             if (_esVistaCliente || _clienteBloqueado)
+
             {
+
                 cmbCliente.Visible = false;
+
                 label1.Visible = false;
+
             }
 
+
+
             _cargando = true;
+
             this.Enabled = false;          // bloquea botones, listas y todo lo que se pueda tocar hasta terminar de cargar
+
             this.UseWaitCursor = true;     // cursor de espera
+
+
 
             try
             {
@@ -114,19 +126,25 @@ namespace WindowsForms
                 {
                     var clientesTask = ClienteApiClient.GetAllAsync();
                     var clientesResult = await clientesTask;
-                    clientes = clientesResult?.ToList() ?? new List<DTOs.ClienteDTO>();
+                    //  Solo clientes activos, o el cliente que ya tenía el pedido si lo estamos editando
+                    clientes = clientesResult?
+                        .Where(c => c.Activo || (_esEdicion && c.Id == _pedidoActual.ClienteId))
+                        .ToList() ?? new List<DTOs.ClienteDTO>();
                 }
 
                 var hamburguesas = await hamburguesasTask;
                 var preciosDel = await preciosDeliveryTask;
 
-                
+                //  Solo hamburguesas activas, o las que ya están en el detalle del pedido a editar
+                var hamburguesasFiltradas = hamburguesas
+                    .Where(h => h.Activo || (_esEdicion && _pedidoActual.DetallesPedido.Any(d => d.HamburguesaId == h.Id)))
+                    .ToList();
+
                 var precioDeliveryVigente = preciosDel
                     .Where(p => p.FechaDesde <= _pedidoActual.Fecha)
                     .OrderByDescending(p => p.FechaDesde)
                     .FirstOrDefault();
 
-                
                 if (precioDeliveryVigente == null)
                 {
                     precioDeliveryVigente = preciosDel
@@ -136,7 +154,6 @@ namespace WindowsForms
 
                 _precioDeliveryActual = precioDeliveryVigente?.Monto ?? 0;
 
-                
                 cmbCliente.DisplayMember = "NombreCompleto";
                 cmbCliente.ValueMember = "Id";
                 cmbCliente.DataSource = clientes.Select(c => new
@@ -147,7 +164,8 @@ namespace WindowsForms
 
                 cmbHamburguesa.DisplayMember = "Nombre";
                 cmbHamburguesa.ValueMember = "Id";
-                cmbHamburguesa.DataSource = hamburguesas.ToList();
+                // Cambio clave acá: usamos la lista filtrada
+                cmbHamburguesa.DataSource = hamburguesasFiltradas;
                 cmbHamburguesa.SelectedIndex = -1;
 
                 cmbModalidad.DataSource = Enum.GetValues(typeof(ModalidadPedido));
@@ -198,13 +216,11 @@ namespace WindowsForms
             }
             finally
             {
-                
                 _cargando = false;
                 this.UseWaitCursor = false;
                 this.Enabled = true;
             }
         }
-
 
         private void cmbModalidad_SelectedIndexChanged(object sender, EventArgs e)
         {

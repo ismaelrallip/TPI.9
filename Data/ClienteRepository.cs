@@ -29,6 +29,10 @@ namespace Data
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (cliente == null) return false;
+            if (!cliente.Activo)
+            {
+                throw new InvalidOperationException("El cliente ya se encuentra dado de baja.");
+            }
 
             // Bloquear si existen pedidos en estados que impiden la baja
             var estadosBloqueo = new[] { EstadoPedido.Pendiente, EstadoPedido.Listo, EstadoPedido.Asignado, EstadoPedido.EnCamino };
@@ -68,6 +72,10 @@ namespace Data
             var existing = await context.Clientes.FindAsync(cliente.Id);
             if (existing != null)
             {
+                if (!existing.Activo)
+                {
+                    throw new InvalidOperationException("No se puede modificar un cliente dado de baja.");
+                }
                 existing.SetNombre(cliente.Nombre);
                 existing.SetApellido(cliente.Apellido);
                 existing.SetEmail(cliente.Email);
@@ -140,7 +148,7 @@ namespace Data
         public async Task<Cliente?> GetByEmailAsync(string email)
         {
             return await context.Clientes
-                .FirstOrDefaultAsync(c => c.Email.ToLower() == email.ToLower());
+                .FirstOrDefaultAsync(c => c.Email.ToLower() == email.ToLower() && c.Activo);
         }
     }
 }

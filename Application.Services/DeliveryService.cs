@@ -19,7 +19,7 @@ namespace Application.Services
 
         public async Task<DeliveryDTO> AddAsync(DeliveryDTO dto)
         {
-            
+
             if (await deliveryRepository.DniExistsAsync(dto.Dni))
             {
                 throw new ArgumentException($"Ya existe un delivery con el Dni '{dto.Dni}'.");
@@ -39,7 +39,8 @@ namespace Application.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            return await deliveryRepository.DeleteAsync(id);
+            // Baja lógica (el delivery queda inactivo; sus pedidos históricos se conservan)
+            return await deliveryRepository.DeactivateAsync(id);
         }
 
         public async Task<DeliveryDTO?> GetAsync(int id)
@@ -55,7 +56,8 @@ namespace Application.Services
                 Nombre = delivery.Nombre,
                 Apellido = delivery.Apellido,
                 Telefono = delivery.Telefono,
-                Dni = delivery.Dni
+                Dni = delivery.Dni,
+                Activo = delivery.Activo
             };
         }
 
@@ -69,13 +71,14 @@ namespace Application.Services
                 Nombre = delivery.Nombre,
                 Apellido = delivery.Apellido,
                 Telefono = delivery.Telefono,
-                Dni = delivery.Dni
+                Dni = delivery.Dni,
+                Activo = delivery.Activo
             }).ToList();
         }
 
         public async Task<bool> UpdateAsync(DeliveryDTO dto)
         {
-           
+
             if (await deliveryRepository.DniExistsAsync(dto.Dni, dto.IdDelivery))
             {
                 throw new ArgumentException($"Ya existe otro delivery con el Dni '{dto.Dni}'.");
@@ -87,6 +90,10 @@ namespace Application.Services
             var existing = await deliveryRepository.GetAsync(dto.IdDelivery);
             if (existing == null)
                 return false;
+            if (!existing.Activo)
+            {
+                throw new InvalidOperationException("No se puede modificar un delivery que se encuentra dado de baja.");
+            }
 
             Delivery delivery = new Delivery(dto.IdDelivery, dto.Nombre, dto.Apellido, dto.Telefono, dto.Dni);
             return await deliveryRepository.UpdateAsync(delivery);
@@ -102,7 +109,8 @@ namespace Application.Services
                 Nombre = delivery.Nombre,
                 Apellido = delivery.Apellido,
                 Telefono = delivery.Telefono,
-                Dni = delivery.Dni
+                Dni = delivery.Dni,
+                Activo = delivery.Activo
             }).ToList();
         }
     }

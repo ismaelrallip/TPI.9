@@ -19,16 +19,40 @@ namespace Data
             await context.SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        
+
+        // Baja lógica. Reglas:
+        //  - Si tiene un pedido EnCamino, no se puede dar de baja.
+        //  - Los pedidos Asignados (o Pendientes con este delivery) vuelven a Pendiente y quedan sin delivery.
+        //  - Los pedidos Entregados / Cancelados conservan el delivery (es historial).
+        public async Task<bool> DeactivateAsync(int id)
         {
-            var delivery = await context.Deliveries.FindAsync(id);
-            if (delivery != null)
+            
+            var pedidos = await context.Pedidos.Where(p => p.DeliveryId == id).ToListAsync();
+
+            var delivery = await context.Deliveries.FirstOrDefaultAsync(d => d.IdDelivery == id);
+            if (delivery == null) return false;
+
+            if (!delivery.Activo)
             {
-                context.Deliveries.Remove(delivery);
-                await context.SaveChangesAsync();
-                return true;
+                throw new InvalidOperationException("El delivery ya se encuentra dado de baja.");
             }
-            return false;
+
+            if (pedidos.Any(p => p.Estado == EstadoPedido.EnCamino))
+            {
+                throw new InvalidOperationException("No se puede eliminar el delivery porque tiene pedidos en camino.");
+            }
+
+            foreach (var pedido in pedidos.Where(p => p.Estado == EstadoPedido.Asignado || p.Estado == EstadoPedido.Pendiente))
+            {
+                pedido.SetEstado(EstadoPedido.Pendiente);
+                pedido.SetDelivery(null);
+            }
+
+            delivery.SetActivo(false);
+
+            await context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<Delivery?> GetAsync(int id)
@@ -46,10 +70,15 @@ namespace Data
             var existing = await context.Deliveries.FindAsync(delivery.IdDelivery);
             if (existing != null)
             {
+                if (!existing.Activo)
+                {
+                    throw new InvalidOperationException("No se puede modificar un delivery dado de baja.");
+                }
                 existing.SetNombre(delivery.Nombre);
                 existing.SetApellido(delivery.Apellido);
                 existing.SetTelefono(delivery.Telefono);
                 existing.SetDni(delivery.Dni);
+                
 
                 await context.SaveChangesAsync();
                 return true;
@@ -59,7 +88,7 @@ namespace Data
 
         public async Task<bool> DniExistsAsync(int dni, int? excludeId = null)
         {
-            var query = context.Deliveries.Where(c => c.Dni == dni);
+            var query = context.Deliveries.Where(c => c.Dni == dni && c.Activo); 
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.IdDelivery != excludeId.Value);
@@ -69,7 +98,7 @@ namespace Data
 
         public async Task<bool> TelefonoExistsAsync(string telefono, int? excludeId = null)
         {
-            var query = context.Deliveries.Where(c => c.Telefono == telefono);
+            var query = context.Deliveries.Where(c => c.Telefono == telefono && c.Activo);
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.IdDelivery != excludeId.Value);
@@ -79,13 +108,13 @@ namespace Data
         public async Task<IEnumerable<Delivery>> GetByCriteriaAsync(DeliveryCriteria criteria)
         {
             const string sql = @"
-            SELECT IdDelivery, Nombre, Apellido, Telefono, Dni
-            FROM Deliveries
-            WHERE Nombre LIKE @SearchTerm
-               OR Apellido LIKE @SearchTerm
-               OR Telefono LIKE @SearchTerm
-               OR CAST(Dni AS NVARCHAR(20)) LIKE @SearchTerm
-            ORDER BY Nombre, Apellido";
+    SELECT IdDelivery, Nombre, Apellido, Telefono, Dni, Activo
+    FROM Deliveries
+    WHERE Nombre LIKE @SearchTerm
+       OR Apellido LIKE @SearchTerm
+       OR Telefono LIKE @SearchTerm
+       OR CAST(Dni AS NVARCHAR(20)) LIKE @SearchTerm
+    ORDER BY Nombre, Apellido";
 
             var deliveries = new List<Delivery>();
             string? connectionString = context.Database.GetConnectionString();
@@ -107,6 +136,13 @@ namespace Data
                     reader.GetString(reader.GetOrdinal("Telefono")),
                     reader.GetInt32(reader.GetOrdinal("Dni"))
                 );
+
+                // Mapear el estado Activo
+                if (!reader.GetBoolean(reader.GetOrdinal("Activo")))
+                {
+                    delivery.SetActivo(false);
+                }
+
                 deliveries.Add(delivery);
             }
 

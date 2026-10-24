@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\API.Auth.Blazor.Server\API.Auth.Blazor.Server.csproj" />
     <ProjectReference Include="..\API.Clients\API.Clients.csproj" />
+    <ProjectReference Include="..\Application.Services\Application.Services.csproj" />
     <ProjectReference Include="..\DTOs\DTOs.csproj" />
   </ItemGroup>
 

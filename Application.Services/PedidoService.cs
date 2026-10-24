@@ -14,16 +14,19 @@ namespace Application.Services
         private readonly IHamburguesaRepository _hamburguesaRepository;
         private readonly IPrecioDeliveryRepository _precioDeliveryRepository;
         private readonly IClienteRepository _clienteRepository;
+        private readonly IDeliveryRepository _deliveryRepository;
 
         public PedidoService(IPedidoRepository pedidoRepository,
                              IHamburguesaRepository hamburguesaRepository,
                              IPrecioDeliveryRepository precioDeliveryRepository,
-                             IClienteRepository clienteRepository)
+                             IClienteRepository clienteRepository,
+                             IDeliveryRepository deliveryRepository)
         {
             _pedidoRepository = pedidoRepository;
             _hamburguesaRepository = hamburguesaRepository;
             _precioDeliveryRepository = precioDeliveryRepository;
             _clienteRepository = clienteRepository;
+            _deliveryRepository = deliveryRepository;
         }
 
         public async Task<PedidoDTO> AddAsync(PedidoDTO dto)
@@ -31,11 +34,14 @@ namespace Application.Services
             var clienteExistente = await _clienteRepository.GetAsync(dto.ClienteId);
             if (clienteExistente == null)
                 throw new ArgumentException($"El cliente con ID {dto.ClienteId} no existe.");
+           
+            if (!clienteExistente.Activo)
+                throw new ArgumentException("El cliente seleccionado está dado de baja y no puede realizar pedidos.");
 
             if (dto.DetallesPedido == null || dto.DetallesPedido.Count == 0)
                 throw new ArgumentException("El pedido debe tener al menos una hamburguesa.");
 
-            
+
 
             var fechaPedido = DateTime.Now;
 
@@ -59,6 +65,7 @@ namespace Application.Services
 
             if (dto.Modalidad == ModalidadPedido.Delivery && dto.DeliveryId.HasValue)
             {
+                await ValidarDeliveryActivoAsync(dto.DeliveryId);
                 pedido.SetDelivery(dto.DeliveryId.Value);
             }
 
@@ -70,6 +77,8 @@ namespace Application.Services
                 var hamburguesa = await _hamburguesaRepository.GetByIdAsync(detalleDto.HamburguesaId);
                 if (hamburguesa == null)
                     throw new ArgumentException($"La hamburguesa con ID {detalleDto.HamburguesaId} no existe.");
+                if (!hamburguesa.Activo)
+                    throw new ArgumentException($"La hamburguesa '{hamburguesa.Nombre}' ya no está disponible.");
 
                 var precioVigente = hamburguesa.ObtenerPrecioVigente(fechaPedido);
                 var item = new DetallePedido(detalleDto.Id, detalleDto.Cantidad, precioVigente, hamburguesa.Id, pedido.Id);
@@ -147,6 +156,17 @@ namespace Application.Services
                 pedidoExistente.SetCalificacionDelivery(dto.CalificacionDelivery);
             }
 
+            // Asignación / reasignación de delivery (solo el administrador, en pedidos Delivery Pendientes o Asignados).
+            // Va ANTES del bloque "Pendiente": al pasar de Pendiente a Asignado ese bloque ya no se ejecuta.
+            if (esAdmin
+                && pedidoExistente.Modalidad == ModalidadPedido.Delivery
+                && (pedidoExistente.Estado == EstadoPedido.Pendiente || pedidoExistente.Estado == EstadoPedido.Asignado)
+                && dto.DeliveryId != pedidoExistente.DeliveryId)
+            {
+                await ValidarDeliveryActivoAsync(dto.DeliveryId);
+                pedidoExistente.SetDelivery(dto.DeliveryId);
+            }
+
             // Los items, comentarios y la dirección solo se pueden modificar mientras el pedido está Pendiente.
             if (pedidoExistente.Estado == EstadoPedido.Pendiente)
             {
@@ -185,6 +205,8 @@ namespace Application.Services
                     var hamburguesa = await _hamburguesaRepository.GetByIdAsync(nuevoItem.HamburguesaId);
                     if (hamburguesa == null)
                         throw new InvalidOperationException($"La hamburguesa con ID {nuevoItem.HamburguesaId} no existe.");
+                    if (!hamburguesa.Activo)
+                        throw new ArgumentException($"La hamburguesa '{hamburguesa.Nombre}' ya no está disponible.");
 
                     // Precio vigente a la fecha del pedido
                     var precioVigente = hamburguesa.ObtenerPrecioVigente(fechaPedido);
@@ -208,6 +230,16 @@ namespace Application.Services
 
             return await _pedidoRepository.UpdateAsync(pedidoExistente);
         }
+        // El delivery elegido tiene que existir y no estar dado de baja
+        private async Task ValidarDeliveryActivoAsync(int? deliveryId)
+        {
+            if (!deliveryId.HasValue) return;
+
+            var delivery = await _deliveryRepository.GetAsync(deliveryId.Value);
+            if (delivery == null || !delivery.Activo)
+                throw new ArgumentException("El delivery seleccionado no existe o fue dado de baja.");
+        }
+
         private async Task<decimal> ObtenerCostoDeliveryAsync(ModalidadPedido modalidad, DateTime fecha)
         {
             if (modalidad != ModalidadPedido.Delivery) return 0;

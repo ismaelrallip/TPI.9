@@ -1,6 +1,9 @@
 ﻿@page "/hamburguesas"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Administrador")]
+@using Application.Services
+@inject NotificatorService Notificator
+@implements IDisposable
 
 <PageTitle>Gestión de Hamburguesas</PageTitle>
 
@@ -33,6 +36,7 @@
                     <th>Descripción</th>
                     <th style="width: 140px;">Precio</th>
                     <th style="width: 160px;">FechaPrecio</th>
+                    <th style="width: 100px;" class="text-center">Estado</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,6 +77,12 @@
                             <td>@burger.Descripcion</td>
                             <td>@(ultimoPrecio != null ? $"${ultimoPrecio.Monto:N2}" : "-")</td>
                             <td>@(ultimoPrecio != null ? ultimoPrecio.FechaDesde.ToString("dd/MM/yyyy") : "-")</td>
+                            <td class="text-center">
+                                <!-- Agregado -->
+                                <span class="badge @(burger.Activo ? "bg-success" : "bg-secondary")">
+                                    @(burger.Activo ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
                         </tr>
                     }
                 }
@@ -87,7 +97,7 @@
             VER RESUMEN
         </button>
 
-        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(hamburguesaSeleccionada == null)"
+        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(hamburguesaSeleccionada == null || !hamburguesaSeleccionada.Activo)"
                 @onclick="AbrirModalModificar">
             MODIFICAR
         </button>
@@ -160,7 +170,7 @@
                     {
                         <button type="button" class="btn btn-danger fw-bold" @onclick="EliminarHamburguesa"
                                 disabled="@guardando">
-                            ELIMINAR
+                            Dar de baja
                         </button>
                     }
                     else
@@ -319,8 +329,18 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Notificator.OnPedidosChanged += StateHasChangedCallback; 
         await CargarHamburguesas();
         await CargarIngredientesDisponibles();
+    }
+
+    private void StateHasChangedCallback()
+    {
+        _ = InvokeAsync(() => StateHasChanged());
+    }
+    public void Dispose()
+    {
+        Notificator.OnPedidosChanged -= StateHasChangedCallback; 
     }
 
     private async Task CargarHamburguesas()
@@ -503,12 +523,16 @@
         try
         {
             await HamburguesaApiClient.DeleteAsync(hamburguesaSeleccionada.Id);
+
+            // Notificamos a la pantalla de pedidos abierta
+            Notificator.NotificarCambioPedidos();
+
             CerrarModales();
             await CargarHamburguesas();
         }
         catch (Exception ex)
         {
-            errorModal = $"Error al eliminar: {ex.Message}";
+            errorModal = $"Error al dar de baja: {ex.Message}";
         }
         finally
         {

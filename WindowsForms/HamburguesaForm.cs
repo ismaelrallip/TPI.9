@@ -20,6 +20,7 @@ namespace WindowsForms
             ConfigurarColumnas();
 
             dataGridViewHamburguesas.AutoGenerateColumns = false;
+            dataGridViewHamburguesas.SelectionChanged += dataGridViewHamburguesas_SelectionChanged; // <--- Agregá esto acá
 
             _timerBusqueda.Tick += async (s, e) =>
             {
@@ -35,7 +36,7 @@ namespace WindowsForms
             LoadHamburguesas();
         }
 
-       
+
         // El filtro lo resuelve la API (base de datos): ya no se filtra en memoria.
         private async Task LoadHamburguesas(string texto = "")
         {
@@ -50,7 +51,6 @@ namespace WindowsForms
 
                 var datosParaGrid = burgas.Select(h =>
                 {
-                    // Buscamos el precio con la fecha más reciente
                     var ultimoPrecio = h.Precios?
                         .OrderByDescending(p => p.FechaDesde)
                         .FirstOrDefault();
@@ -62,7 +62,8 @@ namespace WindowsForms
                         h.Descripcion,
                         // Si no hay precios o la lista es null
                         Precio = ultimoPrecio?.Monto ?? 0m,
-                        FechaPrecio = ultimoPrecio?.FechaDesde.ToString("dd/MM/yyyy") ?? "Sin registrar"
+                        FechaPrecio = ultimoPrecio?.FechaDesde.ToString("dd/MM/yyyy") ?? "Sin registrar",
+                        Activo = h.Activo
                     };
                 }).ToList();
 
@@ -179,13 +180,30 @@ namespace WindowsForms
         private void ConfigurarColumnas()
         {
             dataGridViewHamburguesas.AutoGenerateColumns = false;
-            dataGridViewHamburguesas.Columns.Clear(); 
+            dataGridViewHamburguesas.Columns.Clear();
 
+            
             dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "ID", DataPropertyName = "Id", Width = 50 });
             dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre", Width = 150 });
             dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "Descripcion", HeaderText = "Descripción", DataPropertyName = "Descripcion", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "Precio", HeaderText = "Precio Actual", DataPropertyName = "Precio", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "C2" } });
             dataGridViewHamburguesas.Columns.Add(new DataGridViewTextBoxColumn { Name = "FechaPrecio", HeaderText = "Fecha del Precio", DataPropertyName = "FechaPrecio", Width = 120 });
+            dataGridViewHamburguesas.Columns.Add(new DataGridViewCheckBoxColumn { Name = "Activo", HeaderText = "Activo", DataPropertyName = "Activo", Width = 60 });
+        }
+        private void dataGridViewHamburguesas_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dataGridViewHamburguesas.CurrentRow != null && dataGridViewHamburguesas.CurrentRow.Index >= 0)
+            {
+                var celdaActivo = dataGridViewHamburguesas.CurrentRow.Cells["Activo"].Value;
+                bool estaActivo = celdaActivo != null && Convert.ToBoolean(celdaActivo);
+
+                // Se habilita solo si está activo
+                buttonUpdateHamburguesa.Enabled = estaActivo;
+            }
+            else
+            {
+                buttonUpdateHamburguesa.Enabled = false;
+            }
         }
     }
 }

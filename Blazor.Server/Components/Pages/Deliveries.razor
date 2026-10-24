@@ -1,7 +1,9 @@
 ﻿@page "/deliveries"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Administrador")]
-
+@using Application.Services
+@inject NotificatorService Notificator
+@implements IDisposable
 <PageTitle>Gestión de Deliveries</PageTitle>
 
 <div class="container-fluid p-4">
@@ -34,13 +36,14 @@
                     <th>Apellido</th>
                     <th>Teléfono</th>
                     <th>DNI</th>
+                    <th style="width: 100px;" class="text-center">Estado</th>
                 </tr>
             </thead>
             <tbody>
                 @if (cargando)
                 {
                     <tr>
-                        <td colspan="6" class="text-center py-4">
+                        <td colspan="7" class="text-center py-4">
                             <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                             <span class="ms-2">Cargando...</span>
                         </td>
@@ -49,7 +52,7 @@
                 else if (!listaDeliveries.Any())
                 {
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">
+                        <td colspan="7" class="text-center py-4 text-muted">
                             No se encontraron registros.
                         </td>
                     </tr>
@@ -73,6 +76,11 @@
                             <td>@d.Apellido</td>
                             <td>@d.Telefono</td>
                             <td>@d.Dni</td>
+                            <td class="text-center"> <!-- Agregado -->
+                            <span class="badge @(d.Activo ? "bg-success" : "bg-secondary")">
+                                @(d.Activo ? "Activo" : "Inactivo")
+                            </span>
+                            </td>
                         </tr>
                     }
                 }
@@ -82,12 +90,12 @@
 
     <!-- Botones de Acción -->
     <div class="d-flex justify-content-center gap-2">
-        <button class="btn btn-outline-danger px-4 fw-bold" disabled="@(deliverySeleccionado == null)"
+        <button class="btn btn-outline-danger px-4 fw-bold" disabled="@(deliverySeleccionado == null || !deliverySeleccionado.Activo)"
                 @onclick="AbrirModalConfirmarEliminar">
-            Eliminar
+            Dar de baja
         </button>
 
-        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(deliverySeleccionado == null)"
+        <button class="btn btn-outline-warning px-4 fw-bold" disabled="@(deliverySeleccionado == null || !deliverySeleccionado.Activo)"
                 @onclick="AbrirModalModificar">
             Actualizar
         </button>
@@ -185,7 +193,7 @@
                 </div>
                 <div class="modal-body text-center">
                     <div class="display-6 text-primary mb-2">?</div>
-                    <p class="mb-0">¿Eliminar a @deliverySeleccionado.Nombre @deliverySeleccionado.Apellido?</p>
+                    <p class="mb-0">¿Dar de baja a @deliverySeleccionado.Nombre @deliverySeleccionado.Apellido?</p>
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
                     <button type="button" class="btn btn-primary px-3" @onclick="EliminarDeliveryConfirmado"
@@ -229,9 +237,19 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Notificator.OnPedidosChanged += StateHasChangedCallback; 
         await CargarDeliveries();
     }
 
+    private void StateHasChangedCallback() 
+    {
+        _ = InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose() 
+    {
+        Notificator.OnPedidosChanged -= StateHasChangedCallback;
+    }
     // Busca en el servidor cuando el usuario deja de escribir (evita una llamada por cada tecla)
     private async Task OnBusquedaInput(ChangeEventArgs e)
     {
@@ -384,12 +402,16 @@
         try
         {
             await DeliveryApiClient.DeleteAsync(deliverySeleccionado.IdDelivery);
+
+            // Notificamos cambios para sincronizar grillas
+            Notificator.NotificarCambioPedidos(); // Agregado
+
             CerrarModales();
             await CargarDeliveries();
         }
         catch (Exception ex)
         {
-            errorModal = $"Error al eliminar delivery: {ex.Message}";
+            errorModal = $"Error al dar de baja delivery: {ex.Message}";
         }
         finally
         {

@@ -9,6 +9,6 @@ namespace Data
         Task<IEnumerable<Hamburguesa>> GetByCriteriaAsync(string texto);
         Task AddAsync(Hamburguesa hamburguesa);
         Task<bool> UpdateAsync(Hamburguesa hamburguesa);
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeactivateAsync(int id, string comentarioFinal);
     }
 }

@@ -34,7 +34,7 @@ namespace Data
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                     .Build();
 
-                string connectionString = configuration.GetConnectionString("DefaultConnection") 
+                string connectionString = configuration.GetConnectionString("DefaultConnection")
                     ?? "Server=(localdb)\\mssqllocaldb;Database=TPI_HamburgueseriaDB;Trusted_Connection=True;MultipleActiveResultSets=true";
                 optionsBuilder.UseSqlServer(connectionString);
             }
@@ -51,8 +51,9 @@ namespace Data
                 entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Apellido).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
-                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique().HasFilter("[Activo] = 1");
                 entity.Property(e => e.Telefono).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => e.Telefono).IsUnique().HasFilter("[Activo] = 1");
                 entity.Property(e => e.Password).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Activo).IsRequired().HasDefaultValue(true);
             });
@@ -64,8 +65,10 @@ namespace Data
                 entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Apellido).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Telefono).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => e.Telefono).IsUnique().HasFilter("[Activo] = 1");
                 entity.Property(e => e.Dni).IsRequired();
-                entity.HasIndex(e => e.Dni).IsUnique();
+                entity.HasIndex(e => e.Dni).IsUnique().HasFilter("[Activo] = 1");
+                entity.Property(e => e.Activo).IsRequired().HasDefaultValue(true);
             });
 
             modelBuilder.Entity<Ingrediente>(entity =>
@@ -93,6 +96,8 @@ namespace Data
 
                     p.Property(x => x.FechaDesde).HasColumnName("PrecioFechaDesde");
                 });
+
+                entity.Property(e => e.Activo).IsRequired().HasDefaultValue(true);
 
                 entity.HasMany(e => e.Ingredientes)
                       .WithMany();

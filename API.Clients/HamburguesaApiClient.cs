@@ -107,6 +107,18 @@ namespace API.Clients
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        var doc = System.Text.Json.JsonDocument.Parse(content);
+                        if (doc.RootElement.TryGetProperty("mensaje", out var msgEl))
+                        {
+                            throw new InvalidOperationException(msgEl.GetString() ?? content);
+                        }
+                    }
+                    catch (System.Text.Json.JsonException)
+                    {
+                    }
+
                     throw new Exception($"Error al eliminar hamburguesa {id}. Status: {response.StatusCode}. Detalle: {content}");
                 }
             }

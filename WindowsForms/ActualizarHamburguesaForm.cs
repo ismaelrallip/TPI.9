@@ -146,15 +146,22 @@ namespace WindowsForms
 
         private async void EliminarHamburguesa()
         {
+            var confirmar = MessageBox.Show($"¿Estás seguro que deseas dar de baja la hamburguesa '{_hamburguesa.Nombre}'?",
+                "Confirmar Baja", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (confirmar != DialogResult.Yes) return;
+
             try
             {
                 await HamburguesaApiClient.DeleteAsync(idRecibida);
+                PedidosForm.RefrescarSiEstaAbierto();
+                MessageBox.Show("Hamburguesa dada de baja correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al eliminar la hamburguesa: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"No se pudo dar de baja la hamburguesa: {ex.Message}", "Error de Operación", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

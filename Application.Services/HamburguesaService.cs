@@ -35,7 +35,12 @@ namespace Application.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            return await hamburguesaRepository.DeleteAsync(id);
+            var hamburguesa = await hamburguesaRepository.GetByIdAsync(id);
+            if (hamburguesa == null) return false;
+
+            // Baja lógica: los pedidos Pendientes que la incluyen se cancelan con este comentario final
+            string comentarioFinal = $"Hamburguesa '{hamburguesa.Nombre}' dada de baja por el administrador.";
+            return await hamburguesaRepository.DeactivateAsync(id, comentarioFinal);
         }
 
         public async Task<HamburguesaDTO?> GetAsync(int id)
@@ -60,6 +65,11 @@ namespace Application.Services
         {
             var existing = await hamburguesaRepository.GetByIdAsync(dto.Id);
             if (existing == null) return false;
+            
+            if (!existing.Activo)
+            {
+                throw new InvalidOperationException("No se puede modificar una hamburguesa que se encuentra dada de baja.");
+            }
 
             var ingredientes = await ObtenerIngredientesAsync(dto);
 
@@ -114,6 +124,7 @@ namespace Application.Services
                 Id = hamburguesa.Id,
                 Nombre = hamburguesa.Nombre,
                 Descripcion = hamburguesa.Descripcion,
+                Activo = hamburguesa.Activo,
                 Precios = hamburguesa.Precios
                     .OrderBy(p => p.FechaDesde)
                     .Select(p => new PrecioDTO { FechaDesde = p.FechaDesde, Monto = p.Monto })

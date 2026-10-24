@@ -13,9 +13,10 @@ namespace Domain.Model
         public string Descripcion { get; private set; }
         public List<Precio> Precios { get; private set; } = new List<Precio>();
         public List<Ingrediente> Ingredientes { get; private set; } = new List<Ingrediente>();
+        public bool Activo { get; private set; } = true;
         // se agrega constructor vacío para EF Core
         public Hamburguesa() { }
-        public Hamburguesa(int id, string nombre, string descripcion, List<Precio> precios,List<Ingrediente> ingredientes)
+        public Hamburguesa(int id, string nombre, string descripcion, List<Precio> precios, List<Ingrediente> ingredientes)
         {
             SetId(id);
             SetNombre(nombre);
@@ -23,6 +24,11 @@ namespace Domain.Model
             SetPrecios(precios);
             SetIngredientes(ingredientes);
         }
+        public void SetActivo(bool activo)
+        {
+            Activo = activo;
+        }
+
         public void SetId(int id)
         {
             if (id < 0)

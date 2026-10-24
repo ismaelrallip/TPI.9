@@ -10,7 +10,7 @@ namespace Data
     public interface IDeliveryRepository
     {
         Task AddAsync(Delivery delivery);
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeactivateAsync(int id);
         Task<Delivery?> GetAsync(int id);
         Task<IEnumerable<Delivery>> GetAllAsync();
         Task<bool> UpdateAsync(Delivery cliente);

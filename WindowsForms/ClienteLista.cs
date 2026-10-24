@@ -86,7 +86,7 @@ namespace WindowsForms
 
                 
                 await ClienteApiClient.DeactivateAsync(seleccionado.Id);
-
+                PedidosForm.RefrescarSiEstaAbierto();
                 await CargarClientesAsync();
             }
             catch (Exception ex)
@@ -130,9 +130,13 @@ namespace WindowsForms
 
         private void clientesDataGridView_SelectionChanged(object sender, EventArgs e)
         {
-            var haySeleccion = ClienteSeleccionado() != null;
-            actualizarButton.Enabled = haySeleccion;
-            eliminarButton.Enabled = haySeleccion;
+            var seleccionado = ClienteSeleccionado();
+            var haySeleccion = seleccionado != null;
+            var estaActivo = seleccionado?.Activo ?? false;
+
+            // Solo se puede modificar o dar de baja si el cliente está activo
+            actualizarButton.Enabled = haySeleccion && estaActivo;
+            eliminarButton.Enabled = haySeleccion && estaActivo;
         }
 
         private void DeshabilitarControles()

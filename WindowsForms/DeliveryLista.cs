@@ -25,11 +25,13 @@ namespace WindowsForms
 
         private void ConfigurarColumnas()
         {
+            deliveriesDataGridView.Columns.Clear();
             deliveriesDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "IdDelivery", HeaderText = "Id", DataPropertyName = "IdDelivery", Width = 60 });
             deliveriesDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre", Width = 150 });
             deliveriesDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Apellido", HeaderText = "Apellido", DataPropertyName = "Apellido", Width = 150 });
             deliveriesDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Telefono", HeaderText = "Teléfono", DataPropertyName = "Telefono", Width = 140 });
             deliveriesDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Dni", HeaderText = "DNI", DataPropertyName = "Dni", Width = 100 });
+            deliveriesDataGridView.Columns.Add(new DataGridViewCheckBoxColumn { Name = "Activo", HeaderText = "Activo", DataPropertyName = "Activo", Width = 60 });
         }
 
         private async void DeliveryLista_Load(object sender, EventArgs e)
@@ -76,19 +78,23 @@ namespace WindowsForms
             var seleccionado = DeliverySeleccionado();
             if (seleccionado == null) return;
 
-            var confirmar = MessageBox.Show($"¿Eliminar a {seleccionado.Nombre} {seleccionado.Apellido}?", "Confirmar",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var confirmar = MessageBox.Show($"¿Está seguro que desea dar de baja (desactivar) a {seleccionado.Nombre} {seleccionado.Apellido}?",
+                "Confirmar Baja", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
             if (confirmar != DialogResult.Yes) return;
 
             try
             {
                 DeshabilitarControles();
+
+               
                 await DeliveryApiClient.DeleteAsync(seleccionado.IdDelivery);
-                await CargarDeliveriesAsync();
+                PedidosForm.RefrescarSiEstaAbierto();
+                await CargarDeliveriesAsync(); 
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al eliminar delivery: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al dar de baja al delivery: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -128,9 +134,13 @@ namespace WindowsForms
 
         private void deliveriesDataGridView_SelectionChanged(object sender, EventArgs e)
         {
-            var haySeleccion = DeliverySeleccionado() != null;
-            actualizarButton.Enabled = haySeleccion;
-            eliminarButton.Enabled = haySeleccion;
+            var seleccionado = DeliverySeleccionado();
+            var haySeleccion = seleccionado != null;
+            var estaActivo = seleccionado?.Activo ?? false;
+
+            // Solo se permite actualizar o dar de baja si está activo
+            actualizarButton.Enabled = haySeleccion && estaActivo;
+            eliminarButton.Enabled = haySeleccion && estaActivo;
         }
 
         private void DeshabilitarControles()

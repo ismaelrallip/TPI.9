@@ -72,12 +72,21 @@ namespace WebAPI
 
             group.MapDelete("/{id:int}", async (int id, IHamburguesaService svc) =>
             {
-                var deleted = await svc.DeleteAsync(id);
-                return deleted ? Results.NoContent() : Results.NotFound();
+                try
+                {
+                    var deleted = await svc.DeleteAsync(id);
+                    return deleted ? Results.NoContent() : Results.NotFound();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    
+                    return Results.UnprocessableEntity(new { mensaje = ex.Message });
+                }
             })
             .WithName("DeleteHamburguesa")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status422UnprocessableEntity)
             .RequireAuthorization("AdminOnly")
             .WithOpenApi();
         }
