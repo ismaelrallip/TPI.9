@@ -18,6 +18,21 @@
         <Routes @rendermode="InteractiveServer" />
     </CascadingAuthenticationState>
     <script src="_framework/blazor.web.js"></script>
+
+    <!-- Script para permitir la descarga de archivos PDF -->
+    <script>
+        window.descargarArchivo = async (nombreArchivo, streamReference) => {
+            const arrayBuffer = await streamReference.arrayBuffer();
+            const blob = new Blob([arrayBuffer]);
+            const url = URL.createObjectURL(blob);
+            const anchorElement = document.createElement('a');
+            anchorElement.href = url;
+            anchorElement.download = nombreArchivo ?? '';
+            anchorElement.click();
+            anchorElement.remove();
+            URL.revokeObjectURL(url);
+        }
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,151 @@
+﻿@page "/admin/reportes/pedidos"
+@using API.Clients
+@using DTOs
+@using Domain.Model
+@inject IJSRuntime JSRuntime
+
+<div class="container-fluid p-4" style="background-color: #F8F9FA; min-height: 100vh;">
+    <h3 class="mb-4" style="color: #0B1536; font-weight: bold;">Reporte de Pedidos</h3>
+
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label text-muted small fw-bold">Desde</label>
+                    <input type="date" class="form-control" @bind="desde" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-muted small fw-bold">Hasta</label>
+                    <input type="date" class="form-control" @bind="hasta" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold">Modalidad</label>
+                    <select class="form-select" @bind="modalidadSeleccionada">
+                        <option value="">Todas</option>
+                        @foreach (var mod in Enum.GetValues<ModalidadPedido>())
+                        {
+                            <option value="@mod">@mod</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold">Estado</label>
+                    <select class="form-select" @bind="estadoSeleccionado">
+                        <option value="">Todos</option>
+                        @foreach (var est in Enum.GetValues<EstadoPedido>())
+                        {
+                            <option value="@est">@est</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button class="btn btn-outline-secondary w-100" @onclick="CargarPedidos" disabled="@cargando">
+                        @if (cargando)
+                        {
+                            <span class="spinner-border spinner-border-sm"></span>
+                        }
+                        else
+                        {
+
+                            <span>Filtrar</span>
+                        }
+                    </button>
+                    <button class="btn w-100 text-white" style="background-color: #361648;" @onclick="DescargarPDF" disabled="@(descargando || cargando)">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (pedidos != null && !cargando)
+    {
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead style="background-color: #0B1536; color: white;">
+                        <tr>
+                            <th class="py-3 px-3">ID</th>
+                            <th class="py-3">Fecha</th>
+                            <th class="py-3">Cliente</th>
+                            <th class="py-3">Modalidad</th>
+                            <th class="py-3">Estado</th>
+                            <th class="py-3 text-end px-3">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody style="background-color: #FFFFFF;">
+                        @if (!pedidos.Any())
+                        {
+                            <tr><td colspan="6" class="text-center py-5 text-muted">No se encontraron pedidos con estos filtros.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var p in pedidos)
+                            {
+                                <tr>
+                                    <td class="px-3 fw-bold text-muted">#@p.Id</td>
+                                    <td>@p.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@(p.ClienteNombre ?? "—")</td>
+                                    <td>@p.Modalidad</td>
+                                    <td>
+                                        <span class="badge" style="background-color: @(p.Estado == EstadoPedido.Entregado ? "#198754" : p.Estado == EstadoPedido.Cancelado ? "#DC3545" : "#361648")">
+                                            @p.Estado
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-bold px-3">@p.PrecioTotal.ToString("C")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private DateTime? desde = DateTime.Today.AddDays(-30);
+    private DateTime? hasta = DateTime.Today;
+    private string modalidadSeleccionada = "";
+    private string estadoSeleccionado = "";
+
+    private IEnumerable<PedidoDTO>? pedidos;
+    private bool cargando = false;
+    private bool descargando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPedidos();
+    }
+
+    private ModalidadPedido? GetModalidad() => string.IsNullOrEmpty(modalidadSeleccionada) ? null : Enum.Parse<ModalidadPedido>(modalidadSeleccionada);
+    private EstadoPedido? GetEstado() => string.IsNullOrEmpty(estadoSeleccionado) ? null : Enum.Parse<EstadoPedido>(estadoSeleccionado);
+
+    private async Task CargarPedidos()
+    {
+        cargando = true;
+        try
+        {
+            pedidos = await PedidoApiClient.GetByFiltroAsync(desde, hasta, GetModalidad(), GetEstado());
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task DescargarPDF()
+    {
+        descargando = true;
+        try
+        {
+            var bytes = await PedidoApiClient.DescargarReportePdfAsync(desde, hasta, GetModalidad(), GetEstado());
+            using var streamRef = new DotNetStreamReference(new MemoryStream(bytes));
+            await JSRuntime.InvokeVoidAsync("descargarArchivo", $"Reporte_Pedidos_{DateTime.Now:yyyyMMdd_HHmm}.pdf", streamRef);
+        }
+        finally
+        {
+            descargando = false;
+        }
+    }
+}

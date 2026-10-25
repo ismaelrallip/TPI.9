@@ -15,7 +15,7 @@
             <AuthorizeView>
                 <Authorized>
                     <span class="fw-bold text-secondary">
-                        Bienvenido, @nombreCompleto
+                        @nombreCompleto
                     </span>
                 </Authorized>
             </AuthorizeView>
@@ -79,10 +79,23 @@
         {
             var session = AuthService.CurrentSession;
 
-            // Igual que en HomeCliente_Load del WinForms.
-            if (session?.ClienteId == null)
+            if (session == null)
             {
                 nombreCompleto = "Usuario";
+                return;
+            }
+
+            // Si es administrador, mostrar "Hola, Admin".
+            if (session.Role == "Administrador")
+            {
+                nombreCompleto = "Admin";
+                return;
+            }
+
+            // Si es cliente, mostrar su nombre y apellido.
+            if (session.ClienteId == null)
+            {
+                nombreCompleto = session.Username ?? "Usuario";
                 return;
             }
 
@@ -93,13 +106,16 @@
 
             if (string.IsNullOrWhiteSpace(nombreCompleto))
             {
-                nombreCompleto = session.Username;
+                nombreCompleto = session.Username ?? "Usuario";
             }
         }
         catch
         {
-            nombreCompleto =
-                AuthService.CurrentSession?.Username ?? "Usuario";
+            var session = AuthService.CurrentSession;
+
+            nombreCompleto = session?.Role == "Administrador"
+                ? "Admin"
+                : session?.Username ?? "Usuario";
         }
     }
 

@@ -1,0 +1,161 @@
+﻿@page "/admin/reportes/delivery"
+@using API.Clients
+@using DTOs
+@using DTOs.Reportes.Admin
+@inject IJSRuntime JSRuntime
+
+<div class="container-fluid p-4" style="background-color: #F8F9FA; min-height: 100vh;">
+    <h3 class="mb-4" style="color: #0B1536; font-weight: bold;">Reporte de Delivery</h3>
+
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">Repartidor</label>
+                    <select class="form-select" @onchange="OnDeliveryChanged">
+                        <option value="">Seleccione un repartidor...</option>
+                        @if (deliveries != null)
+                        {
+                            @foreach (var d in deliveries)
+                            {
+                                <option value="@d.IdDelivery">@d.Nombre @d.Apellido (ID: @d.IdDelivery)</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold">Desde</label>
+                    <input type="date" class="form-control" @bind="desde" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold">Hasta</label>
+                    <input type="date" class="form-control" @bind="hasta" />
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button class="btn btn-outline-secondary w-100" @onclick="CargarHistorial" disabled="@(deliveryIdSeleccionado == null || cargando)">
+                        @if (cargando)
+                        {
+                            <span class="spinner-border spinner-border-sm"></span>
+                        }
+                        else
+                        {
+
+                            <span>Filtrar</span>
+                        }
+                    </button>
+                    <button class="btn w-100 text-white" style="background-color: #361648;" @onclick="DescargarPDF" disabled="@(descargando || deliveryIdSeleccionado == null || cargando)">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (historial != null && !cargando)
+    {
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead style="background-color: #0B1536; color: white;">
+                        <tr>
+                            <th class="py-3 px-3">Pedido ID</th>
+                            <th class="py-3">Fecha</th>
+                            <th class="py-3">Cliente</th>
+                            <th class="py-3">Dirección</th>
+                            <th class="py-3">Estado</th>
+                            <th class="py-3 text-center">Calif.</th>
+                            <th class="py-3 text-end px-3">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody style="background-color: #FFFFFF;">
+                        @if (!historial.Pedidos.Any())
+                        {
+                            <tr><td colspan="7" class="text-center py-5 text-muted">Este repartidor no registra pedidos en el período seleccionado.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var p in historial.Pedidos)
+                            {
+                                <tr>
+                                    <td class="px-3 fw-bold text-muted">#@p.PedidoId</td>
+                                    <td>@p.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@p.Cliente</td>
+                                    <td>@p.Direccion</td>
+                                    <td>
+                                        <span class="badge" style="background-color: @(p.Estado.ToString() == "Entregado" ? "#198754" : p.Estado.ToString() == "Cancelado" ? "#DC3545" : "#361648")">
+                                            @p.Estado
+                                        </span>
+                                    </td>
+                                    <td class="text-center fw-bold" style="color: #0B1536;">@(p.CalificacionDelivery?.ToString() ?? "—")</td>
+                                    <td class="text-end fw-bold px-3">@p.PrecioTotal.ToString("C")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private IEnumerable<DeliveryDTO>? deliveries;
+    private int? deliveryIdSeleccionado;
+    private DateTime? desde = DateTime.Today.AddDays(-30);
+    private DateTime? hasta = DateTime.Today;
+
+    private ReporteDeliveryDTO? historial;
+    private bool cargando = false;
+    private bool descargando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        deliveries = (await DeliveryApiClient.GetAllAsync()).OrderBy(d => d.Apellido).ThenBy(d => d.Nombre);
+    }
+
+    private async Task OnDeliveryChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            deliveryIdSeleccionado = id;
+            await CargarHistorial();
+        }
+        else
+        {
+            deliveryIdSeleccionado = null;
+            historial = null;
+        }
+    }
+
+    private async Task CargarHistorial()
+    {
+        if (!deliveryIdSeleccionado.HasValue) return;
+
+        cargando = true;
+        try
+        {
+            historial = await DeliveryApiClient.ObtenerHistorialAsync(deliveryIdSeleccionado.Value, desde, hasta);
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task DescargarPDF()
+    {
+        if (!deliveryIdSeleccionado.HasValue) return;
+
+        descargando = true;
+        try
+        {
+            var bytes = await DeliveryApiClient.DescargarReporteDeliveryPdfAsync(deliveryIdSeleccionado.Value, desde, hasta);
+            using var streamRef = new DotNetStreamReference(new MemoryStream(bytes));
+            await JSRuntime.InvokeVoidAsync("descargarArchivo", $"Reporte_Delivery_{deliveryIdSeleccionado}_{DateTime.Now:yyyyMMdd_HHmm}.pdf", streamRef);
+        }
+        finally
+        {
+            descargando = false;
+        }
+    }
+}

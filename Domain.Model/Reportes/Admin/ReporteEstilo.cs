@@ -6,20 +6,28 @@ using System.Globalization;
 
 namespace Domain.Model.Reportes.Admin
 {
-    /// <summary>
-    /// Paleta y componentes visuales compartidos por los reportes PDF del administrador.
-    /// </summary>
     internal static class ReporteEstilo
     {
         public const string NombreNegocio = "HAMBURGUESERÍA";
-        public const string Naranja = "#E8590C";
-        public const string Marron = "#3B2314";
-        public const string Crema = "#FFF4E6";
-        public const string Borde = "#F1D9BF";
-        public const string Gris = "#6B6B6B";
-        public const string Verde = "#2B8A3E";
-        public const string Rojo = "#C92A2A";
-        public const string Azul = "#1C7ED6";
+
+        // --- PALETA BLAZOR PRINCIPAL ---
+        public const string AzulMarino = "#0B1536";   // Azul oscuro elegante para encabezados
+        public const string AzulGrafico = "#2563EB";  // Azul más brillante exclusivo para el gráfico (legibilidad)
+        public const string VioletaOscuro = "#361648"; // Violeta profundo
+        public const string Blanco = "#FFFFFF";
+        public const string GrisFondo = "#F8F9FA";
+        public const string GrisBorde = "#E5E7EB";
+        public const string GrisTexto = "#4B5563";
+        public const string Verde = "#198754";
+        public const string Rojo = "#DC3545";
+
+        // --- ALIAS DE COMPATIBILIDAD ---
+        public const string Azul = AzulGrafico;       // ¡El gráfico usa este azul claro!
+        public const string Borde = GrisBorde;
+        public const string Gris = GrisTexto;
+        public const string Marron = AzulMarino;      // Los componentes viejos usan el azul oscuro
+        public const string Crema = GrisFondo;
+        public const string Naranja = VioletaOscuro;
 
         public static readonly CultureInfo Cultura = new("es-AR");
 
@@ -29,42 +37,43 @@ namespace Domain.Model.Reportes.Admin
 
         public static string ColorEstado(string estado) => estado switch
         {
-            "Entregado" => Verde,
-            "Cancelado" => Rojo,
-            _ => Marron
+            "Entregado" or "Activo" => Verde,
+            "Cancelado" or "Inactivo" => Rojo,
+            _ => VioletaOscuro
         };
 
         public static void ComponerEncabezado(IContainer container, string titulo, string subtitulo, DateTime generadoEl)
         {
             container.Column(column =>
             {
-                column.Item().Background(Marron).Padding(16).Row(row =>
+                // El encabezado sigue usando el Azul Marino oscuro
+                column.Item().Background(AzulMarino).Padding(16).Row(row =>
                 {
                     row.RelativeItem().Column(c =>
                     {
-                        c.Item().Text(NombreNegocio).FontSize(10).Bold().FontColor(Naranja);
-                        c.Item().PaddingTop(2).Text(titulo).FontSize(20).Bold().FontColor(Colors.White);
+                        c.Item().Text(NombreNegocio).FontSize(10).Bold().FontColor(Blanco);
+                        c.Item().PaddingTop(2).Text(titulo).FontSize(20).Bold().FontColor(Blanco);
                     });
 
                     row.AutoItem().AlignBottom().Text($"Generado el {FechaHora(generadoEl)}")
-                        .FontSize(8).FontColor(Colors.White);
+                        .FontSize(8).FontColor(Blanco);
                 });
 
-                column.Item().Height(4).Background(Naranja);
-                column.Item().PaddingTop(8).Text(subtitulo).FontSize(9).FontColor(Gris);
+                column.Item().Height(4).Background(VioletaOscuro);
+                column.Item().PaddingTop(8).Text(subtitulo).FontSize(9).FontColor(GrisTexto);
             });
         }
 
         public static void ComponerPie(IContainer container)
         {
-            container.BorderTop(0.5f).BorderColor(Borde).PaddingTop(6).Row(row =>
+            container.BorderTop(0.5f).BorderColor(GrisBorde).PaddingTop(6).Row(row =>
             {
-                row.RelativeItem().Text($"{NombreNegocio} · Reporte administrativo")
-                    .FontSize(8).FontColor(Gris);
+                row.RelativeItem().Text($"{NombreNegocio} · Reporte del Sistema")
+                    .FontSize(8).FontColor(GrisTexto);
 
                 row.RelativeItem().AlignRight().Text(t =>
                 {
-                    t.DefaultTextStyle(x => x.FontSize(8).FontColor(Gris));
+                    t.DefaultTextStyle(x => x.FontSize(8).FontColor(GrisTexto));
                     t.Span("Página ");
                     t.CurrentPageNumber();
                     t.Span(" de ");
@@ -75,27 +84,27 @@ namespace Domain.Model.Reportes.Admin
 
         public static void Tarjeta(IContainer container, string etiqueta, string valor)
         {
-            container.Background(Crema).Border(1).BorderColor(Borde).Padding(10).Column(col =>
+            container.Background(Blanco).Border(1).BorderColor(GrisBorde).Padding(10).Column(col =>
             {
-                col.Item().Text(etiqueta).FontSize(8).SemiBold().FontColor(Gris);
-                col.Item().PaddingTop(2).Text(valor).FontSize(16).Bold().FontColor(Naranja);
+                col.Item().Text(etiqueta).FontSize(8).SemiBold().FontColor(GrisTexto);
+                col.Item().PaddingTop(2).Text(valor).FontSize(16).Bold().FontColor(VioletaOscuro);
             });
         }
 
         public static void SinDatos(IContainer container, string mensaje)
         {
-            container.Background(Crema).Border(1).BorderColor(Borde).Padding(24).AlignCenter()
-                .Text(mensaje).FontSize(11).FontColor(Gris);
+            container.Background(GrisFondo).Border(1).BorderColor(GrisBorde).Padding(24).AlignCenter()
+                .Text(mensaje).FontSize(11).FontColor(GrisTexto);
         }
 
         public static IContainer CeldaEncabezado(IContainer container) =>
-            container.Background(Naranja)
+            container.Background(AzulMarino)
                 .PaddingVertical(6).PaddingHorizontal(5)
-                .DefaultTextStyle(x => x.SemiBold().FontColor(Colors.White));
+                .DefaultTextStyle(x => x.SemiBold().FontColor(Blanco));
 
         public static IContainer CeldaDato(IContainer container, bool alterna) =>
-            container.Background(alterna ? Crema : Colors.White)
-                .BorderBottom(0.5f).BorderColor(Borde)
+            container.Background(alterna ? GrisFondo : Blanco)
+                .BorderBottom(0.5f).BorderColor(GrisBorde)
                 .PaddingVertical(5).PaddingHorizontal(5);
     }
 }
