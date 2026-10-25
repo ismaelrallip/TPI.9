@@ -14,12 +14,13 @@
 - [Documentación del negocio, requisitos, reglas de negocio y modelo de datos](https://docs.google.com/document/d/1YfdhHR1HZWSLFLJvm5I7DLrj5C67ysH38pvzBC0-3eA/edit?tab=t.0)
 - [Informe de Uso de IA - Entrega 1](https://docs.google.com/document/d/1Tp7xP2-oaNi9mdo0L2RLI9TjgrSsXH8p6cauEkaLaj8/edit?usp=sharing)
 
-## 🛠️ Tecnologías utilizadas
-
-- C# y .NET
-- Entity Framework Core
-- SQL Server
-- [Agregar las tecnologías del frontend, si corresponde]
+- **Lenguaje:** C#
+- **Framework:** .NET
+- **Interfaces de usuario:** Windows Forms y Blazor
+- **Acceso a datos:** Entity Framework Core
+- **Base de datos:** SQL Server
+- **Generación de reportes PDF:** QuestPDF
+- **Documentación y pruebas de la API:** Swagger / OpenAPI
 
 ## 📝 Descripción
 
