@@ -58,7 +58,7 @@ namespace WindowsForms
             try
             {
                 buttonUpdateIngrediente.Enabled = false;
-                buttonVerResumen.Enabled = false;
+                
 
                 var ingredientes = string.IsNullOrWhiteSpace(texto)
                     ? await IngredienteApiClient.GetAllAsync()
@@ -67,7 +67,7 @@ namespace WindowsForms
                 dataGridViewIngredientes.DataSource = ingredientes.ToList();
 
                 buttonUpdateIngrediente.Enabled = true;
-                buttonVerResumen.Enabled = true;
+               
             }
             catch (Exception ex)
             {

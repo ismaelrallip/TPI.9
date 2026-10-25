@@ -99,9 +99,14 @@
                 </button>
 
                 <button class="btn btn-outline-primary fw-bold px-4"
-                        disabled="@(pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Entregado || pedidoSeleccionado.CalificacionPedido.HasValue)"
+                        disabled="@(pedidoSeleccionado == null ||
+                                            pedidoSeleccionado.Estado != EstadoPedido.Entregado)"
                         @onclick="AbrirModalCalificar">
-                    @(pedidoSeleccionado?.CalificacionPedido.HasValue == true ? "Ya Calificado" : "Comentar / Calificar")
+                    @(pedidoSeleccionado != null &&
+                                        (pedidoSeleccionado.CalificacionPedido.HasValue ||
+                                        !string.IsNullOrWhiteSpace(pedidoSeleccionado.ComentarioFinal))
+                                        ? "Editar calificación"
+                                        : "Comentar / Calificar")
                 </button>
             </div>
         </div> <!-- Cierra col-lg-7 -->
@@ -423,6 +428,50 @@
         </div>
     </div>
 }
+@if (mostrarModalCancelar && pedidoSeleccionado != null)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Cancelar pedido</h5>
+                    <button type="button" class="btn-close"
+                            @onclick="CerrarModalCancelar"
+                            disabled="@cancelandoPedido">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    ¿Estás seguro de que querés cancelar el pedido
+                    <strong>#@pedidoSeleccionado.Id</strong>?
+                    Esta acción cambiará su estado a Cancelado.
+
+                    @if (!string.IsNullOrEmpty(errorCancelacion))
+                    {
+                        <div class="alert alert-danger mt-3 mb-0">
+                            @errorCancelacion
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary"
+                            @onclick="CerrarModalCancelar"
+                            disabled="@cancelandoPedido">
+                        Volver
+                    </button>
+
+                    <button class="btn btn-danger"
+                            @onclick="ConfirmarCancelarPedido"
+                            disabled="@cancelandoPedido">
+                        @(cancelandoPedido ? "Cancelando..." : "Sí, cancelar")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     
@@ -442,6 +491,9 @@
     private string comentarioFinal = string.Empty;
     private bool guardandoModal;
     private string? errorModal;
+    private bool mostrarModalCancelar;
+    private bool cancelandoPedido;
+    private string? errorCancelacion;
 
     protected override async Task OnInitializedAsync()
     {
@@ -522,12 +574,15 @@
 
     private void AbrirModalCalificar()
     {
-        // Validar explícitamente que esté Entregado y que aún NO haya sido calificado
-        if (pedidoSeleccionado == null || pedidoSeleccionado.Estado != EstadoPedido.Entregado || pedidoSeleccionado.CalificacionPedido.HasValue) return;
+        if (pedidoSeleccionado == null ||
+            pedidoSeleccionado.Estado != EstadoPedido.Entregado)
+            return;
 
-        califPedido = 5;
-        califDelivery = 5;
-        comentarioFinal = string.Empty;
+        califPedido = pedidoSeleccionado.CalificacionPedido ?? 5;
+        califDelivery = pedidoSeleccionado.CalificacionDelivery ?? 5;
+
+        comentarioFinal = pedidoSeleccionado.ComentarioFinal ?? string.Empty;
+
         errorModal = null;
         mostrarModalCalificar = true;
     }
@@ -572,23 +627,53 @@
         }
     }
 
-    private async Task CancelarPedido()
+    private void CancelarPedido()
     {
-        if (pedidoSeleccionado == null) return;
+        if (pedidoSeleccionado == null ||
+            pedidoSeleccionado.Estado != EstadoPedido.Pendiente)
+            return;
+
+        errorCancelacion = null;
+        mostrarModalCancelar = true;
+    }
+
+    private void CerrarModalCancelar()
+    {
+        if (cancelandoPedido)
+            return;
+
+        mostrarModalCancelar = false;
+        errorCancelacion = null;
+    }
+
+    private async Task ConfirmarCancelarPedido()
+    {
+        if (pedidoSeleccionado == null ||
+            pedidoSeleccionado.Estado != EstadoPedido.Pendiente)
+            return;
+
+        cancelandoPedido = true;
+        errorCancelacion = null;
 
         try
         {
             pedidoSeleccionado.Estado = EstadoPedido.Cancelado;
+
             await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
 
-            // Notificamos cambios
+            mostrarModalCancelar = false;
             Notificator.NotificarCambioPedidos();
 
             await CargarMisPedidos();
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al cancelar pedido: {ex.Message}";
+            pedidoSeleccionado.Estado = EstadoPedido.Pendiente;
+            errorCancelacion = $"Error al cancelar el pedido: {ex.Message}";
+        }
+        finally
+        {
+            cancelandoPedido = false;
         }
     }
 

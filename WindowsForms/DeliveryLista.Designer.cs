@@ -40,10 +40,10 @@
             // actualizarButton
             // 
             actualizarButton.Enabled = false;
-            actualizarButton.Location = new Point(606, 463);
-            actualizarButton.Margin = new Padding(2);
+            actualizarButton.Location = new Point(693, 617);
+            actualizarButton.Margin = new Padding(2, 3, 2, 3);
             actualizarButton.Name = "actualizarButton";
-            actualizarButton.Size = new Size(80, 22);
+            actualizarButton.Size = new Size(91, 29);
             actualizarButton.TabIndex = 16;
             actualizarButton.Text = "Actualizar";
             actualizarButton.UseVisualStyleBackColor = true;
@@ -52,10 +52,10 @@
             // eliminarButton
             // 
             eliminarButton.Enabled = false;
-            eliminarButton.Location = new Point(554, 617);
-            eliminarButton.Margin = new Padding(2);
+            eliminarButton.Location = new Point(633, 823);
+            eliminarButton.Margin = new Padding(2, 3, 2, 3);
             eliminarButton.Name = "eliminarButton";
-            eliminarButton.Size = new Size(125, 29);
+            eliminarButton.Size = new Size(143, 39);
             eliminarButton.TabIndex = 15;
             eliminarButton.Text = "Dar de Baja";
             eliminarButton.UseVisualStyleBackColor = true;
@@ -63,10 +63,10 @@
             // 
             // agregarButton
             // 
-            agregarButton.Location = new Point(703, 463);
-            agregarButton.Margin = new Padding(2);
+            agregarButton.Location = new Point(803, 617);
+            agregarButton.Margin = new Padding(2, 3, 2, 3);
             agregarButton.Name = "agregarButton";
-            agregarButton.Size = new Size(80, 22);
+            agregarButton.Size = new Size(91, 29);
             agregarButton.TabIndex = 14;
             agregarButton.Text = "Agregar";
             agregarButton.UseVisualStyleBackColor = true;
@@ -78,23 +78,23 @@
             deliveriesDataGridView.AllowUserToDeleteRows = false;
             deliveriesDataGridView.AllowUserToOrderColumns = true;
             deliveriesDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            deliveriesDataGridView.Location = new Point(32, 70);
-            deliveriesDataGridView.Margin = new Padding(2);
+            deliveriesDataGridView.Location = new Point(37, 93);
+            deliveriesDataGridView.Margin = new Padding(2, 3, 2, 3);
             deliveriesDataGridView.MultiSelect = false;
             deliveriesDataGridView.Name = "deliveriesDataGridView";
             deliveriesDataGridView.ReadOnly = true;
             deliveriesDataGridView.RowHeadersWidth = 82;
             deliveriesDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            deliveriesDataGridView.Size = new Size(751, 359);
+            deliveriesDataGridView.Size = new Size(858, 479);
             deliveriesDataGridView.TabIndex = 13;
             deliveriesDataGridView.SelectionChanged += deliveriesDataGridView_SelectionChanged;
             // 
             // buscarButton
             // 
-            buscarButton.Location = new Point(340, 16);
-            buscarButton.Margin = new Padding(2);
+            buscarButton.Location = new Point(389, 21);
+            buscarButton.Margin = new Padding(2, 3, 2, 3);
             buscarButton.Name = "buscarButton";
-            buscarButton.Size = new Size(65, 21);
+            buscarButton.Size = new Size(74, 28);
             buscarButton.TabIndex = 12;
             buscarButton.Text = "Buscar";
             buscarButton.UseVisualStyleBackColor = true;
@@ -102,25 +102,24 @@
             // 
             // buscarTextBox
             // 
-            buscarTextBox.Location = new Point(50, 14);
-            buscarTextBox.Margin = new Padding(2);
+            buscarTextBox.Location = new Point(57, 19);
+            buscarTextBox.Margin = new Padding(2, 3, 2, 3);
             buscarTextBox.Name = "buscarTextBox";
             buscarTextBox.PlaceholderText = "Buscar por nombre, apellido, teléfono o DNI...";
-            buscarTextBox.Size = new Size(275, 23);
+            buscarTextBox.Size = new Size(314, 27);
             buscarTextBox.TabIndex = 11;
             // 
             // DeliveryLista
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(880, 541);
+            ClientSize = new Size(1006, 721);
             Controls.Add(actualizarButton);
             Controls.Add(eliminarButton);
             Controls.Add(agregarButton);
             Controls.Add(deliveriesDataGridView);
             Controls.Add(buscarButton);
             Controls.Add(buscarTextBox);
-            Margin = new Padding(3, 2, 3, 2);
             Name = "DeliveryLista";
             Text = "Deliveries";
             ((System.ComponentModel.ISupportInitialize)deliveriesDataGridView).EndInit();

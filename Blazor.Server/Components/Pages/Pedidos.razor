@@ -399,7 +399,49 @@
         </div>
     </div>
 }
+@if (mostrarModalConfirmacion)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Confirmar acción</h5>
+                    <button type="button" class="btn-close"
+                            @onclick="CerrarModalConfirmacion"
+                            disabled="@guardandoConfirmacion">
+                    </button>
+                </div>
 
+                <div class="modal-body">
+                    @mensajeConfirmacion
+
+                    @if (!string.IsNullOrWhiteSpace(errorConfirmacion))
+                    {
+                        <div class="alert alert-danger mt-3 mb-0">
+                            @errorConfirmacion
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            @onclick="CerrarModalConfirmacion"
+                            disabled="@guardandoConfirmacion">
+                        Volver
+                    </button>
+
+                    <button type="button"
+                            class="btn @(esCancelacion ? "btn-danger" : "btn-primary")"
+                            @onclick="ConfirmarCambioEstado"
+                            disabled="@guardandoConfirmacion">
+                        @(guardandoConfirmacion ? "Procesando..." : "Confirmar")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 @code {
     private List<PedidoDTO> listaPedidos = new();
     private List<DeliveryDTO> listaDeliveries = new();
@@ -425,7 +467,12 @@
     private string textoBotonAvanzar = "Avanzar Estado";
     private string textoBotonDelivery = "Asignar Delivery";
     private EstadoPedido? estadoSiguiente;
-
+    private bool mostrarModalConfirmacion;
+    private bool guardandoConfirmacion;
+    private bool esCancelacion;
+    private string mensajeConfirmacion = string.Empty;
+    private string? errorConfirmacion;
+    private EstadoPedido? estadoAnteriorConfirmacion;
     // Modales
     private bool mostrarModalDelivery;
     private int deliveryIdSeleccionado;
@@ -591,38 +638,131 @@
         }
     }
 
-    private async Task AvanzarEstadoPedido()
+    private void CancelarPedido()
     {
-        if (pedidoSeleccionado == null || !estadoSiguiente.HasValue) return;
+        if (pedidoSeleccionado == null ||
+            pedidoSeleccionado.Estado == EstadoPedido.Entregado ||
+            pedidoSeleccionado.Estado == EstadoPedido.Cancelado)
+            return;
+
+        esCancelacion = true;
+        estadoAnteriorConfirmacion = pedidoSeleccionado.Estado;
+        errorConfirmacion = null;
+
+        mensajeConfirmacion =
+            $"¿Estás seguro de que querés cancelar el pedido #{pedidoSeleccionado.Id}?";
+
+        mostrarModalConfirmacion = true;
+    }
+
+    private void AvanzarEstadoPedido()
+    {
+        if (pedidoSeleccionado == null || !estadoSiguiente.HasValue)
+            return;
+
+        esCancelacion = false;
+        estadoAnteriorConfirmacion = pedidoSeleccionado.Estado;
+        errorConfirmacion = null;
+
+        mensajeConfirmacion =
+            $"¿Querés cambiar el estado del pedido #{pedidoSeleccionado.Id} " +
+            $"de {pedidoSeleccionado.Estado} a {estadoSiguiente.Value}?";
+
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CerrarModalConfirmacion()
+    {
+        if (guardandoConfirmacion)
+            return;
+
+        mostrarModalConfirmacion = false;
+        errorConfirmacion = null;
+    }
+
+    private async Task ConfirmarCambioEstado()
+    {
+        if (pedidoSeleccionado == null)
+            return;
+
+        var pedido = pedidoSeleccionado;
+        var estadoAnterior = estadoAnteriorConfirmacion;
+
+        // Volvemos a validar antes de guardar.
+        if (estadoAnterior != pedido.Estado)
+        {
+            errorConfirmacion = "El estado del pedido cambió. Actualizá la lista e intentá nuevamente.";
+            return;
+        }
+
+        if (esCancelacion &&
+            (pedido.Estado == EstadoPedido.Entregado ||
+             pedido.Estado == EstadoPedido.Cancelado))
+        {
+            errorConfirmacion = "Este pedido ya no se puede cancelar.";
+            return;
+        }
+
+        if (!esCancelacion &&
+            (!estadoSiguiente.HasValue ||
+             !PuedeAvanzarA(pedido.Estado, estadoSiguiente.Value, pedido.Modalidad)))
+        {
+            errorConfirmacion = "No se puede realizar esa transición de estado.";
+            return;
+        }
+
+        guardandoConfirmacion = true;
+        errorConfirmacion = null;
 
         try
         {
-            pedidoSeleccionado.Estado = estadoSiguiente.Value;
-            await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
+            pedido.Estado = esCancelacion
+                ? EstadoPedido.Cancelado
+                : estadoSiguiente!.Value;
+
+            await PedidoApiClient.UpdateAsync(pedido);
+
+            mostrarModalConfirmacion = false;
+            Notificator.NotificarCambioPedidos();
+
             await CargarPedidos();
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al avanzar estado: {ex.Message}";
+            pedido.Estado = estadoAnterior!.Value;
+            errorConfirmacion = $"No se pudo actualizar el pedido: {ex.Message}";
+        }
+        finally
+        {
+            guardandoConfirmacion = false;
         }
     }
 
-    private async Task CancelarPedido()
+    private bool PuedeAvanzarA(
+        EstadoPedido actual,
+        EstadoPedido siguiente,
+        ModalidadPedido modalidad)
     {
-        if (pedidoSeleccionado == null) return;
+        if (modalidad == ModalidadPedido.TakeAway)
+        {
+            return (actual == EstadoPedido.Pendiente &&
+                    siguiente == EstadoPedido.EnProceso)
+                || (actual == EstadoPedido.EnProceso &&
+                    siguiente == EstadoPedido.Listo)
+                || (actual == EstadoPedido.Listo &&
+                    siguiente == EstadoPedido.Entregado);
+        }
 
-        try
+        if (modalidad == ModalidadPedido.Delivery)
         {
-            pedidoSeleccionado.Estado = EstadoPedido.Cancelado;
-            await PedidoApiClient.UpdateAsync(pedidoSeleccionado);
-            await CargarPedidos();
+            return (actual == EstadoPedido.Asignado &&
+                    siguiente == EstadoPedido.EnCamino)
+                || (actual == EstadoPedido.EnCamino &&
+                    siguiente == EstadoPedido.Entregado);
         }
-        catch (Exception ex)
-        {
-            mensajeError = $"Error al cancelar pedido: {ex.Message}";
-        }
+
+        return false;
     }
-
 
     private async Task AbrirModalModificar()
     {

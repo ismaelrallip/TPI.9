@@ -3,11 +3,12 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject API.Clients.IAuthService AuthService
 @inject Application.Services.NotificatorService Notificator
+@inject NavigationManager Navigation
 @implements IDisposable
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu />
+        <NavMenu OnSolicitarLogout="MostrarConfirmacion" />
     </div>
 
     <main>
@@ -33,8 +34,50 @@
     <a class="dismiss">🗙</a>
 </div>
 
+<!-- MODAL DE CIERRE DE SESIÓN GLOBAL -->
+@if (mostrarConfirmacion)
+{
+    <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background-color: rgba(0, 0, 0, 0.65);
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;">
+
+        <div class="bg-white text-dark shadow-lg rounded-3"
+             style="width: 100%; max-width: 500px; position: relative; z-index: 100000;">
+
+            <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+                <h5 class="fw-bold mb-0">Cerrar sesión</h5>
+                <button type="button" class="btn-close" aria-label="Cerrar" @onclick="CancelarCierre" disabled="@cerrandoSesion"></button>
+            </div>
+
+            <div class="p-4">
+                <p class="mb-0">¿Estás seguro de que querés cerrar sesión?</p>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 border-top p-3">
+                <button type="button" class="btn btn-secondary" @onclick="CancelarCierre" disabled="@cerrandoSesion">
+                    No, volver
+                </button>
+                <button type="button" class="btn btn-danger" @onclick="EjecutarLogout" disabled="@cerrandoSesion">
+                    @(cerrandoSesion ? "Cerrando..." : "Sí, cerrar sesión")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private string nombreCompleto = "Usuario";
+    private bool mostrarConfirmacion = false;
+    private bool cerrandoSesion = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,7 +128,7 @@
                 return;
             }
 
-            // Si es administrador, mostrar "Hola, Admin".
+            // Si es administrador, mostrar "Admin".
             if (session.Role == "Administrador")
             {
                 nombreCompleto = "Admin";
@@ -116,6 +159,34 @@
             nombreCompleto = session?.Role == "Administrador"
                 ? "Admin"
                 : session?.Username ?? "Usuario";
+        }
+    }
+
+    private void MostrarConfirmacion()
+    {
+        mostrarConfirmacion = true;
+    }
+
+    private void CancelarCierre()
+    {
+        mostrarConfirmacion = false;
+    }
+
+    private async Task EjecutarLogout()
+    {
+        if (cerrandoSesion) return;
+        cerrandoSesion = true;
+
+        try
+        {
+            await AuthService.LogoutAsync();
+            mostrarConfirmacion = false;
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+        catch (Exception)
+        {
+            cerrandoSesion = false;
+            throw;
         }
     }
 

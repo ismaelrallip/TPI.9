@@ -31,7 +31,6 @@
             dataGridViewIngredientes = new DataGridView();
             textBoxBuscarIngredientes = new TextBox();
             buttonAddIngrediente = new Button();
-            buttonVerResumen = new Button();
             buttonUpdateIngrediente = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridViewIngredientes).BeginInit();
             SuspendLayout();
@@ -40,57 +39,46 @@
             // 
             dataGridViewIngredientes.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewIngredientes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewIngredientes.Location = new Point(64, 146);
+            dataGridViewIngredientes.Location = new Point(51, 117);
             dataGridViewIngredientes.Margin = new Padding(2);
             dataGridViewIngredientes.MultiSelect = false;
             dataGridViewIngredientes.Name = "dataGridViewIngredientes";
             dataGridViewIngredientes.ReadOnly = true;
             dataGridViewIngredientes.RowHeadersWidth = 62;
             dataGridViewIngredientes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewIngredientes.Size = new Size(1072, 570);
+            dataGridViewIngredientes.Size = new Size(858, 456);
             dataGridViewIngredientes.TabIndex = 0;
             // 
             // textBoxBuscarIngredientes
             // 
             textBoxBuscarIngredientes.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBoxBuscarIngredientes.Location = new Point(89, 50);
+            textBoxBuscarIngredientes.Location = new Point(71, 40);
             textBoxBuscarIngredientes.Margin = new Padding(2);
             textBoxBuscarIngredientes.Name = "textBoxBuscarIngredientes";
             textBoxBuscarIngredientes.PlaceholderText = "Ingrediente...";
-            textBoxBuscarIngredientes.Size = new Size(328, 31);
+            textBoxBuscarIngredientes.Size = new Size(263, 27);
             textBoxBuscarIngredientes.TabIndex = 1;
             textBoxBuscarIngredientes.TextChanged += textBoxBuscarIngredientes_TextChanged;
             // 
             // buttonAddIngrediente
             // 
             buttonAddIngrediente.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            buttonAddIngrediente.Location = new Point(1021, 775);
+            buttonAddIngrediente.Location = new Point(817, 620);
             buttonAddIngrediente.Margin = new Padding(2);
             buttonAddIngrediente.Name = "buttonAddIngrediente";
-            buttonAddIngrediente.Size = new Size(115, 36);
+            buttonAddIngrediente.Size = new Size(92, 29);
             buttonAddIngrediente.TabIndex = 2;
             buttonAddIngrediente.Text = "AGREGAR";
             buttonAddIngrediente.UseVisualStyleBackColor = true;
             buttonAddIngrediente.Click += buttonAddIngrediente_Click;
             // 
-            // buttonVerResumen
-            // 
-            buttonVerResumen.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            buttonVerResumen.Location = new Point(702, 775);
-            buttonVerResumen.Margin = new Padding(2);
-            buttonVerResumen.Name = "buttonVerResumen";
-            buttonVerResumen.Size = new Size(154, 36);
-            buttonVerResumen.TabIndex = 8;
-            buttonVerResumen.Text = "VER RESUMEN";
-            buttonVerResumen.UseVisualStyleBackColor = true;
-            // 
             // buttonUpdateIngrediente
             // 
             buttonUpdateIngrediente.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            buttonUpdateIngrediente.Location = new Point(877, 775);
+            buttonUpdateIngrediente.Location = new Point(702, 620);
             buttonUpdateIngrediente.Margin = new Padding(2);
             buttonUpdateIngrediente.Name = "buttonUpdateIngrediente";
-            buttonUpdateIngrediente.Size = new Size(128, 36);
+            buttonUpdateIngrediente.Size = new Size(102, 29);
             buttonUpdateIngrediente.TabIndex = 7;
             buttonUpdateIngrediente.Text = "MODIFICAR";
             buttonUpdateIngrediente.UseVisualStyleBackColor = true;
@@ -98,10 +86,9 @@
             // 
             // IngredientesForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1258, 901);
-            Controls.Add(buttonVerResumen);
+            ClientSize = new Size(1006, 721);
             Controls.Add(buttonUpdateIngrediente);
             Controls.Add(buttonAddIngrediente);
             Controls.Add(textBoxBuscarIngredientes);
@@ -120,7 +107,6 @@
         private DataGridView dataGridViewIngredientes;
         private TextBox textBoxBuscarIngredientes;
         private Button buttonAddIngrediente;
-        private Button buttonVerResumen;
         private Button buttonUpdateIngrediente;
     }
 }

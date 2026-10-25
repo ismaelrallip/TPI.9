@@ -83,8 +83,11 @@
                 <hr class="text-white-50 mx-3 my-2" />
 
                 <div class="nav-item px-3">
-                    <button class="nav-link btn btn-link text-start text-danger w-100" @onclick="CerrarSesion">
-                        <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Cerrar sesión
+                    <button type="button"
+                            class="nav-link btn btn-link text-start text-danger w-100"
+                            @onclick="PedirConfirmacionLogout">
+                        <span class="bi bi-box-arrow-right" aria-hidden="true"></span>
+                        Cerrar sesión
                     </button>
                 </div>
             </nav>
@@ -93,9 +96,11 @@
 </div>
 
 @code {
-    private async Task CerrarSesion()
+    [Parameter]
+    public EventCallback OnSolicitarLogout { get; set; }
+
+    private async Task PedirConfirmacionLogout()
     {
-        await AuthService.LogoutAsync();
-        Navigation.NavigateTo("/login", true);
+        await OnSolicitarLogout.InvokeAsync();
     }
 }
