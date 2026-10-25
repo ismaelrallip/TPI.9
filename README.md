@@ -14,6 +14,8 @@
 - [Documentación del negocio, requisitos, reglas de negocio y modelo de datos](https://docs.google.com/document/d/1YfdhHR1HZWSLFLJvm5I7DLrj5C67ysH38pvzBC0-3eA/edit?tab=t.0)
 - [Informe de Uso de IA - Entrega 1](https://docs.google.com/document/d/1Tp7xP2-oaNi9mdo0L2RLI9TjgrSsXH8p6cauEkaLaj8/edit?usp=sharing)
 
+## 🛠️ Tecnologías utilizadas
+
 - **Lenguaje:** C#
 - **Framework:** .NET
 - **Interfaces de usuario:** Windows Forms y Blazor
