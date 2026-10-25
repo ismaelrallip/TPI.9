@@ -4,47 +4,48 @@
 
 ## Integrantes
 
-- **Rallip Sanchez, Ismael** - Legajo: 51392 - Ismaelrasa@gmail.com
-- **Bertotti, Santino** - Legajo: 52967 - santinobertotti1@gmail.com
-- **Tessore, Marco** - Legajo: 53126 - marcoeltrebol@gmail.com
-
-## Descripción
-
-Este repositorio contiene el sistema para gestionar los pedidos, clientes y delivery de una hamburguesería.
-
-La API está construida con una **arquitectura en capas** en C# .NET.
-
-## 🗄️ Base de Datos y Datos de Prueba
-
-La base de datos **se crea sola automáticamente al iniciar el sistema**. _(Nota: dentro del código del context hay una sentencia para borrarla y volverla a crear desde cero, pero por defecto se encuentra comentada)._
-
-Una vez que el sistema haya creado la base de datos, existe un archivo SQL llamado **[seed.sql](./seed.sql)**. **Debes ejecutar este script en tu instancia de SQL Server** para precargar algunos datos de prueba.
+- Rallip Sanchez, Ismael - Legajo 51392 - Ismaelrasa@gmail.com
+- Bertotti, Santino - Legajo 52967 - santinobertotti1@gmail.com
+- Tessore, Marco - Legajo 53126 - marcoeltrebol@gmail.com
 
 ## 📄 Documentación
 
 - [Consigna del Trabajo Práctico](https://docs.google.com/document/d/1aHfNGXIkrtZoeUvli5Xmhj6I-O33DrE1/edit)
-- [Documentación con requisitos, reglas de negocio y modelo de datos](https://docs.google.com/document/d/1YfdhHR1HZWSLFLJvm5I7DLrj5C67ysH38pvzBC0-3eA/edit?tab=t.0)
-- [Informe Uso de IA Entrega 1](https://docs.google.com/document/d/1Tp7xP2-oaNi9mdo0L2RLI9TjgrSsXH8p6cauEkaLaj8/edit?usp=sharing)
+- [Documentación del negocio, requisitos, reglas de negocio y modelo de datos](https://docs.google.com/document/d/1YfdhHR1HZWSLFLJvm5I7DLrj5C67ysH38pvzBC0-3eA/edit?tab=t.0)
+- [Informe de Uso de IA - Entrega 1](https://docs.google.com/document/d/1Tp7xP2-oaNi9mdo0L2RLI9TjgrSsXH8p6cauEkaLaj8/edit?usp=sharing)
+
+## 🛠️ Tecnologías utilizadas
+
+- C# y .NET
+- Entity Framework Core
+- SQL Server
+- [Agregar las tecnologías del frontend, si corresponde]
+
+## 📝 Descripción
+
+Este repositorio contiene el sistema de gestión de pedidos, clientes y delivery de una hamburguesería, desarrollado como parte del Trabajo Práctico Integrador.
+
+La aplicación utiliza una arquitectura en capas y una base de datos SQL Server.
+
+## 🗄️ Base de datos y datos de prueba
+
+La base de datos se crea automáticamente al iniciar el sistema si todavía no existe. Si se realizan cambios en las entidades, estos no se aplican automáticamente a una base de datos ya creada.
+
+Una vez creada la base de datos, se puede ejecutar el archivo `seed.sql` en SQL Server para cargar datos de prueba.
+
+**Importante:** el script `seed.sql` elimina y vuelve a insertar datos en las tablas que modifica. Se recomienda ejecutarlo únicamente en entornos de desarrollo o prueba.
 
 ## 🔑 Credenciales de acceso
 
-Para ingresar al sistema como **Administrador**:
+- **Administrador:** usuario `admin`, contraseña `admin`.
+- **Cliente de prueba:** email `prueba901@email.com`, contraseña `123456`.
 
-- **Usuario:** `admin`
-- **Contraseña:** `admin`
+## ⚙️ Variables de entorno
 
-Para ingresar al sistema como **Cliente** (Datos de la seed):
-
-- **Email:** `prueba901@email.com`
-- **Contraseña:** `123456`
-
-### 📋 Plantilla para el archivo `.env`
-
-Crea un archivo llamado `.env` en la raíz del proyecto utilizando el siguiente formato :
+Crear un archivo `.env` en la raíz del proyecto con la siguiente configuración:
 
 ```env
 TPI9_JWT_SECRET_KEY=Hamburgueseria-JWT-Key-Development-2026
 TPI9_ADMIN_USERNAME=admin
 TPI9_ADMIN_PASSWORD=admin
 TPI_API_BASE_URL=http://localhost:5183/
-```
