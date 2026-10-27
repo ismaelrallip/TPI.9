@@ -209,6 +209,8 @@ namespace Data
                 .AsNoTracking()
                 .Include(p => p.Cliente)
                 .Include(p => p.Delivery)
+                .Include(p => p.DetallePedido)
+            .ThenInclude(d => d.Hamburguesa)
                 .AsQueryable();
 
             if (desde.HasValue)

@@ -51,6 +51,29 @@ namespace WebAPI
             .Produces(StatusCodes.Status404NotFound)
             .RequireAuthorization("AdminOnly")
             .WithOpenApi();
+            app.MapPost("/precios-delivery",
+            
+            async (PrecioDeliveryDTO dto,IPrecioDeliveryService service) =>
+            {
+                try
+                {
+                    var creado = await service.AddAsync(dto);
+
+                    return Results.Created(
+                        $"/precios-delivery/{creado.Id}",
+                        creado);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+            })
+        .WithName("AddPrecioDelivery")
+        .Produces<PrecioDeliveryDTO>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .RequireAuthorization("AdminOnly")
+        .WithOpenApi();
         }
+
     }
 }

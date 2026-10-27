@@ -38,8 +38,11 @@ namespace API.Auth.WindowsForms
       AuthenticationStateChanged?.Invoke(false);
       return Task.CompletedTask;
     }
-
-    public Task CheckTokenExpirationAsync()
+        public Task CargarSesionGuardadaAsync()
+        {
+            return Task.CompletedTask;
+        }
+        public Task CheckTokenExpirationAsync()
     {
       if (currentSession != null && DateTime.UtcNow >= currentSession.ExpiresAt)
       {

@@ -83,13 +83,16 @@ namespace WindowsForms
         {
         }
 
+
         private async void agregarButton_Click(object sender, EventArgs e)
         {
             using var detalle = new AgregarPrecioDeliveryForm();
+
             if (detalle.ShowDialog(this) == DialogResult.OK)
             {
-                await CargarPrecioDeliveryAsync(dateTimePickerDesde.Value);
+                await CargarPrecioDeliveryAsync(null);
             }
         }
+
     }
 }

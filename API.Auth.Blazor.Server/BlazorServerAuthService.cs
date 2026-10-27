@@ -1,19 +1,23 @@
 ﻿using DTOs;
 using API.Clients;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace API.Auth.Blazor.Server
 {
     public class BlazorServerAuthService : IAuthService
     {
-        private  LoginResponse? _currentSession;
+        private LoginResponse? _currentSession;
+        private readonly ProtectedLocalStorage _localStorage;
 
         public event Action<bool>? AuthenticationStateChanged;
 
         public LoginResponse? CurrentSession => _currentSession;
 
-        public BlazorServerAuthService()
+        // Inyectamos ProtectedLocalStorage
+        public BlazorServerAuthService(ProtectedLocalStorage localStorage)
         {
+            _localStorage = localStorage;
         }
 
         public Task<bool> IsAuthenticatedAsync()
@@ -63,6 +67,10 @@ namespace API.Auth.Blazor.Server
             if (response != null && !string.IsNullOrWhiteSpace(response.Token))
             {
                 _currentSession = response;
+
+                // Guardamos la sesión cifrada en el navegador
+                await _localStorage.SetAsync("sesion_usuario", response);
+
                 AuthenticationStateChanged?.Invoke(true);
                 return true;
             }
@@ -70,11 +78,14 @@ namespace API.Auth.Blazor.Server
             return false;
         }
 
-        public Task LogoutAsync()
+        public async Task LogoutAsync()
         {
             _currentSession = null;
+
+            // Borramos la sesión del navegador
+            await _localStorage.DeleteAsync("sesion_usuario");
+
             AuthenticationStateChanged?.Invoke(false);
-            return Task.CompletedTask;
         }
 
         public async Task CheckTokenExpirationAsync()
@@ -105,6 +116,33 @@ namespace API.Auth.Blazor.Server
             catch
             {
                 return Task.FromResult(false);
+            }
+        }
+
+       
+        public async Task CargarSesionGuardadaAsync()
+        {
+            try
+            {
+                var result = await _localStorage.GetAsync<LoginResponse>("sesion_usuario");
+
+                if (result.Success && result.Value != null)
+                {
+                    // Verificamos que no esté expirada antes de restaurarla
+                    if (DateTime.UtcNow < result.Value.ExpiresAt)
+                    {
+                        _currentSession = result.Value;
+                        AuthenticationStateChanged?.Invoke(true);
+                    }
+                    else
+                    {
+                        await LogoutAsync();
+                    }
+                }
+            }
+            catch
+            {
+                // Si ocurre un error leyendo el LocalStorage (ej. datos corruptos), se ignora y queda deslogueado
             }
         }
     }

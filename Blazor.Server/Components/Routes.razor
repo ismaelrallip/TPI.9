@@ -1,10 +1,70 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-            <NotAuthorized>
-                <RedirectToLogin />
-            </NotAuthorized>
-        </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router>
+﻿@inject API.Clients.IAuthService AuthService
+@inject NavigationManager Navigation
+
+@if (!inicializado)
+{
+    <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+}
+else
+{
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>No encontrado</PageTitle>
+            <LayoutView Layout="typeof(Layout.MainLayout)">
+                <p role="alert" class="p-4">La página a la que intentás acceder no existe.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+}
+
+@code {
+    private bool inicializado = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            
+            await AuthService.CargarSesionGuardadaAsync();
+
+            
+            if (await AuthService.IsAuthenticatedAsync())
+            {
+                var uri = new Uri(Navigation.Uri);
+                var path = uri.AbsolutePath.ToLower();
+
+               
+                if (path == "/" || path == "/login")
+                {
+                    var role = AuthService.CurrentSession?.Role;
+
+                    if (role == "Administrador")
+                    {
+                        Navigation.NavigateTo("/hamburguesas", forceLoad: false);
+                    }
+                    else if (role == "Cliente")
+                    {
+                        Navigation.NavigateTo("/cliente/perfil", forceLoad: false);
+                    }
+                }
+                
+            }
+
+           
+            inicializado = true;
+            StateHasChanged();
+        }
+    }
+}
