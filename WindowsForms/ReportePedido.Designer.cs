@@ -66,52 +66,58 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(271, 20);
+            label1.Location = new Point(387, 33);
+            label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(279, 15);
+            label1.Size = new Size(425, 25);
             label1.TabIndex = 0;
             label1.Text = "Si no selecciona un filtro, se traen todos los pedidos";
             // 
             // desdeLabel
             // 
             desdeLabel.AutoSize = true;
-            desdeLabel.Location = new Point(58, 49);
+            desdeLabel.Location = new Point(83, 82);
+            desdeLabel.Margin = new Padding(4, 0, 4, 0);
             desdeLabel.Name = "desdeLabel";
-            desdeLabel.Size = new Size(39, 15);
+            desdeLabel.Size = new Size(62, 25);
             desdeLabel.TabIndex = 1;
             desdeLabel.Text = "Desde";
             // 
             // hastaLabel
             // 
             hastaLabel.AutoSize = true;
-            hastaLabel.Location = new Point(58, 96);
+            hastaLabel.Location = new Point(83, 160);
+            hastaLabel.Margin = new Padding(4, 0, 4, 0);
             hastaLabel.Name = "hastaLabel";
-            hastaLabel.Size = new Size(37, 15);
+            hastaLabel.Size = new Size(57, 25);
             hastaLabel.TabIndex = 2;
             hastaLabel.Text = "Hasta";
             // 
             // modalidadLabel
             // 
             modalidadLabel.AutoSize = true;
-            modalidadLabel.Location = new Point(430, 49);
+            modalidadLabel.Location = new Point(614, 82);
+            modalidadLabel.Margin = new Padding(4, 0, 4, 0);
             modalidadLabel.Name = "modalidadLabel";
-            modalidadLabel.Size = new Size(64, 15);
+            modalidadLabel.Size = new Size(98, 25);
             modalidadLabel.TabIndex = 3;
             modalidadLabel.Text = "Modalidad";
             // 
             // desdeDatePicker
             // 
-            desdeDatePicker.Location = new Point(128, 49);
+            desdeDatePicker.Location = new Point(183, 82);
+            desdeDatePicker.Margin = new Padding(4, 5, 4, 5);
             desdeDatePicker.Name = "desdeDatePicker";
-            desdeDatePicker.Size = new Size(233, 23);
+            desdeDatePicker.Size = new Size(331, 31);
             desdeDatePicker.TabIndex = 4;
             desdeDatePicker.ValueChanged += desdeDatePicker_ValueChanged;
             // 
             // hastaDatePicker
             // 
-            hastaDatePicker.Location = new Point(128, 96);
+            hastaDatePicker.Location = new Point(183, 160);
+            hastaDatePicker.Margin = new Padding(4, 5, 4, 5);
             hastaDatePicker.Name = "hastaDatePicker";
-            hastaDatePicker.Size = new Size(233, 23);
+            hastaDatePicker.Size = new Size(331, 31);
             hastaDatePicker.TabIndex = 5;
             hastaDatePicker.ValueChanged += hastaDatePicker_ValueChanged;
             // 
@@ -119,9 +125,10 @@
             // 
             modalidadComboBox.FormattingEnabled = true;
             modalidadComboBox.Items.AddRange(new object[] { "Delivery", "Take Away" });
-            modalidadComboBox.Location = new Point(526, 49);
+            modalidadComboBox.Location = new Point(751, 82);
+            modalidadComboBox.Margin = new Padding(4, 5, 4, 5);
             modalidadComboBox.Name = "modalidadComboBox";
-            modalidadComboBox.Size = new Size(121, 23);
+            modalidadComboBox.Size = new Size(171, 33);
             modalidadComboBox.TabIndex = 6;
             modalidadComboBox.SelectedIndexChanged += modalidadComboBox_SelectedIndexChanged;
             // 
@@ -129,26 +136,29 @@
             // 
             estadoComboBox.FormattingEnabled = true;
             estadoComboBox.Items.AddRange(new object[] { "Pendiente", "EnProceso", "Listo", "Asignado", "EnCamino", "Entregado", "Cancelado" });
-            estadoComboBox.Location = new Point(526, 96);
+            estadoComboBox.Location = new Point(751, 160);
+            estadoComboBox.Margin = new Padding(4, 5, 4, 5);
             estadoComboBox.Name = "estadoComboBox";
-            estadoComboBox.Size = new Size(121, 23);
+            estadoComboBox.Size = new Size(171, 33);
             estadoComboBox.TabIndex = 7;
             estadoComboBox.SelectedIndexChanged += estadoComboBox_SelectedIndexChanged;
             // 
             // estadoLabel
             // 
             estadoLabel.AutoSize = true;
-            estadoLabel.Location = new Point(430, 96);
+            estadoLabel.Location = new Point(614, 160);
+            estadoLabel.Margin = new Padding(4, 0, 4, 0);
             estadoLabel.Name = "estadoLabel";
-            estadoLabel.Size = new Size(42, 15);
+            estadoLabel.Size = new Size(66, 25);
             estadoLabel.TabIndex = 8;
             estadoLabel.Text = "Estado";
             // 
             // DownloadButton
             // 
-            DownloadButton.Location = new Point(681, 96);
+            DownloadButton.Location = new Point(973, 160);
+            DownloadButton.Margin = new Padding(4, 5, 4, 5);
             DownloadButton.Name = "DownloadButton";
-            DownloadButton.Size = new Size(117, 23);
+            DownloadButton.Size = new Size(167, 38);
             DownloadButton.TabIndex = 9;
             DownloadButton.Text = "Descargar PDF";
             DownloadButton.UseVisualStyleBackColor = true;
@@ -157,18 +167,22 @@
             // dataGridViewPedidos
             // 
             dataGridViewPedidos.AutoGenerateColumns = false;
+            dataGridViewPedidos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewPedidos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewPedidos.Columns.AddRange(new DataGridViewColumn[] { idDataGridViewTextBoxColumn, fechaDataGridViewTextBoxColumn, comentarioDataGridViewTextBoxColumn, direccionDataGridViewTextBoxColumn, modalidadDataGridViewTextBoxColumn, calificacionPedidoDataGridViewTextBoxColumn, calificacionDeliveryDataGridViewTextBoxColumn, estadoDataGridViewTextBoxColumn, comentarioFinalDataGridViewTextBoxColumn, precioTotalDataGridViewTextBoxColumn, clienteIdDataGridViewTextBoxColumn, clienteNombreDataGridViewTextBoxColumn, clienteActivoDataGridViewCheckBoxColumn, deliveryIdDataGridViewTextBoxColumn, deliveryNombreDataGridViewTextBoxColumn });
             dataGridViewPedidos.DataSource = pedidoDTOBindingSource;
-            dataGridViewPedidos.Location = new Point(28, 152);
+            dataGridViewPedidos.Location = new Point(40, 253);
+            dataGridViewPedidos.Margin = new Padding(4, 5, 4, 5);
             dataGridViewPedidos.Name = "dataGridViewPedidos";
-            dataGridViewPedidos.Size = new Size(1244, 351);
+            dataGridViewPedidos.RowHeadersWidth = 62;
+            dataGridViewPedidos.Size = new Size(1939, 795);
             dataGridViewPedidos.TabIndex = 10;
             // 
             // idDataGridViewTextBoxColumn
             // 
             idDataGridViewTextBoxColumn.DataPropertyName = "Id";
             idDataGridViewTextBoxColumn.HeaderText = "Id";
+            idDataGridViewTextBoxColumn.MinimumWidth = 8;
             idDataGridViewTextBoxColumn.Name = "idDataGridViewTextBoxColumn";
             idDataGridViewTextBoxColumn.Visible = false;
             // 
@@ -176,60 +190,70 @@
             // 
             fechaDataGridViewTextBoxColumn.DataPropertyName = "Fecha";
             fechaDataGridViewTextBoxColumn.HeaderText = "Fecha";
+            fechaDataGridViewTextBoxColumn.MinimumWidth = 8;
             fechaDataGridViewTextBoxColumn.Name = "fechaDataGridViewTextBoxColumn";
             // 
             // comentarioDataGridViewTextBoxColumn
             // 
             comentarioDataGridViewTextBoxColumn.DataPropertyName = "Comentario";
             comentarioDataGridViewTextBoxColumn.HeaderText = "Comentario";
+            comentarioDataGridViewTextBoxColumn.MinimumWidth = 8;
             comentarioDataGridViewTextBoxColumn.Name = "comentarioDataGridViewTextBoxColumn";
             // 
             // direccionDataGridViewTextBoxColumn
             // 
             direccionDataGridViewTextBoxColumn.DataPropertyName = "Direccion";
             direccionDataGridViewTextBoxColumn.HeaderText = "Direccion";
+            direccionDataGridViewTextBoxColumn.MinimumWidth = 8;
             direccionDataGridViewTextBoxColumn.Name = "direccionDataGridViewTextBoxColumn";
             // 
             // modalidadDataGridViewTextBoxColumn
             // 
             modalidadDataGridViewTextBoxColumn.DataPropertyName = "Modalidad";
             modalidadDataGridViewTextBoxColumn.HeaderText = "Modalidad";
+            modalidadDataGridViewTextBoxColumn.MinimumWidth = 8;
             modalidadDataGridViewTextBoxColumn.Name = "modalidadDataGridViewTextBoxColumn";
             // 
             // calificacionPedidoDataGridViewTextBoxColumn
             // 
             calificacionPedidoDataGridViewTextBoxColumn.DataPropertyName = "CalificacionPedido";
             calificacionPedidoDataGridViewTextBoxColumn.HeaderText = "CalificacionPedido";
+            calificacionPedidoDataGridViewTextBoxColumn.MinimumWidth = 8;
             calificacionPedidoDataGridViewTextBoxColumn.Name = "calificacionPedidoDataGridViewTextBoxColumn";
             // 
             // calificacionDeliveryDataGridViewTextBoxColumn
             // 
             calificacionDeliveryDataGridViewTextBoxColumn.DataPropertyName = "CalificacionDelivery";
             calificacionDeliveryDataGridViewTextBoxColumn.HeaderText = "CalificacionDelivery";
+            calificacionDeliveryDataGridViewTextBoxColumn.MinimumWidth = 8;
             calificacionDeliveryDataGridViewTextBoxColumn.Name = "calificacionDeliveryDataGridViewTextBoxColumn";
             // 
             // estadoDataGridViewTextBoxColumn
             // 
             estadoDataGridViewTextBoxColumn.DataPropertyName = "Estado";
             estadoDataGridViewTextBoxColumn.HeaderText = "Estado";
+            estadoDataGridViewTextBoxColumn.MinimumWidth = 8;
             estadoDataGridViewTextBoxColumn.Name = "estadoDataGridViewTextBoxColumn";
             // 
             // comentarioFinalDataGridViewTextBoxColumn
             // 
             comentarioFinalDataGridViewTextBoxColumn.DataPropertyName = "ComentarioFinal";
             comentarioFinalDataGridViewTextBoxColumn.HeaderText = "ComentarioFinal";
+            comentarioFinalDataGridViewTextBoxColumn.MinimumWidth = 8;
             comentarioFinalDataGridViewTextBoxColumn.Name = "comentarioFinalDataGridViewTextBoxColumn";
             // 
             // precioTotalDataGridViewTextBoxColumn
             // 
             precioTotalDataGridViewTextBoxColumn.DataPropertyName = "PrecioTotal";
             precioTotalDataGridViewTextBoxColumn.HeaderText = "PrecioTotal";
+            precioTotalDataGridViewTextBoxColumn.MinimumWidth = 8;
             precioTotalDataGridViewTextBoxColumn.Name = "precioTotalDataGridViewTextBoxColumn";
             // 
             // clienteIdDataGridViewTextBoxColumn
             // 
             clienteIdDataGridViewTextBoxColumn.DataPropertyName = "ClienteId";
             clienteIdDataGridViewTextBoxColumn.HeaderText = "ClienteId";
+            clienteIdDataGridViewTextBoxColumn.MinimumWidth = 8;
             clienteIdDataGridViewTextBoxColumn.Name = "clienteIdDataGridViewTextBoxColumn";
             clienteIdDataGridViewTextBoxColumn.Visible = false;
             // 
@@ -237,18 +261,21 @@
             // 
             clienteNombreDataGridViewTextBoxColumn.DataPropertyName = "ClienteNombre";
             clienteNombreDataGridViewTextBoxColumn.HeaderText = "ClienteNombre";
+            clienteNombreDataGridViewTextBoxColumn.MinimumWidth = 8;
             clienteNombreDataGridViewTextBoxColumn.Name = "clienteNombreDataGridViewTextBoxColumn";
             // 
             // clienteActivoDataGridViewCheckBoxColumn
             // 
             clienteActivoDataGridViewCheckBoxColumn.DataPropertyName = "ClienteActivo";
             clienteActivoDataGridViewCheckBoxColumn.HeaderText = "ClienteActivo";
+            clienteActivoDataGridViewCheckBoxColumn.MinimumWidth = 8;
             clienteActivoDataGridViewCheckBoxColumn.Name = "clienteActivoDataGridViewCheckBoxColumn";
             // 
             // deliveryIdDataGridViewTextBoxColumn
             // 
             deliveryIdDataGridViewTextBoxColumn.DataPropertyName = "DeliveryId";
             deliveryIdDataGridViewTextBoxColumn.HeaderText = "DeliveryId";
+            deliveryIdDataGridViewTextBoxColumn.MinimumWidth = 8;
             deliveryIdDataGridViewTextBoxColumn.Name = "deliveryIdDataGridViewTextBoxColumn";
             deliveryIdDataGridViewTextBoxColumn.Visible = false;
             // 
@@ -256,6 +283,7 @@
             // 
             deliveryNombreDataGridViewTextBoxColumn.DataPropertyName = "DeliveryNombre";
             deliveryNombreDataGridViewTextBoxColumn.HeaderText = "DeliveryNombre";
+            deliveryNombreDataGridViewTextBoxColumn.MinimumWidth = 8;
             deliveryNombreDataGridViewTextBoxColumn.Name = "deliveryNombreDataGridViewTextBoxColumn";
             // 
             // pedidoDTOBindingSource
@@ -269,9 +297,10 @@
             // 
             // traerTodosButton
             // 
-            traerTodosButton.Location = new Point(681, 45);
+            traerTodosButton.Location = new Point(973, 75);
+            traerTodosButton.Margin = new Padding(4, 5, 4, 5);
             traerTodosButton.Name = "traerTodosButton";
-            traerTodosButton.Size = new Size(157, 23);
+            traerTodosButton.Size = new Size(224, 38);
             traerTodosButton.TabIndex = 11;
             traerTodosButton.Text = "Traer todos los pedidos";
             traerTodosButton.UseVisualStyleBackColor = true;
@@ -280,9 +309,9 @@
             // ReportePedido
             // 
             AcceptButton = DownloadButton;
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1313, 570);
+            ClientSize = new Size(2060, 1075);
             Controls.Add(traerTodosButton);
             Controls.Add(dataGridViewPedidos);
             Controls.Add(DownloadButton);
@@ -295,6 +324,7 @@
             Controls.Add(hastaLabel);
             Controls.Add(desdeLabel);
             Controls.Add(label1);
+            Margin = new Padding(4, 5, 4, 5);
             Name = "ReportePedido";
             Text = "Reporte de Pedidos";
             ((System.ComponentModel.ISupportInitialize)dataGridViewPedidos).EndInit();

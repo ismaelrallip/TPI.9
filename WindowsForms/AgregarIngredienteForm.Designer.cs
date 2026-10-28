@@ -39,51 +39,51 @@
             // textBoxNombre
             // 
             textBoxNombre.Font = new Font("Segoe UI", 12F);
-            textBoxNombre.Location = new Point(29, 37);
-            textBoxNombre.Margin = new Padding(2, 2, 2, 2);
+            textBoxNombre.Location = new Point(36, 46);
+            textBoxNombre.Margin = new Padding(2);
             textBoxNombre.Name = "textBoxNombre";
             textBoxNombre.PlaceholderText = "Nombre...";
-            textBoxNombre.Size = new Size(208, 34);
+            textBoxNombre.Size = new Size(259, 39);
             textBoxNombre.TabIndex = 0;
             // 
             // textBoxDescripcion
             // 
             textBoxDescripcion.Font = new Font("Segoe UI", 12F);
-            textBoxDescripcion.Location = new Point(29, 110);
-            textBoxDescripcion.Margin = new Padding(2, 2, 2, 2);
+            textBoxDescripcion.Location = new Point(36, 138);
+            textBoxDescripcion.Margin = new Padding(2);
             textBoxDescripcion.Name = "textBoxDescripcion";
             textBoxDescripcion.PlaceholderText = "Descripcion...";
-            textBoxDescripcion.Size = new Size(208, 34);
+            textBoxDescripcion.Size = new Size(259, 39);
             textBoxDescripcion.TabIndex = 1;
             // 
             // numericUpDownStock
             // 
             numericUpDownStock.Font = new Font("Segoe UI", 12F);
-            numericUpDownStock.Location = new Point(29, 198);
-            numericUpDownStock.Margin = new Padding(2, 2, 2, 2);
+            numericUpDownStock.Location = new Point(36, 248);
+            numericUpDownStock.Margin = new Padding(2);
             numericUpDownStock.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
             numericUpDownStock.Name = "numericUpDownStock";
-            numericUpDownStock.Size = new Size(207, 34);
+            numericUpDownStock.Size = new Size(259, 39);
             numericUpDownStock.TabIndex = 3;
             // 
             // labelStock
             // 
             labelStock.AutoSize = true;
             labelStock.Font = new Font("Segoe UI", 12F);
-            labelStock.Location = new Point(25, 170);
+            labelStock.Location = new Point(31, 212);
             labelStock.Margin = new Padding(2, 0, 2, 0);
             labelStock.Name = "labelStock";
-            labelStock.Size = new Size(64, 28);
+            labelStock.Size = new Size(76, 32);
             labelStock.TabIndex = 4;
             labelStock.Text = "Stock:";
             // 
             // buttonAddIngrediente
             // 
             buttonAddIngrediente.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
-            buttonAddIngrediente.Location = new Point(539, 328);
-            buttonAddIngrediente.Margin = new Padding(2, 2, 2, 2);
+            buttonAddIngrediente.Location = new Point(674, 410);
+            buttonAddIngrediente.Margin = new Padding(2);
             buttonAddIngrediente.Name = "buttonAddIngrediente";
-            buttonAddIngrediente.Size = new Size(115, 42);
+            buttonAddIngrediente.Size = new Size(144, 52);
             buttonAddIngrediente.TabIndex = 5;
             buttonAddIngrediente.Text = "AGREGAR";
             buttonAddIngrediente.UseVisualStyleBackColor = true;
@@ -91,19 +91,19 @@
             // 
             // AgregarIngredienteForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(702, 433);
+            ClientSize = new Size(878, 541);
             Controls.Add(buttonAddIngrediente);
             Controls.Add(labelStock);
             Controls.Add(numericUpDownStock);
             Controls.Add(textBoxDescripcion);
             Controls.Add(textBoxNombre);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            Margin = new Padding(2, 2, 2, 2);
+            Margin = new Padding(2);
             Name = "AgregarIngredienteForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "AgregarIngredienteForm";
+            Text = "Agregar Ingrediente";
             ((System.ComponentModel.ISupportInitialize)numericUpDownStock).EndInit();
             ResumeLayout(false);
             PerformLayout();

@@ -62,8 +62,8 @@ namespace WindowsForms
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
-            Close();
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
         }
 
         private void passwordTextBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -112,7 +112,7 @@ namespace WindowsForms
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
-                
+
                 // Se deja cargado el email que se acaba de registrar.
                 usernameTextBox.Text = registerForm.Cliente.Email;
             }
@@ -129,7 +129,7 @@ namespace WindowsForms
                 SetLoading(false);
             }
 
-            
+
             // el cursor queda en la contraseña, listo para iniciar sesión.
             if (registrado)
             {

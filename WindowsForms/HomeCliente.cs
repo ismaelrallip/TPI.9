@@ -14,7 +14,8 @@ namespace WindowsForms
     public partial class HomeCliente : Form
     {
         public bool LogoutRequested { get; private set; } = false;
-        private ToolStripLabel? _etiquetaCliente;   
+        private ToolStripLabel? _etiquetaCliente;
+
         public HomeCliente()
         {
             InitializeComponent();
@@ -37,6 +38,12 @@ namespace WindowsForms
                 AuthServiceProvider.Current.AuthenticationStateChanged -= AuthenticationStateChanged;
 
             base.OnFormClosed(e);
+
+            // Si cerró la ventana tocando la X (no por Logout), deslogueamos la sesión
+            if (!LogoutRequested && AuthServiceProvider.Current != null)
+            {
+                _ = AuthServiceProvider.Current.LogoutAsync();
+            }
         }
 
         public void RequestLogout()
@@ -54,7 +61,6 @@ namespace WindowsForms
             {
                 var cliente = await ClienteApiClient.GetAsync(session.ClienteId.Value);
 
-                // La etiqueta se crea y se agrega recién cuando se tiene el nombre
                 _etiquetaCliente = new ToolStripLabel($"{cliente.Nombre} {cliente.Apellido}")
                 {
                     Alignment = ToolStripItemAlignment.Right,
@@ -64,102 +70,63 @@ namespace WindowsForms
             }
             catch
             {
-                // Si no se puede traer el nombre, no se muestra nada.
+                // Si no se puede obtener el nombre, no se muestra la etiqueta.
             }
         }
-        private async void perfilToolStripMenuItem_Click(object sender, EventArgs e)
+
+        private void perfilToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
-            {
-                perfilToolStripMenuItem.Enabled = false;
-                var session = AuthServiceProvider.Current?.CurrentSession;
-                if (session == null || session.ClienteId == null)
-                {
-                    MessageBox.Show("No se pudo obtener la información del cliente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // Buscar si ya existe una instancia abierta de Perfil
-                var existente = this.MdiChildren.OfType<PerfilCliente>().FirstOrDefault();
-                if (existente != null)
-                {
-                    existente.BringToFront();
-                    return;
-                }
-
-                var detalle = new PerfilCliente();
-                detalle.MdiParent = this;
-                detalle.FormBorderStyle = FormBorderStyle.None;
-                detalle.Dock = DockStyle.Fill;
-
-                detalle.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al actualizar cliente: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                perfilToolStripMenuItem.Enabled = true;
-            }
+            MostrarFormulario<PerfilCliente>();
         }
+
         private void crearPedidoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            var session = AuthServiceProvider.Current?.CurrentSession;
+            if (session == null || session.ClienteId == null)
             {
-                crearPedidoToolStripMenuItem.Enabled = false;
-                var session = AuthServiceProvider.Current?.CurrentSession;
-                if (session == null || session.ClienteId == null)
-                {
-                    MessageBox.Show("No se pudo obtener la información del cliente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                MessageBox.Show("No se pudo obtener la información del cliente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
-                // Buscar si ya existe una instancia abierta de Crear Pedido
-                var existente = this.MdiChildren.OfType<AgregarEditarPedidoForm>().FirstOrDefault();
-                if (existente != null)
-                {
-                    existente.BringToFront();
-                    return;
-                }
+            // Usamos la sobrecarga personalizada pasando la fábrica para instanciar con ClienteId
+            var form = MostrarFormulario(() => new AgregarEditarPedidoForm(session.ClienteId.Value));
 
-                var form = new AgregarEditarPedidoForm(session.ClienteId.Value);
-                form.MdiParent = this;
-                form.FormBorderStyle = FormBorderStyle.None;
-                form.Dock = DockStyle.Fill;
-
-                //  Escuchamos cuando el formulario se cierra ---
+            // Mantenemos la suscripción para recargar "Mis Pedidos" si se creó correctamente
+            if (form != null)
+            {
                 form.FormClosed += async (s, ev) =>
                 {
-                    
                     if (form.DialogResult == DialogResult.OK)
                     {
                         MessageBox.Show("Pedido creado correctamente.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        // Buscamos si "Mis Pedidos" está abierto en el fondo
                         var pedidosForm = this.MdiChildren.OfType<PedidosForm>().FirstOrDefault(f => f.Tag?.ToString() == $"cliente_{session.ClienteId.Value}");
-
                         if (pedidosForm != null)
                         {
-                            // Forzamos la recarga de los datos
                             await pedidosForm.LoadPedidos();
                         }
                     }
                 };
-
-                form.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"No se pudo crear el pedido: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                crearPedidoToolStripMenuItem.Enabled = true;
             }
         }
 
+        private void misPedidosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var session = AuthServiceProvider.Current?.CurrentSession;
+            if (session == null || session.ClienteId == null)
+            {
+                MessageBox.Show("No se pudo obtener la información del cliente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
+            int clienteId = session.ClienteId.Value;
+
+            var form = MostrarFormulario(() => new PedidosForm(clienteId, true));
+            if (form != null)
+            {
+                form.Tag = $"cliente_{clienteId}";
+            }
+        }
 
         private async void cerrarSesionToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -168,43 +135,53 @@ namespace WindowsForms
                 await AuthServiceProvider.Current.LogoutAsync();
         }
 
-        private void misPedidosToolStripMenuItem_Click(object sender, EventArgs e)
+        #region Métodos Auxiliares para Navegación MDI
+
+        /// <summary>
+        /// Abre un formulario sin parámetros reemplazando el hijo anterior.
+        /// </summary>
+        private T? MostrarFormulario<T>() where T : Form, new()
+        {
+            return MostrarFormulario(() => new T());
+        }
+
+        /// <summary>
+        /// Abre un formulario instanciado con constructor personalizado reemplazando el hijo anterior.
+        /// </summary>
+        private T? MostrarFormulario<T>(Func<T> factory) where T : Form
         {
             try
             {
-                misPedidosToolStripMenuItem.Enabled = false;
-                var session = AuthServiceProvider.Current?.CurrentSession;
-                if (session == null || session.ClienteId == null)
+                // Verifica si la misma pantalla ya está abierta
+                var formularioExistente = this.MdiChildren.OfType<T>().FirstOrDefault();
+                if (formularioExistente != null)
                 {
-                    MessageBox.Show("No se pudo obtener la información del cliente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    formularioExistente.BringToFront();
+                    return formularioExistente;
                 }
 
-                int clienteId = session.ClienteId.Value;
-
-                // Buscar una instancia ya abierta específica para este cliente
-                var existente = this.MdiChildren.OfType<PedidosForm>().FirstOrDefault(f => f.Tag?.ToString() == $"cliente_{clienteId}");
-                if (existente != null)
+                // Cierra los formularios hijos previos para mantener un área limpia
+                foreach (var child in this.MdiChildren)
                 {
-                    existente.BringToFront();
-                    return;
+                    child.Close();
                 }
 
-                var form = new PedidosForm(clienteId, true);
+                // Crea y configura el nuevo formulario hijo
+                var form = factory();
                 form.MdiParent = this;
-                form.Tag = $"cliente_{clienteId}";
                 form.FormBorderStyle = FormBorderStyle.None;
                 form.Dock = DockStyle.Fill;
                 form.Show();
+
+                return form;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"No se pudieron obtener los pedidos: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                misPedidosToolStripMenuItem.Enabled = true;
+                MessageBox.Show($"Ocurrió un error al abrir la pantalla: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
             }
         }
+
+        #endregion
     }
 }

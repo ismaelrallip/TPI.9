@@ -106,7 +106,7 @@
             Margin = new Padding(2);
             Name = "ActualizarIngredienteForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "ActualizarIngredienteForm";
+            Text = "Actualizar Ingrediente";
             Load += ActualizarIngredienteForm_Load;
             ((System.ComponentModel.ISupportInitialize)numericUpDownStock).EndInit();
             ResumeLayout(false);

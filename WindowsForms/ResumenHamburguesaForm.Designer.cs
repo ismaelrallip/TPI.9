@@ -84,7 +84,7 @@
             // 
             // labelMostrarNombre
             // 
-            labelMostrarNombre.BackColor = SystemColors.ButtonShadow;
+            labelMostrarNombre.BackColor = Color.White;
             labelMostrarNombre.Font = new Font("Segoe UI", 9F);
             labelMostrarNombre.Location = new Point(157, 34);
             labelMostrarNombre.Name = "labelMostrarNombre";
@@ -94,7 +94,7 @@
             // 
             // labelMostrarPrecio
             // 
-            labelMostrarPrecio.BackColor = SystemColors.ButtonShadow;
+            labelMostrarPrecio.BackColor = Color.White;
             labelMostrarPrecio.Font = new Font("Segoe UI", 9F);
             labelMostrarPrecio.Location = new Point(690, 34);
             labelMostrarPrecio.Name = "labelMostrarPrecio";
@@ -114,7 +114,7 @@
             Controls.Add(dataGridViewPrecios);
             Controls.Add(dataGridViewIngredientes);
             Name = "ResumenHamburguesaForm";
-            Text = "ResumenHamburguesaForm";
+            Text = "Resumen Hamburguesa";
             ((System.ComponentModel.ISupportInitialize)dataGridViewIngredientes).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewPrecios).EndInit();
             ResumeLayout(false);

@@ -26,13 +26,16 @@ namespace WindowsForms
                 using var loginForm = new LoginForm();
                 if (loginForm.ShowDialog() != DialogResult.OK)
                 {
-                    return; // Cancela el login: cierra la app.
+                    // Cancela o cierra el login: cierra la app por completo
+                    CerrarAplicacion();
+                    return;
                 }
 
                 var session = AuthServiceProvider.Current?.CurrentSession;
                 if (session == null)
                 {
                     MessageBox.Show("No se pudo recuperar la sesión autenticada.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    CerrarAplicacion();
                     return;
                 }
 
@@ -40,24 +43,23 @@ namespace WindowsForms
                 {
                     try
                     {
-                        
                         var home = new HomeAdministrador();
                         Application.Run(home);
 
-                        
                         if (home.LogoutRequested)
                         {
-                            
-                            continue;
+                            continue; // Vuelve al login
                         }
                         else
                         {
-                            return; // cerrar la app
+                            CerrarAplicacion();
+                            return;
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error en la aplicacion: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Error en la aplicación: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        CerrarAplicacion();
                         return;
                     }
                 }
@@ -70,20 +72,28 @@ namespace WindowsForms
 
                         if (home.LogoutRequested)
                         {
-                            continue;
+                            continue; // Vuelve al login
                         }
                         else
                         {
-                            return; // cerrar la app
+                            CerrarAplicacion();
+                            return;
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error en la aplicacion: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Error en la aplicación: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        CerrarAplicacion();
                         return;
                     }
                 }
             }
+        }
+
+        private static void CerrarAplicacion()
+        {
+            Application.Exit();
+            Environment.Exit(0); // Mata todo hilo residual de la WebAPI o conexiones activas
         }
 
         private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)

@@ -39,19 +39,19 @@
             // 
             // buscarTextBox
             // 
-            buscarTextBox.Location = new Point(71, 40);
+            buscarTextBox.Location = new Point(89, 50);
             buscarTextBox.Margin = new Padding(2);
             buscarTextBox.Name = "buscarTextBox";
             buscarTextBox.PlaceholderText = "Buscar por nombre, apellido o email...";
-            buscarTextBox.Size = new Size(263, 27);
+            buscarTextBox.Size = new Size(328, 31);
             buscarTextBox.TabIndex = 5;
             // 
             // buscarButton
             // 
-            buscarButton.Location = new Point(349, 43);
+            buscarButton.Location = new Point(436, 54);
             buscarButton.Margin = new Padding(2);
             buscarButton.Name = "buscarButton";
-            buscarButton.Size = new Size(74, 24);
+            buscarButton.Size = new Size(92, 30);
             buscarButton.TabIndex = 6;
             buscarButton.Text = "Buscar";
             buscarButton.UseVisualStyleBackColor = true;
@@ -62,25 +62,26 @@
             clientesDataGridView.AllowUserToAddRows = false;
             clientesDataGridView.AllowUserToDeleteRows = false;
             clientesDataGridView.AllowUserToOrderColumns = true;
+            clientesDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             clientesDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            clientesDataGridView.Location = new Point(51, 117);
+            clientesDataGridView.Location = new Point(64, 146);
             clientesDataGridView.Margin = new Padding(2);
             clientesDataGridView.MultiSelect = false;
             clientesDataGridView.Name = "clientesDataGridView";
             clientesDataGridView.ReadOnly = true;
             clientesDataGridView.RowHeadersWidth = 82;
             clientesDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            clientesDataGridView.Size = new Size(858, 456);
+            clientesDataGridView.Size = new Size(1072, 570);
             clientesDataGridView.TabIndex = 7;
             clientesDataGridView.SelectionChanged += clientesDataGridView_SelectionChanged;
             // 
             // actualizarButton
             // 
             actualizarButton.Enabled = false;
-            actualizarButton.Location = new Point(712, 620);
+            actualizarButton.Location = new Point(890, 775);
             actualizarButton.Margin = new Padding(2);
             actualizarButton.Name = "actualizarButton";
-            actualizarButton.Size = new Size(92, 29);
+            actualizarButton.Size = new Size(115, 36);
             actualizarButton.TabIndex = 10;
             actualizarButton.Text = "Actualizar";
             actualizarButton.UseVisualStyleBackColor = true;
@@ -89,10 +90,10 @@
             // eliminarButton
             // 
             eliminarButton.Enabled = false;
-            eliminarButton.Location = new Point(581, 620);
+            eliminarButton.Location = new Point(726, 775);
             eliminarButton.Margin = new Padding(2);
             eliminarButton.Name = "eliminarButton";
-            eliminarButton.Size = new Size(114, 29);
+            eliminarButton.Size = new Size(142, 36);
             eliminarButton.TabIndex = 9;
             eliminarButton.Text = "Dar de Baja";
             eliminarButton.UseVisualStyleBackColor = true;
@@ -100,10 +101,10 @@
             // 
             // agregarButton
             // 
-            agregarButton.Location = new Point(817, 620);
+            agregarButton.Location = new Point(1021, 775);
             agregarButton.Margin = new Padding(2);
             agregarButton.Name = "agregarButton";
-            agregarButton.Size = new Size(92, 29);
+            agregarButton.Size = new Size(115, 36);
             agregarButton.TabIndex = 8;
             agregarButton.Text = "Agregar";
             agregarButton.UseVisualStyleBackColor = true;
@@ -111,15 +112,18 @@
             // 
             // ClienteLista
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1006, 721);
+            ClientSize = new Size(1258, 901);
+            ControlBox = false;
             Controls.Add(actualizarButton);
             Controls.Add(eliminarButton);
             Controls.Add(agregarButton);
             Controls.Add(clientesDataGridView);
             Controls.Add(buscarButton);
             Controls.Add(buscarTextBox);
+            FormBorderStyle = FormBorderStyle.None;
+            Margin = new Padding(4);
             Name = "ClienteLista";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Clientes";

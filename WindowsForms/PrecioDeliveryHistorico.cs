@@ -23,15 +23,18 @@ namespace WindowsForms
             ConfigurarColumnas();
         }
 
-        private void PrecioDeliveryHistorico_Load(object sender, EventArgs e)
+        private async void PrecioDeliveryHistorico_Load(object sender, EventArgs e)
         {
             dateTimePickerDesde.Value = DateTime.Today;
+            dateTimePickerDesde.Checked = false; // Arranca destildado para mostrar todo el histórico
 
-           
-            _ = CargarPrecioDeliveryAsync(null);
+            // Carga inicial sin filtro (o con el valor de checked)
+            await CargarPrecioDeliveryAsync(dateTimePickerDesde.Checked ? dateTimePickerDesde.Value : null);
         }
+
         private void ConfigurarColumnas()
         {
+            PrecioDeliveryDataGridView.Columns.Clear();
             PrecioDeliveryDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "Id", DataPropertyName = "Id", Width = 60 });
             PrecioDeliveryDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "FechaDesde", HeaderText = "Fecha Desde", DataPropertyName = "FechaDesde", Width = 150 });
             PrecioDeliveryDataGridView.Columns.Add(new DataGridViewTextBoxColumn { Name = "Monto", HeaderText = "Monto", DataPropertyName = "Monto", Width = 100 });
@@ -39,7 +42,9 @@ namespace WindowsForms
 
         private async void buscarButton_Click(object sender, EventArgs e)
         {
-            await CargarPrecioDeliveryAsync(dateTimePickerDesde.Value);
+            // Si está tildado envía la fecha seleccionada; si no, envía null para traer todos
+            DateTime? fechaFiltro = dateTimePickerDesde.Checked ? dateTimePickerDesde.Value.Date : null;
+            await CargarPrecioDeliveryAsync(fechaFiltro);
         }
 
         public async Task CargarPrecioDeliveryAsync(DateTime? fechaFiltro = null)
@@ -48,7 +53,6 @@ namespace WindowsForms
             {
                 DeshabilitarControles();
 
-                // Llamada a la API que filtra directamente en la base de datos
                 IEnumerable<PrecioDeliveryDTO> preciosFiltrados = await PrecioDeliveryApiClient.GetByCriteriaAsync(fechaFiltro);
 
                 PrecioDeliveryDataGridView.DataSource = preciosFiltrados.ToList();
@@ -62,6 +66,7 @@ namespace WindowsForms
                 HabilitarControles();
             }
         }
+
         private PrecioDeliveryDTO? PrecioDeliverySeleccionado() =>
            PrecioDeliveryDataGridView.SelectedRows.Count == 0 ? null : (PrecioDeliveryDTO)PrecioDeliveryDataGridView.SelectedRows[0].DataBoundItem;
 
@@ -79,20 +84,15 @@ namespace WindowsForms
             PrecioDeliveryDataGridView.Enabled = true;
         }
 
-        private void PrecioDeliveryDataGridView_SelectionChanged(object sender, EventArgs e)
-        {
-        }
-
-
         private async void agregarButton_Click(object sender, EventArgs e)
         {
             using var detalle = new AgregarPrecioDeliveryForm();
 
             if (detalle.ShowDialog(this) == DialogResult.OK)
             {
-                await CargarPrecioDeliveryAsync(null);
+                DateTime? fechaFiltro = dateTimePickerDesde.Checked ? dateTimePickerDesde.Value.Date : null;
+                await CargarPrecioDeliveryAsync(fechaFiltro);
             }
         }
-
     }
 }

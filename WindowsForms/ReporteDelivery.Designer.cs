@@ -44,26 +44,29 @@
             // desdeLabel
             // 
             desdeLabel.AutoSize = true;
-            desdeLabel.Location = new Point(31, 66);
+            desdeLabel.Location = new Point(44, 110);
+            desdeLabel.Margin = new Padding(4, 0, 4, 0);
             desdeLabel.Name = "desdeLabel";
-            desdeLabel.Size = new Size(39, 15);
+            desdeLabel.Size = new Size(62, 25);
             desdeLabel.TabIndex = 15;
             desdeLabel.Text = "Desde";
             // 
             // hastaLabel
             // 
             hastaLabel.AutoSize = true;
-            hastaLabel.Location = new Point(370, 66);
+            hastaLabel.Location = new Point(529, 110);
+            hastaLabel.Margin = new Padding(4, 0, 4, 0);
             hastaLabel.Name = "hastaLabel";
-            hastaLabel.Size = new Size(37, 15);
+            hastaLabel.Size = new Size(57, 25);
             hastaLabel.TabIndex = 16;
             hastaLabel.Text = "Hasta";
             // 
             // downloadButton
             // 
-            downloadButton.Location = new Point(714, 66);
+            downloadButton.Location = new Point(1020, 110);
+            downloadButton.Margin = new Padding(4, 5, 4, 5);
             downloadButton.Name = "downloadButton";
-            downloadButton.Size = new Size(100, 23);
+            downloadButton.Size = new Size(143, 38);
             downloadButton.TabIndex = 17;
             downloadButton.Text = "Descargar PDF";
             downloadButton.UseVisualStyleBackColor = true;
@@ -71,26 +74,31 @@
             // 
             // desdeDatePicker
             // 
-            desdeDatePicker.Location = new Point(76, 66);
+            desdeDatePicker.Location = new Point(109, 110);
+            desdeDatePicker.Margin = new Padding(4, 5, 4, 5);
             desdeDatePicker.Name = "desdeDatePicker";
-            desdeDatePicker.Size = new Size(230, 23);
+            desdeDatePicker.Size = new Size(327, 31);
             desdeDatePicker.TabIndex = 18;
             desdeDatePicker.ValueChanged += desdeDatePicker_ValueChanged;
             // 
             // hastaDatePicker
             // 
-            hastaDatePicker.Location = new Point(413, 66);
+            hastaDatePicker.Location = new Point(590, 110);
+            hastaDatePicker.Margin = new Padding(4, 5, 4, 5);
             hastaDatePicker.Name = "hastaDatePicker";
-            hastaDatePicker.Size = new Size(230, 23);
+            hastaDatePicker.Size = new Size(327, 31);
             hastaDatePicker.TabIndex = 19;
             hastaDatePicker.ValueChanged += hastaDatePicker_ValueChanged;
             // 
             // deliveriesDataGridView
             // 
+            deliveriesDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             deliveriesDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            deliveriesDataGridView.Location = new Point(31, 112);
+            deliveriesDataGridView.Location = new Point(44, 187);
+            deliveriesDataGridView.Margin = new Padding(4, 5, 4, 5);
             deliveriesDataGridView.Name = "deliveriesDataGridView";
-            deliveriesDataGridView.Size = new Size(920, 437);
+            deliveriesDataGridView.RowHeadersWidth = 62;
+            deliveriesDataGridView.Size = new Size(1528, 890);
             deliveriesDataGridView.TabIndex = 20;
             // 
             // pedidoDTOBindingSource
@@ -100,18 +108,19 @@
             // deliveryComboBox
             // 
             deliveryComboBox.FormattingEnabled = true;
-            deliveryComboBox.Location = new Point(31, 26);
+            deliveryComboBox.Location = new Point(44, 43);
+            deliveryComboBox.Margin = new Padding(4, 5, 4, 5);
             deliveryComboBox.Name = "deliveryComboBox";
-            deliveryComboBox.Size = new Size(275, 23);
+            deliveryComboBox.Size = new Size(391, 33);
             deliveryComboBox.TabIndex = 21;
             deliveryComboBox.SelectedIndexChanged += deliveryComboBox_SelectedIndexChanged;
             // 
             // ReporteDelivery
             // 
             AcceptButton = downloadButton;
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1222, 583);
+            ClientSize = new Size(1746, 1102);
             Controls.Add(deliveryComboBox);
             Controls.Add(deliveriesDataGridView);
             Controls.Add(hastaDatePicker);
@@ -119,6 +128,7 @@
             Controls.Add(downloadButton);
             Controls.Add(hastaLabel);
             Controls.Add(desdeLabel);
+            Margin = new Padding(4, 5, 4, 5);
             Name = "ReporteDelivery";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Reporte de Delivery";

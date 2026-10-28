@@ -36,6 +36,12 @@ namespace WindowsForms
                 AuthServiceProvider.Current.AuthenticationStateChanged -= AuthenticationStateChanged;
 
             base.OnFormClosed(e);
+
+            // Si cerró la ventana tocando la X (no por Logout), deslogueamos la sesión
+            if (!LogoutRequested && AuthServiceProvider.Current != null)
+            {
+                _ = AuthServiceProvider.Current.LogoutAsync();
+            }
         }
 
 
@@ -94,19 +100,17 @@ namespace WindowsForms
 
         private void MostrarFormulario<T>() where T : Form, new()
         {
-            var formularioExistente = this.MdiChildren.OfType<T>().FirstOrDefault();
+            // Cierra cualquier otro formulario hijo abierto para que no queden superpuestos de fondo
+            foreach (var child in this.MdiChildren)
+            {
+                child.Close();
+            }
 
-            if (formularioExistente != null)
-            {
-                formularioExistente.BringToFront();
-            }
-            else
-            {
-                var form = new T();
-                form.MdiParent = this;
-                form.WindowState = FormWindowState.Maximized;
-                form.Show();
-            }
+            var form = new T();
+            form.MdiParent = this;
+            form.FormBorderStyle = FormBorderStyle.None; // Quita los bordes y botones del hijo
+            form.Dock = DockStyle.Fill;                  // Ocupa todo el espacio de trabajo
+            form.Show();
         }
     }
 }

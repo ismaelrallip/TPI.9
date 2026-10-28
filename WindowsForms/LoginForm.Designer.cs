@@ -45,46 +45,47 @@
             // 
             titleLabel.AutoSize = true;
             titleLabel.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            titleLabel.Location = new Point(59, 12);
+            titleLabel.Location = new Point(87, 18);
+            titleLabel.Margin = new Padding(4, 0, 4, 0);
             titleLabel.Name = "titleLabel";
-            titleLabel.Size = new Size(136, 28);
+            titleLabel.Size = new Size(165, 32);
             titleLabel.TabIndex = 0;
             titleLabel.Text = "Iniciar sesión";
             // 
             // usernameLabel
             // 
             usernameLabel.AutoSize = true;
-            usernameLabel.Location = new Point(48, 52);
+            usernameLabel.Location = new Point(10, 63);
             usernameLabel.Margin = new Padding(1, 0, 1, 0);
             usernameLabel.Name = "usernameLabel";
-            usernameLabel.Size = new Size(62, 20);
+            usernameLabel.Size = new Size(76, 25);
             usernameLabel.TabIndex = 8;
             usernameLabel.Text = "Usuario:";
             // 
             // usernameTextBox
             // 
-            usernameTextBox.Location = new Point(51, 73);
+            usernameTextBox.Location = new Point(10, 89);
             usernameTextBox.Margin = new Padding(1);
             usernameTextBox.Name = "usernameTextBox";
-            usernameTextBox.Size = new Size(133, 27);
+            usernameTextBox.Size = new Size(319, 31);
             usernameTextBox.TabIndex = 3;
             // 
             // passwordLabel
             // 
             passwordLabel.AutoSize = true;
-            passwordLabel.Location = new Point(48, 121);
+            passwordLabel.Location = new Point(10, 149);
             passwordLabel.Margin = new Padding(1, 0, 1, 0);
             passwordLabel.Name = "passwordLabel";
-            passwordLabel.Size = new Size(86, 20);
+            passwordLabel.Size = new Size(105, 25);
             passwordLabel.TabIndex = 7;
             passwordLabel.Text = "Contraseña:";
             // 
             // loginButton
             // 
-            loginButton.Location = new Point(32, 181);
+            loginButton.Location = new Point(14, 224);
             loginButton.Margin = new Padding(1);
             loginButton.Name = "loginButton";
-            loginButton.Size = new Size(78, 28);
+            loginButton.Size = new Size(175, 35);
             loginButton.TabIndex = 5;
             loginButton.Text = "Iniciar Sesión";
             loginButton.UseVisualStyleBackColor = true;
@@ -92,19 +93,19 @@
             // 
             // passwordTextBox
             // 
-            passwordTextBox.Location = new Point(51, 143);
+            passwordTextBox.Location = new Point(14, 175);
             passwordTextBox.Margin = new Padding(1);
             passwordTextBox.Name = "passwordTextBox";
             passwordTextBox.PasswordChar = '*';
-            passwordTextBox.Size = new Size(133, 27);
+            passwordTextBox.Size = new Size(315, 31);
             passwordTextBox.TabIndex = 4;
             // 
             // cancelButton
             // 
-            cancelButton.Location = new Point(155, 215);
+            cancelButton.Location = new Point(224, 265);
             cancelButton.Margin = new Padding(1);
             cancelButton.Name = "cancelButton";
-            cancelButton.Size = new Size(84, 36);
+            cancelButton.Size = new Size(105, 45);
             cancelButton.TabIndex = 6;
             cancelButton.Text = "Cancelar";
             cancelButton.UseVisualStyleBackColor = true;
@@ -116,10 +117,10 @@
             // 
             // registerButton
             // 
-            registerButton.Location = new Point(140, 179);
-            registerButton.Margin = new Padding(3, 4, 3, 4);
+            registerButton.Location = new Point(205, 220);
+            registerButton.Margin = new Padding(4, 5, 4, 5);
             registerButton.Name = "registerButton";
-            registerButton.Size = new Size(99, 31);
+            registerButton.Size = new Size(124, 39);
             registerButton.TabIndex = 9;
             registerButton.Text = "Registrarse";
             registerButton.UseVisualStyleBackColor = true;
@@ -128,10 +129,10 @@
             // LoginForm
             // 
             AcceptButton = loginButton;
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             CancelButton = cancelButton;
-            ClientSize = new Size(253, 264);
+            ClientSize = new Size(342, 330);
             Controls.Add(registerButton);
             Controls.Add(cancelButton);
             Controls.Add(passwordTextBox);
@@ -141,11 +142,12 @@
             Controls.Add(usernameLabel);
             Controls.Add(titleLabel);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(4);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "LoginForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "TPI - Login";
+            Text = "Login";
             ((System.ComponentModel.ISupportInitialize)errorProvider).EndInit();
             ResumeLayout(false);
             PerformLayout();

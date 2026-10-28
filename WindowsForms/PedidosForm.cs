@@ -93,19 +93,18 @@ namespace WindowsForms
             _estaCargando = true;
 
             dateTimePickerFiltro.Value = DateTime.Today;
-
-            // Al arrancar destildado (requiere la propiedad ShowCheckBox = true desde el diseñador visual),
-            // indicamos que queremos traer absolutamente todos los pedidos históricos sin importar la fecha.
-            dateTimePickerFiltro.Checked = false;
+            dateTimePickerFiltro.Checked = false; // Arranca destildado (muestra todos)
 
             var opcionesModalidad = new List<string> { "Todos", "TakeAway", "Delivery" };
             comboBoxFiltro.DataSource = opcionesModalidad;
             comboBoxFiltro.SelectedIndex = 0;
 
-            // El filtro completo lo resuelve la API. 
-            // Cualquier acción del usuario (tildar/destildar el checkbox, cambiar el día o elegir otra modalidad)
-            // volverá a consultar automáticamente al servidor.
+            // Dispara cuando cambia la fecha dentro del selector
             dateTimePickerFiltro.ValueChanged += async (s, ev) => { if (!_estaCargando) await LoadPedidos(); };
+
+            // AGREGAR ESTA LÍNEA: Dispara cuando se tilda o destilda el checkbox con el mouse
+            dateTimePickerFiltro.MouseUp += async (s, ev) => { if (!_estaCargando) await LoadPedidos(); };
+
             comboBoxFiltro.SelectedIndexChanged += async (s, ev) => { if (!_estaCargando) await LoadPedidos(); };
 
             _estaCargando = false;
@@ -113,26 +112,22 @@ namespace WindowsForms
 
         public async Task LoadPedidos()
         {
+            if (_estaCargando) return;
+
             try
             {
-                // Leemos los filtros antes de bloquear la interfaz.
-                // Si el control está tildado, mandamos la fecha específica. Si está destildado, mandamos null.
+                _estaCargando = true;
+
+                // EVALUACIÓN CLAVE: 
+                // Si el checkbox está marcado -> manda la fecha elegida.
+                // Si está desmarcado -> manda null (trae todos los pedidos).
                 DateTime? fechaSeleccionada = dateTimePickerFiltro.Checked ? dateTimePickerFiltro.Value.Date : null;
 
-                // Si la modalidad es "Todos", mandamos null para que la API no filtre por este campo.
                 string modalidadSeleccionada = comboBoxFiltro.SelectedItem?.ToString() ?? "Todos";
                 ModalidadPedido? modalidad = modalidadSeleccionada == "Todos"
                     ? null
                     : Enum.Parse<ModalidadPedido>(modalidadSeleccionada);
 
-                _estaCargando = true;
-
-                // Bloqueamos los controles temporalmente para evitar que el usuario haga múltiples cambios 
-                // rápidos y sature la API de peticiones simultáneas.
-                dateTimePickerFiltro.Enabled = false;
-                comboBoxFiltro.Enabled = false;
-
-                // Consultamos al servidor. Si tenemos un cliente específico, pedimos sólo sus pedidos.
                 if (_clienteIdFilter.HasValue)
                 {
                     var resultado = await PedidoApiClient.GetByClienteIdAsync(_clienteIdFilter.Value, fechaSeleccionada, modalidad);
@@ -140,24 +135,25 @@ namespace WindowsForms
                 }
                 else
                 {
-                    // Ya no filtramos en memoria con .Where(); la API nos devuelve la lista exacta y lista para mostrar.
-                    var resultado = await PedidoApiClient.GetByFiltroAsync(fechaSeleccionada, modalidad);
+                    // Si fechaSeleccionada es null, 'desde' y 'hasta' van a ser null y la API devolverá todos los registros
+                    var resultado = await PedidoApiClient.GetByFiltroAsync(
+                        desde: fechaSeleccionada,
+                        hasta: fechaSeleccionada,
+                        modalidad: modalidad,
+                        estado: null);
+
                     _pedidosCache = resultado?.ToList() ?? new List<PedidoDTO>();
                 }
 
-                _estaCargando = false;
-                MostrarPedidos(); // Solo mapea y proyecta los datos ya filtrados en la grilla
+                MostrarPedidos();
             }
             catch (Exception ex)
             {
-                _estaCargando = false;
                 MessageBox.Show($"Error al cargar los pedidos: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
-                // Volvemos a habilitar la botonera de filtros, haya salido bien o mal la consulta
-                dateTimePickerFiltro.Enabled = true;
-                comboBoxFiltro.Enabled = true;
+                _estaCargando = false;
             }
         }
 

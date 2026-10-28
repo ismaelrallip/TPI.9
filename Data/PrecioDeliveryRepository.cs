@@ -57,11 +57,13 @@ namespace Data
 
             if (fechaFiltro.HasValue)
             {
-                // Compara solo la fecha , ignorando la hora
-                query = query.Where(p => p.FechaDesde.Date == fechaFiltro.Value.Date);
+                // Rango completo de las 24 horas del día seleccionado
+                var desde = fechaFiltro.Value.Date;
+                var hasta = desde.AddDays(1);
+
+                query = query.Where(p => p.FechaDesde >= desde && p.FechaDesde < hasta);
             }
 
-            // Ordena del más reciente al más antiguo
             return await query.OrderByDescending(p => p.FechaDesde).ToListAsync();
         }
     }

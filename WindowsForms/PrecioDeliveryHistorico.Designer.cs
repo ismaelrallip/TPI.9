@@ -37,10 +37,10 @@
             // 
             // agregarButton
             // 
-            agregarButton.Location = new Point(796, 614);
-            agregarButton.Margin = new Padding(2, 3, 2, 3);
+            agregarButton.Location = new Point(995, 768);
+            agregarButton.Margin = new Padding(2, 4, 2, 4);
             agregarButton.Name = "agregarButton";
-            agregarButton.Size = new Size(91, 29);
+            agregarButton.Size = new Size(114, 36);
             agregarButton.TabIndex = 14;
             agregarButton.Text = "Agregar";
             agregarButton.UseVisualStyleBackColor = true;
@@ -51,24 +51,24 @@
             PrecioDeliveryDataGridView.AllowUserToAddRows = false;
             PrecioDeliveryDataGridView.AllowUserToDeleteRows = false;
             PrecioDeliveryDataGridView.AllowUserToOrderColumns = true;
+            PrecioDeliveryDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             PrecioDeliveryDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            PrecioDeliveryDataGridView.Location = new Point(29, 141);
-            PrecioDeliveryDataGridView.Margin = new Padding(2, 3, 2, 3);
+            PrecioDeliveryDataGridView.Location = new Point(36, 176);
+            PrecioDeliveryDataGridView.Margin = new Padding(2, 4, 2, 4);
             PrecioDeliveryDataGridView.MultiSelect = false;
             PrecioDeliveryDataGridView.Name = "PrecioDeliveryDataGridView";
             PrecioDeliveryDataGridView.ReadOnly = true;
             PrecioDeliveryDataGridView.RowHeadersWidth = 82;
             PrecioDeliveryDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            PrecioDeliveryDataGridView.Size = new Size(858, 436);
+            PrecioDeliveryDataGridView.Size = new Size(1072, 545);
             PrecioDeliveryDataGridView.TabIndex = 13;
-            PrecioDeliveryDataGridView.SelectionChanged += PrecioDeliveryDataGridView_SelectionChanged;
             // 
             // buscarButton
             // 
-            buscarButton.Location = new Point(326, 67);
-            buscarButton.Margin = new Padding(2, 3, 2, 3);
+            buscarButton.Location = new Point(494, 84);
+            buscarButton.Margin = new Padding(2, 4, 2, 4);
             buscarButton.Name = "buscarButton";
-            buscarButton.Size = new Size(74, 24);
+            buscarButton.Size = new Size(92, 30);
             buscarButton.TabIndex = 12;
             buscarButton.Text = "Buscar";
             buscarButton.UseVisualStyleBackColor = true;
@@ -76,25 +76,27 @@
             // 
             // dateTimePickerDesde
             // 
-            dateTimePickerDesde.Location = new Point(63, 67);
-            dateTimePickerDesde.Margin = new Padding(3, 4, 3, 4);
+            dateTimePickerDesde.Checked = false;
+            dateTimePickerDesde.Location = new Point(79, 84);
+            dateTimePickerDesde.Margin = new Padding(4, 5, 4, 5);
             dateTimePickerDesde.Name = "dateTimePickerDesde";
-            dateTimePickerDesde.Size = new Size(228, 27);
+            dateTimePickerDesde.ShowCheckBox = true;
+            dateTimePickerDesde.Size = new Size(389, 31);
             dateTimePickerDesde.TabIndex = 17;
             dateTimePickerDesde.Value = new DateTime(2026, 10, 14, 18, 16, 47, 0);
             // 
             // PrecioDeliveryHistorico
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1006, 721);
+            ClientSize = new Size(1258, 901);
             Controls.Add(dateTimePickerDesde);
             Controls.Add(agregarButton);
             Controls.Add(PrecioDeliveryDataGridView);
             Controls.Add(buscarButton);
-            Margin = new Padding(3, 4, 3, 4);
+            Margin = new Padding(4, 5, 4, 5);
             Name = "PrecioDeliveryHistorico";
-            Text = "PrecioDeliveryHistorico";
+            Text = "Precio Delivery Historico";
             Load += PrecioDeliveryHistorico_Load;
             ((System.ComponentModel.ISupportInitialize)PrecioDeliveryDataGridView).EndInit();
             ResumeLayout(false);

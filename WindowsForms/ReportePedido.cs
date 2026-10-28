@@ -1,10 +1,10 @@
 ﻿using API.Clients;
 using Domain.Model;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
 
 namespace WindowsForms
 {
@@ -34,16 +34,15 @@ namespace WindowsForms
 
         private void ConfigurarFechas()
         {
-            foreach (DateTimePicker picker in new[]
-            {
-                desdeDatePicker,
-                hastaDatePicker
-            })
+            foreach (DateTimePicker picker in new[] { desdeDatePicker, hastaDatePicker })
             {
                 picker.Format = DateTimePickerFormat.Custom;
                 picker.CustomFormat = "dd/MM/yyyy";
                 picker.ShowCheckBox = true;
                 picker.Checked = false;
+
+                // Suscripción a MouseUp para capturar el clic sobre el checkbox
+                picker.MouseUp += async (s, ev) => { await CargarPedidosAsync(); };
             }
         }
 
@@ -56,15 +55,13 @@ namespace WindowsForms
             estadoComboBox.Items.Clear();
 
             modalidadComboBox.Items.Add("Todos");
-            foreach (ModalidadPedido modalidad in
-                     Enum.GetValues(typeof(ModalidadPedido)))
+            foreach (ModalidadPedido modalidad in Enum.GetValues(typeof(ModalidadPedido)))
             {
                 modalidadComboBox.Items.Add(modalidad);
             }
 
             estadoComboBox.Items.Add("Todos");
-            foreach (EstadoPedido estado in
-                     Enum.GetValues(typeof(EstadoPedido)))
+            foreach (EstadoPedido estado in Enum.GetValues(typeof(EstadoPedido)))
             {
                 estadoComboBox.Items.Add(estado);
             }
@@ -80,10 +77,8 @@ namespace WindowsForms
             dataGridViewPedidos.AllowUserToAddRows = false;
             dataGridViewPedidos.AllowUserToDeleteRows = false;
             dataGridViewPedidos.MultiSelect = false;
-            dataGridViewPedidos.SelectionMode =
-                DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewPedidos.AutoSizeColumnsMode =
-                DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewPedidos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewPedidos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private async Task CargarPedidosAsync()
@@ -91,16 +86,10 @@ namespace WindowsForms
             if (inicializando || cargandoPedidos)
                 return;
 
-            DateTime? desde = desdeDatePicker.Checked
-                ? desdeDatePicker.Value.Date
-                : null;
+            DateTime? desde = desdeDatePicker.Checked ? desdeDatePicker.Value.Date : null;
+            DateTime? hasta = hastaDatePicker.Checked ? hastaDatePicker.Value.Date : null;
 
-            DateTime? hasta = hastaDatePicker.Checked
-                ? hastaDatePicker.Value.Date
-                : null;
-
-            if (desde.HasValue && hasta.HasValue &&
-                desde.Value > hasta.Value)
+            if (desde.HasValue && hasta.HasValue && desde.Value > hasta.Value)
             {
                 MessageBox.Show(
                     "La fecha desde no puede ser posterior a la fecha hasta.",
@@ -110,26 +99,18 @@ namespace WindowsForms
                 return;
             }
 
-            ModalidadPedido? modalidad =
-                modalidadComboBox.SelectedItem is ModalidadPedido m
-                    ? m
-                    : null;
-
-            EstadoPedido? estado =
-                estadoComboBox.SelectedItem is EstadoPedido e
-                    ? e
-                    : null;
+            ModalidadPedido? modalidad = modalidadComboBox.SelectedItem is ModalidadPedido m ? m : null;
+            EstadoPedido? estado = estadoComboBox.SelectedItem is EstadoPedido e ? e : null;
 
             try
             {
                 cargandoPedidos = true;
-                ConfigurarControles(false);
+                // Bloqueamos únicamente los botones de acción, NO los selecciones de fecha/combos
+                traerTodosButton.Enabled = false;
+                DownloadButton.Enabled = false;
 
-                var pedidos = await PedidoApiClient.GetByFiltroAsync(
-                    desde, hasta, modalidad, estado);
+                var pedidos = await PedidoApiClient.GetByFiltroAsync(desde, hasta, modalidad, estado);
 
-                // El backend aplica los filtros.
-                // En el formulario solo se ordenan los resultados.
                 dataGridViewPedidos.DataSource = pedidos
                     .OrderByDescending(p => p.Fecha)
                     .ToList();
@@ -145,46 +126,32 @@ namespace WindowsForms
             finally
             {
                 cargandoPedidos = false;
-                ConfigurarControles(true);
+                traerTodosButton.Enabled = true;
+                DownloadButton.Enabled = true;
             }
         }
 
-        private void ConfigurarControles(bool habilitados)
-        {
-            desdeDatePicker.Enabled = habilitados;
-            hastaDatePicker.Enabled = habilitados;
-            modalidadComboBox.Enabled = habilitados;
-            estadoComboBox.Enabled = habilitados;
-            traerTodosButton.Enabled = habilitados;
-            DownloadButton.Enabled = habilitados;
-        }
-
-        private async void desdeDatePicker_ValueChanged(
-            object sender, EventArgs e)
+        private async void desdeDatePicker_ValueChanged(object sender, EventArgs e)
         {
             await CargarPedidosAsync();
         }
 
-        private async void hastaDatePicker_ValueChanged(
-            object sender, EventArgs e)
+        private async void hastaDatePicker_ValueChanged(object sender, EventArgs e)
         {
             await CargarPedidosAsync();
         }
 
-        private async void modalidadComboBox_SelectedIndexChanged(
-            object sender, EventArgs e)
+        private async void modalidadComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             await CargarPedidosAsync();
         }
 
-        private async void estadoComboBox_SelectedIndexChanged(
-            object sender, EventArgs e)
+        private async void estadoComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             await CargarPedidosAsync();
         }
 
-        private async void traerTodosButton_Click(
-            object sender, EventArgs e)
+        private async void traerTodosButton_Click(object sender, EventArgs e)
         {
             inicializando = true;
 
@@ -198,19 +165,12 @@ namespace WindowsForms
             await CargarPedidosAsync();
         }
 
-        private async void DownloadButton_Click(
-            object sender, EventArgs e)
+        private async void DownloadButton_Click(object sender, EventArgs e)
         {
-            DateTime? desde = desdeDatePicker.Checked
-                ? desdeDatePicker.Value.Date
-                : null;
+            DateTime? desde = desdeDatePicker.Checked ? desdeDatePicker.Value.Date : null;
+            DateTime? hasta = hastaDatePicker.Checked ? hastaDatePicker.Value.Date : null;
 
-            DateTime? hasta = hastaDatePicker.Checked
-                ? hastaDatePicker.Value.Date
-                : null;
-
-            if (desde.HasValue && hasta.HasValue &&
-                desde.Value > hasta.Value)
+            if (desde.HasValue && hasta.HasValue && desde.Value > hasta.Value)
             {
                 MessageBox.Show(
                     "La fecha desde no puede ser posterior a la fecha hasta.",
@@ -220,15 +180,8 @@ namespace WindowsForms
                 return;
             }
 
-            ModalidadPedido? modalidad =
-                modalidadComboBox.SelectedItem is ModalidadPedido m
-                    ? m
-                    : null;
-
-            EstadoPedido? estado =
-                estadoComboBox.SelectedItem is EstadoPedido ep
-                    ? ep
-                    : null;
+            ModalidadPedido? modalidad = modalidadComboBox.SelectedItem is ModalidadPedido m ? m : null;
+            EstadoPedido? estado = estadoComboBox.SelectedItem is EstadoPedido ep ? ep : null;
 
             using var dialog = new SaveFileDialog
             {
@@ -248,12 +201,10 @@ namespace WindowsForms
                 DownloadButton.Enabled = false;
                 Cursor = Cursors.WaitCursor;
 
-                byte[] pdf = await PedidoApiClient.DescargarReportePdfAsync(
-                    desde, hasta, modalidad, estado);
+                byte[] pdf = await PedidoApiClient.DescargarReportePdfAsync(desde, hasta, modalidad, estado);
 
                 if (pdf.Length == 0)
-                    throw new InvalidOperationException(
-                        "La API devolvió un PDF vacío.");
+                    throw new InvalidOperationException("La API devolvió un PDF vacío.");
 
                 await File.WriteAllBytesAsync(dialog.FileName, pdf);
 

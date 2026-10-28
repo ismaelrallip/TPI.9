@@ -36,33 +36,33 @@
             // textBox1
             // 
             textBox1.Font = new Font("Segoe UI", 12F);
-            textBox1.Location = new Point(14, 188);
-            textBox1.Margin = new Padding(3, 4, 3, 4);
+            textBox1.Location = new Point(18, 235);
+            textBox1.Margin = new Padding(4, 5, 4, 5);
             textBox1.Name = "textBox1";
             textBox1.PlaceholderText = "Precio...";
-            textBox1.Size = new Size(171, 34);
+            textBox1.Size = new Size(213, 39);
             textBox1.TabIndex = 2;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
             // dateTimePicker1
             // 
-            dateTimePicker1.Font = new Font("Segoe UI", 12F);
             dateTimePicker1.CustomFormat = "dd/MM/yyyy HH:mm";
+            dateTimePicker1.Font = new Font("Segoe UI", 12F);
             dateTimePicker1.Format = DateTimePickerFormat.Custom;
-            dateTimePicker1.Location = new Point(14, 91);
-            dateTimePicker1.Margin = new Padding(3, 4, 3, 4);
+            dateTimePicker1.Location = new Point(18, 114);
+            dateTimePicker1.Margin = new Padding(4, 5, 4, 5);
             dateTimePicker1.Name = "dateTimePicker1";
-            dateTimePicker1.Size = new Size(342, 34);
-            dateTimePicker1.TabIndex = 3;
             dateTimePicker1.ShowUpDown = true;
+            dateTimePicker1.Size = new Size(426, 39);
+            dateTimePicker1.TabIndex = 3;
             // 
             // button1
             // 
             button1.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            button1.Location = new Point(485, 342);
-            button1.Margin = new Padding(3, 4, 3, 4);
+            button1.Location = new Point(606, 428);
+            button1.Margin = new Padding(4, 5, 4, 5);
             button1.Name = "button1";
-            button1.Size = new Size(115, 43);
+            button1.Size = new Size(144, 54);
             button1.TabIndex = 4;
             button1.Text = "AGREGAR";
             button1.UseVisualStyleBackColor = true;
@@ -70,17 +70,17 @@
             // 
             // AgregarPrecioDeliveryForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(702, 433);
+            ClientSize = new Size(878, 541);
             Controls.Add(button1);
             Controls.Add(dateTimePicker1);
             Controls.Add(textBox1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            Margin = new Padding(3, 4, 3, 4);
+            Margin = new Padding(4, 5, 4, 5);
             Name = "AgregarPrecioDeliveryForm";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "AgregarPrecioDelivery";
+            Text = "Agregar Precio Delivery";
             Load += AgregarPrecioDelivery_Load;
             ResumeLayout(false);
             PerformLayout();
