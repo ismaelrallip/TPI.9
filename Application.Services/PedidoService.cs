@@ -90,11 +90,7 @@ namespace Application.Services
 
             await _pedidoRepository.AddAsync(pedido);
 
-            dto.Id = pedido.Id;
-            dto.Fecha = pedido.Fecha;
-            dto.PrecioTotal = pedido.PrecioTotal;
-
-            return dto;
+            return MapToDTO(pedido);
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -151,9 +147,14 @@ namespace Application.Services
             // Regla: Calificaciones y comentarios finales SOLO aplican si el pedido ya fue entregado
             if (pedidoExistente.Estado == EstadoPedido.Entregado)
             {
-                pedidoExistente.SetComentarioFinal(dto.ComentarioFinal);
-                pedidoExistente.SetCalificacionPedido(dto.CalificacionPedido);
-                pedidoExistente.SetCalificacionDelivery(dto.CalificacionDelivery);
+                if (!string.IsNullOrWhiteSpace(dto.ComentarioFinal))
+                    pedidoExistente.SetComentarioFinal(dto.ComentarioFinal);
+
+                if (dto.CalificacionPedido.HasValue)
+                    pedidoExistente.SetCalificacionPedido(dto.CalificacionPedido);
+
+                if (dto.CalificacionDelivery.HasValue)
+                    pedidoExistente.SetCalificacionDelivery(dto.CalificacionDelivery);
             }
 
             // Asignación / reasignación de delivery (solo el administrador, en pedidos Delivery Pendientes o Asignados).
@@ -183,7 +184,14 @@ namespace Application.Services
                         throw new ArgumentException("La dirección es obligatoria para pedidos con delivery.");
 
                     pedidoExistente.SetDireccion(dto.Direccion.Trim());
-                    pedidoExistente.SetDelivery(dto.DeliveryId);
+
+
+                    // Solo el admin puede asignar o cambiar el repartidor (y debe ser validado)
+                    if (esAdmin && dto.DeliveryId != pedidoExistente.DeliveryId)
+                    {
+                        await ValidarDeliveryActivoAsync(dto.DeliveryId);
+                        pedidoExistente.SetDelivery(dto.DeliveryId);
+                    }
                 }
                 else
                 {

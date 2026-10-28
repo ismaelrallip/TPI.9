@@ -84,19 +84,14 @@ namespace WebAPI
                     return Results.Forbid();
                 }
 
-                // Un cliente no puede cambiar el dueño del pedido; el administrador sí 
-                if (!user.IsInRole("Administrador"))
-                {
-                    dto.ClienteId = pedidoGuardado.ClienteId;
-                }
                 // Capturamos el rol en una variable para reutilizarlo
-                
                 bool esAdmin = user.IsInRole("Administrador");
 
-                // Un cliente no puede cambiar el dueño del pedido; el administrador sí 
+                // Un cliente no puede cambiar el dueño del pedido ni el repartidor; el administrador sí
                 if (!esAdmin)
                 {
                     dto.ClienteId = pedidoGuardado.ClienteId;
+                    dto.DeliveryId = pedidoGuardado.DeliveryId;
                 }
 
                 try

@@ -110,7 +110,7 @@ namespace WindowsForms
             _estaCargando = false;
         }
 
-        public async Task LoadPedidos()
+        public async Task LoadPedidos(int? seleccionarPedidoId = null)
         {
             if (_estaCargando) return;
 
@@ -145,7 +145,7 @@ namespace WindowsForms
                     _pedidosCache = resultado?.ToList() ?? new List<PedidoDTO>();
                 }
 
-                MostrarPedidos();
+                MostrarPedidos(seleccionarPedidoId);
             }
             catch (Exception ex)
             {
@@ -158,7 +158,7 @@ namespace WindowsForms
         }
 
         // Muestra en el grid los pedidos que devolvió el servidor (el filtro lo hace la API)
-        private void MostrarPedidos()
+        private void MostrarPedidos(int? seleccionarPedidoId = null)
         {
             var datosParaGrid = _pedidosCache.Select(p => new
             {
@@ -179,6 +179,19 @@ namespace WindowsForms
 
             dataGridViewPedidos.DataSource = null;
             dataGridViewPedidos.DataSource = datosParaGrid;
+
+            if (seleccionarPedidoId.HasValue)
+            {
+                dataGridViewPedidos.ClearSelection();
+                foreach (DataGridViewRow row in dataGridViewPedidos.Rows)
+                {
+                    if ((int)row.Cells["Id"].Value == seleccionarPedidoId.Value)
+                    {
+                        row.Selected = true;
+                        break;
+                    }
+                }
+            }
         }
 
         private void dataGridViewPedidos_SelectionChanged(object sender, EventArgs e)
@@ -315,13 +328,12 @@ namespace WindowsForms
 
         private async void btnAvanzarEstado_Click(object sender, EventArgs e)
         {
-            if (_esVistaCliente) return; // no permitir en vista cliente
+            if (_esVistaCliente) return;
             if (dataGridViewPedidos.SelectedRows.Count == 0 || btnAvanzarEstado.Tag == null) return;
             int idPedido = (int)dataGridViewPedidos.SelectedRows[0].Cells["Id"].Value;
             var pedido = _pedidosCache.First(p => p.Id == idPedido);
 
             EstadoPedido nuevoEstado = (EstadoPedido)btnAvanzarEstado.Tag;
-
 
             var confirmar = MessageBox.Show(
                 $"¿Estás seguro que deseas avanzar el pedido #{pedido.Id} a '{nuevoEstado}'?\n\nATENCIÓN: Esta acción NO se puede deshacer y el pedido no podrá volver a un estado anterior.",
@@ -333,19 +345,14 @@ namespace WindowsForms
 
             try
             {
-                _estaCargando = true;
                 pedido.Estado = nuevoEstado;
 
                 await PedidoApiClient.UpdateAsync(pedido);
-                await LoadPedidos();
+                await LoadPedidos(idPedido);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al avanzar el pedido: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                _estaCargando = false;
             }
         }
         private async void btnCalificarPedido_Click(object sender, EventArgs e)
@@ -357,7 +364,7 @@ namespace WindowsForms
             using var formCalificar = new CalificarPedidoForm(pedido);
             if (formCalificar.ShowDialog(this) == DialogResult.OK)
             {
-                await LoadPedidos();
+                await LoadPedidos(idPedido);
             }
         }
         private async void btnCancelarPedido_Click(object sender, EventArgs e)
@@ -397,7 +404,7 @@ namespace WindowsForms
             using var formAsignar = new AsignarDeliveryForm(pedido);
             if (formAsignar.ShowDialog(this) == DialogResult.OK)
             {
-                await LoadPedidos();
+                await LoadPedidos(idPedido);
             }
         }
         private async void btnNuevoPedido_Click(object sender, EventArgs e)
@@ -432,7 +439,7 @@ namespace WindowsForms
                 using var form = new AgregarEditarPedidoForm(pedidoSeleccionado, true);
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
-                    await LoadPedidos();
+                    await LoadPedidos(idPedido);
                 }
             }
             else
@@ -440,7 +447,7 @@ namespace WindowsForms
                 using var form = new AgregarEditarPedidoForm(pedidoSeleccionado);
                 if (form.ShowDialog() == DialogResult.OK)
                 {
-                    await LoadPedidos();
+                    await LoadPedidos(idPedido);
                 }
             }
         }

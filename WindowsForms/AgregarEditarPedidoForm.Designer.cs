@@ -72,7 +72,7 @@
             cmbCliente.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbCliente.FormattingEnabled = true;
             cmbCliente.Location = new Point(168, 24);
-            cmbCliente.Margin = new Padding(4, 4, 4, 4);
+            cmbCliente.Margin = new Padding(4);
             cmbCliente.Name = "cmbCliente";
             cmbCliente.Size = new Size(554, 33);
             cmbCliente.TabIndex = 1;
@@ -92,7 +92,7 @@
             cmbModalidad.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbModalidad.FormattingEnabled = true;
             cmbModalidad.Location = new Point(168, 91);
-            cmbModalidad.Margin = new Padding(4, 4, 4, 4);
+            cmbModalidad.Margin = new Padding(4);
             cmbModalidad.Name = "cmbModalidad";
             cmbModalidad.Size = new Size(284, 33);
             cmbModalidad.TabIndex = 3;
@@ -132,7 +132,7 @@
             // 
             txtDireccion.Enabled = false;
             txtDireccion.Location = new Point(244, 169);
-            txtDireccion.Margin = new Padding(4, 4, 4, 4);
+            txtDireccion.Margin = new Padding(4);
             txtDireccion.Name = "txtDireccion";
             txtDireccion.Size = new Size(478, 31);
             txtDireccion.TabIndex = 7;
@@ -148,9 +148,9 @@
             groupBox1.Controls.Add(cmbHamburguesa);
             groupBox1.Controls.Add(label5);
             groupBox1.Location = new Point(61, 350);
-            groupBox1.Margin = new Padding(4, 4, 4, 4);
+            groupBox1.Margin = new Padding(4);
             groupBox1.Name = "groupBox1";
-            groupBox1.Padding = new Padding(4, 4, 4, 4);
+            groupBox1.Padding = new Padding(4);
             groupBox1.Size = new Size(682, 430);
             groupBox1.TabIndex = 8;
             groupBox1.TabStop = false;
@@ -159,7 +159,7 @@
             // btnModificarLinea
             // 
             btnModificarLinea.Location = new Point(28, 375);
-            btnModificarLinea.Margin = new Padding(4, 4, 4, 4);
+            btnModificarLinea.Margin = new Padding(4);
             btnModificarLinea.Name = "btnModificarLinea";
             btnModificarLinea.Size = new Size(220, 36);
             btnModificarLinea.TabIndex = 16;
@@ -170,7 +170,7 @@
             // btnEliminarLinea
             // 
             btnEliminarLinea.Location = new Point(434, 375);
-            btnEliminarLinea.Margin = new Padding(4, 4, 4, 4);
+            btnEliminarLinea.Margin = new Padding(4);
             btnEliminarLinea.Name = "btnEliminarLinea";
             btnEliminarLinea.Size = new Size(216, 36);
             btnEliminarLinea.TabIndex = 15;
@@ -182,9 +182,10 @@
             // 
             dgvDetalles.AllowUserToAddRows = false;
             dgvDetalles.AllowUserToDeleteRows = false;
+            dgvDetalles.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvDetalles.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvDetalles.Location = new Point(28, 175);
-            dgvDetalles.Margin = new Padding(4, 4, 4, 4);
+            dgvDetalles.Margin = new Padding(4);
             dgvDetalles.Name = "dgvDetalles";
             dgvDetalles.ReadOnly = true;
             dgvDetalles.RowHeadersWidth = 51;
@@ -195,7 +196,7 @@
             // btnAgregarLinea
             // 
             btnAgregarLinea.Location = new Point(474, 116);
-            btnAgregarLinea.Margin = new Padding(4, 4, 4, 4);
+            btnAgregarLinea.Margin = new Padding(4);
             btnAgregarLinea.Name = "btnAgregarLinea";
             btnAgregarLinea.Size = new Size(181, 36);
             btnAgregarLinea.TabIndex = 13;
@@ -206,7 +207,7 @@
             // numCantidad
             // 
             numCantidad.Location = new Point(509, 62);
-            numCantidad.Margin = new Padding(4, 4, 4, 4);
+            numCantidad.Margin = new Padding(4);
             numCantidad.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numCantidad.Name = "numCantidad";
             numCantidad.Size = new Size(146, 31);
@@ -228,7 +229,7 @@
             cmbHamburguesa.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbHamburguesa.FormattingEnabled = true;
             cmbHamburguesa.Location = new Point(156, 59);
-            cmbHamburguesa.Margin = new Padding(4, 4, 4, 4);
+            cmbHamburguesa.Margin = new Padding(4);
             cmbHamburguesa.Name = "cmbHamburguesa";
             cmbHamburguesa.Size = new Size(278, 33);
             cmbHamburguesa.TabIndex = 10;
@@ -256,7 +257,7 @@
             // txtComentario
             // 
             txtComentario.Location = new Point(290, 234);
-            txtComentario.Margin = new Padding(4, 4, 4, 4);
+            txtComentario.Margin = new Padding(4);
             txtComentario.Multiline = true;
             txtComentario.Name = "txtComentario";
             txtComentario.Size = new Size(420, 83);
@@ -285,7 +286,7 @@
             // btnGuardar
             // 
             btnGuardar.Location = new Point(570, 845);
-            btnGuardar.Margin = new Padding(4, 4, 4, 4);
+            btnGuardar.Margin = new Padding(4);
             btnGuardar.Name = "btnGuardar";
             btnGuardar.Size = new Size(174, 40);
             btnGuardar.TabIndex = 13;
@@ -296,7 +297,7 @@
             // btnCancelar
             // 
             btnCancelar.Location = new Point(425, 849);
-            btnCancelar.Margin = new Padding(4, 4, 4, 4);
+            btnCancelar.Margin = new Padding(4);
             btnCancelar.Name = "btnCancelar";
             btnCancelar.Size = new Size(118, 36);
             btnCancelar.TabIndex = 14;
@@ -337,7 +338,7 @@
             Controls.Add(cmbCliente);
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "AgregarEditarPedidoForm";

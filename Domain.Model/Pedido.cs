@@ -156,13 +156,40 @@ namespace Domain.Model
             Modalidad = modalidad;
         }
 
-        public void SetEstado(EstadoPedido estado)
+        public void SetEstado(EstadoPedido nuevoEstado)
         {
-           
+            if (Estado == nuevoEstado) return;
+
             if (Estado == EstadoPedido.Cancelado || Estado == EstadoPedido.Entregado)
                 throw new InvalidOperationException("El pedido ya está en un estado final y no se puede modificar su estado.");
 
-            Estado = estado;
+            // Transiciones válidas permitidas (Delivery y Take Away)
+            bool esTransicionValida = (Estado, nuevoEstado) switch
+            {
+                // --- Flujo Take Away ---
+                (EstadoPedido.Pendiente, EstadoPedido.EnProceso) => true,
+                (EstadoPedido.EnProceso, EstadoPedido.Listo) => true,
+                (EstadoPedido.Listo, EstadoPedido.Entregado) => true,
+                (EstadoPedido.EnProceso, EstadoPedido.Cancelado) => true,
+                (EstadoPedido.Listo, EstadoPedido.Cancelado) => true,
+
+                // --- Flujo Delivery ---
+                (EstadoPedido.Pendiente, EstadoPedido.Asignado) => true,
+                (EstadoPedido.Asignado, EstadoPedido.EnCamino) => true,
+                (EstadoPedido.EnCamino, EstadoPedido.Entregado) => true,
+                (EstadoPedido.Asignado, EstadoPedido.Cancelado) => true,
+                (EstadoPedido.EnCamino, EstadoPedido.Cancelado) => true,
+
+                // --- Cancelación desde Pendiente ---
+                (EstadoPedido.Pendiente, EstadoPedido.Cancelado) => true,
+
+                _ => false
+            };
+
+            if (!esTransicionValida)
+                throw new InvalidOperationException($"No se permite cambiar el estado de {Estado} a {nuevoEstado}.");
+
+            Estado = nuevoEstado;
         }
 
         public void SetCalificacionPedido(int? calificacionPedido)
