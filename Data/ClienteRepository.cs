@@ -112,7 +112,7 @@ namespace Data
         public async Task<IEnumerable<Cliente>> GetByCriteriaAsync(ClienteCriteria criteria)
         {
                 const string sql = @"
-            SELECT Id, Nombre, Apellido, Email, Telefono, Password
+            SELECT Id, Nombre, Apellido, Email, Telefono, Password, Activo
             FROM Clientes
             WHERE Nombre LIKE @SearchTerm
                OR Apellido LIKE @SearchTerm
@@ -140,6 +140,8 @@ namespace Data
                     reader.GetString(reader.GetOrdinal("Telefono")),
                     reader.GetString(reader.GetOrdinal("Password"))
                 );
+                // Recuperar el estado 
+                cliente.SetActivo(reader.GetBoolean(reader.GetOrdinal("Activo")));
                 clientes.Add(cliente);
             }
 
