@@ -121,12 +121,12 @@ namespace WebAPI
 
                     if (esAdmin)
                     {
-                        // BAJA LÓGICA DE ADMIN: No valida clave, usa el nuevo método
+                        // BAJA LÃ“GICA DE ADMIN: No valida clave, usa el nuevo mÃ©todo
                         bajaLogicaExitosa = await clienteService.DeactivateByAdminAsync(id);
                     }
                     else
                     {
-                        // BAJA LÓGICA DE CLIENTE: Valida clave con tu método existente
+                        // BAJA LÃ“GICA DE CLIENTE: Valida clave con tu mÃ©todo existente
                         bajaLogicaExitosa = await clienteService.DeleteWithPasswordAsync(id, req.CurrentPassword);
                     }
 
@@ -139,7 +139,7 @@ namespace WebAPI
                 }
                 catch (InvalidOperationException ex)
                 {
-                    // Pedido en curso u otra restricción: devolver mensaje claro al cliente
+                    // Pedido en curso u otra restricciÃ³n: devolver mensaje claro al cliente
                     return Results.UnprocessableEntity(new { mensaje = ex.Message });
                 }
             })

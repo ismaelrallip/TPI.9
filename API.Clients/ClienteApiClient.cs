@@ -24,10 +24,10 @@ namespace API.Clients
                 }
 
                 return await response.Content.ReadFromJsonAsync<ClienteDTO>()
-                    ?? throw new InvalidOperationException("La respuesta del servidor no contiene un cliente v·lido.");
+                    ?? throw new InvalidOperationException("La respuesta del servidor no contiene un cliente v√°lido.");
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al obtener el cliente.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al obtener el cliente.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al obtener el cliente.", ex); }
         }
 
         public static async Task<IEnumerable<ClienteDTO>> GetAllAsync()
@@ -46,7 +46,7 @@ namespace API.Clients
                 return await response.Content.ReadFromJsonAsync<IEnumerable<ClienteDTO>>() ?? Enumerable.Empty<ClienteDTO>();
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al obtener los clientes.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al obtener los clientes.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al obtener los clientes.", ex); }
         }
 
         public static async Task AddAsync(ClienteDTO dto)
@@ -63,7 +63,7 @@ namespace API.Clients
                 }
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al crear el cliente.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al crear el cliente.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al crear el cliente.", ex); }
         }
 
         public static async Task UpdateAsync(ClienteDTO dto)
@@ -80,7 +80,7 @@ namespace API.Clients
                 }
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al actualizar el cliente.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al actualizar el cliente.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al actualizar el cliente.", ex); }
         }
 
        
@@ -101,7 +101,7 @@ namespace API.Clients
                 return await response.Content.ReadFromJsonAsync<IEnumerable<ClienteDTO>>() ?? Enumerable.Empty<ClienteDTO>();
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al buscar clientes.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al buscar clientes.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al buscar clientes.", ex); }
         }
 
         public static async Task RegisterAsync(ClienteDTO dto)
@@ -119,7 +119,7 @@ namespace API.Clients
                 }
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al registrar el cliente.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al registrar el cliente.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al registrar el cliente.", ex); }
         }
 
         public static async Task ChangePasswordAsync(int id, DTOs.ChangePasswordRequest req)
@@ -132,11 +132,11 @@ namespace API.Clients
                 if (!response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"Error al cambiar la contraseÒa. Status: {response.StatusCode}. Detalle: {content}");
+                    throw new Exception($"Error al cambiar la contrase√±a. Status: {response.StatusCode}. Detalle: {content}");
                 }
             }
-            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al cambiar la contraseÒa.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al cambiar la contraseÒa.", ex); }
+            catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al cambiar la contrase√±a.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al cambiar la contrase√±a.", ex); }
         }
 
         public static async Task DeleteWithPasswordAsync(int id, DTOs.DeleteAccountRequest req)
@@ -171,7 +171,7 @@ namespace API.Clients
                 }
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al eliminar la cuenta.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al eliminar la cuenta.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al eliminar la cuenta.", ex); }
         }
         public static async Task DeactivateAsync(int id)
         {
@@ -209,7 +209,7 @@ namespace API.Clients
                 }
             }
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al dar de baja la cuenta.", ex); }
-            catch (TaskCanceledException ex) { throw new Exception("La API tardÛ demasiado en responder al dar de baja la cuenta.", ex); }
+            catch (TaskCanceledException ex) { throw new Exception("La API tard√≥ demasiado en responder al dar de baja la cuenta.", ex); }
         }
     }
 }
