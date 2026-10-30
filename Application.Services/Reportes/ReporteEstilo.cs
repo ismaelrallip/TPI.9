@@ -4,7 +4,7 @@ using QuestPDF.Infrastructure;
 using System;
 using System.Globalization;
 
-namespace Domain.Model.Reportes.Admin
+namespace Application.Services.Reportes
 {
     internal static class ReporteEstilo
     {

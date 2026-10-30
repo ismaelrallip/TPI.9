@@ -1,7 +1,6 @@
-﻿
-using System;
+﻿using System;
 
-namespace Application.Services
+namespace Blazor.Server
 {
     public class NotificatorService
     {

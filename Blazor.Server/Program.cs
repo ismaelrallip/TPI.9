@@ -1,7 +1,6 @@
 
 using API.Clients;
 using API.Auth.Blazor.Server;
-using Application.Services;
 using Blazor.Server.Components;
 using Blazor.Server;
 using Microsoft.AspNetCore.Authentication;

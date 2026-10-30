@@ -1,4 +1,5 @@
-﻿using QuestPDF.Fluent;
+﻿using Domain.Model.Reportes.Admin;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using ScottPlot;
@@ -6,28 +7,8 @@ using System;
 using System.Collections.Generic;
 using Colors = QuestPDF.Helpers.Colors;
 
-namespace Domain.Model.Reportes.Admin
+namespace Application.Services.Reportes
 {
-    public record PedidoReporteFila(
-        int Id,
-        DateTime Fecha,
-        string Cliente,
-        string Modalidad,
-        string Estado,
-        string Delivery,
-        int? CalificacionPedido,
-        decimal Total);
-
-    public record PedidosReporteData(
-        DateTime GeneradoEl,
-        string Filtros,
-        IReadOnlyList<PedidoReporteFila> Filas,
-        int CantidadPedidos,
-        decimal MontoTotal,
-        double? PromedioCalificacion,
-        int CantidadDelivery,
-        int CantidadTakeAway);
-
     public class PedidosReporteDocument : IDocument
     {
         private readonly PedidosReporteData _data;

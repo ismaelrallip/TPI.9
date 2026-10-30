@@ -1,33 +1,12 @@
-﻿using QuestPDF.Fluent;
+﻿using Domain.Model.Reportes.Admin;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System;
 using System.Collections.Generic;
 
-namespace Domain.Model.Reportes.Admin
+namespace Application.Services.Reportes
 {
-    public record DeliveryReporteFila(
-        int PedidoId,
-        DateTime Fecha,
-        string Cliente,
-        string Direccion,
-        string Estado,
-        int? CalificacionDelivery,
-        decimal Total);
-
-    public record DeliveryReporteData(
-        DateTime GeneradoEl,
-        string Filtros,
-        string DeliveryNombre,
-        string Telefono,
-        int Dni,
-        IReadOnlyList<DeliveryReporteFila> Filas,
-        int TotalPedidos,
-        int Entregados,
-        int Cancelados,
-        decimal MontoEntregado,
-        double? PromedioCalificacion);
-
     public class DeliveryReporteDocument : IDocument
     {
         private readonly DeliveryReporteData _data;
