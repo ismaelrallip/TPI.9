@@ -155,6 +155,41 @@
     </div>
 }
 
+
+@* ==========================================
+   MODAL: CONFIRMAR ELIMINACIÓN (ingrediente en uso)
+   ========================================== *@
+@if (mostrarModalConfirmarEliminar)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title text-warning">⚠ Advertencia</h5>
+                    <button type="button" class="btn-close" @onclick="CancelarConfirmacion" disabled="@guardando"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Este ingrediente está siendo utilizado en una o más hamburguesas.</p>
+                    <p>Si lo eliminás, también se quitará de esas hamburguesas.</p>
+                    <p class="fw-bold mb-0">¿Estás seguro de que querés eliminarlo?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelarConfirmacion" disabled="@guardando">
+                        No
+                    </button>
+                    <button type="button" class="btn btn-danger fw-bold" @onclick="EjecutarEliminacion" disabled="@guardando">
+                        @if (guardando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Sí, eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<IngredienteDTO> listaIngredientes = new();
     private IngredienteDTO? ingredienteSeleccionado;
@@ -167,6 +202,7 @@
     private bool esEdicion;
     private bool guardando;
     private string? errorModal;
+    private bool mostrarModalConfirmarEliminar;
 
     // Campos del formulario
     private string formNombre = string.Empty;
@@ -253,6 +289,7 @@
     private void CerrarModales()
     {
         mostrarModalFormulario = false;
+        mostrarModalConfirmarEliminar = false;
         errorModal = null;
     }
 
@@ -321,9 +358,17 @@
 
         try
         {
-            await IngredienteApiClient.DeleteAsync(ingredienteSeleccionado.Id);
-            CerrarModales();
-            await CargarIngredientes();
+            bool estaEnUso = await IngredienteApiClient.EstaEnUsoAsync(ingredienteSeleccionado.Id);
+
+            if (estaEnUso)
+            {
+                // Igual que el MessageBox del WinForm: pedir confirmación
+                mostrarModalConfirmarEliminar = true;
+                return;   // el finally apaga "guardando"
+            }
+
+            // No está en uso: se elimina directamente (igual que en WinForms)
+            await EliminarYRecargar();
         }
         catch (Exception ex)
         {
@@ -333,5 +378,42 @@
         {
             guardando = false;
         }
+    }
+
+    // Botón "Sí, eliminar" del modal de confirmación
+    private async Task EjecutarEliminacion()
+    {
+        if (ingredienteSeleccionado == null) return;
+
+        guardando = true;
+        errorModal = null;
+
+        try
+        {
+            await EliminarYRecargar();
+        }
+        catch (Exception ex)
+        {
+            // Se vuelve al modal del formulario, donde se muestra el error
+            mostrarModalConfirmarEliminar = false;
+            errorModal = $"Error al eliminar el ingrediente: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private void CancelarConfirmacion()
+    {
+        mostrarModalConfirmarEliminar = false;
+    }
+
+    private async Task EliminarYRecargar()
+    {
+        await IngredienteApiClient.DeleteAsync(ingredienteSeleccionado!.Id);
+        mostrarModalConfirmarEliminar = false;
+        CerrarModales();
+        await CargarIngredientes();
     }
 }
