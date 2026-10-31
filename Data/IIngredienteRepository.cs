@@ -10,5 +10,6 @@ namespace Data
         Task<IEnumerable<Ingrediente>> GetAllAsync();
         Task<IEnumerable<Ingrediente>> GetByCriteriaAsync(string texto);
         Task<bool> UpdateAsync(Ingrediente ingrediente);
+        Task<bool> EstaEnUsoAsync(int id);
     }
 }

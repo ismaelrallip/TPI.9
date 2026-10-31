@@ -79,6 +79,24 @@ namespace WebAPI
             .Produces(StatusCodes.Status404NotFound)
             .RequireAuthorization("AdminOnly")
             .WithOpenApi();
+
+            group.MapGet("/{id:int}/en-uso", async (int id, IIngredienteService svc) =>
+            {
+                var ingrediente = await svc.GetAsync(id);
+
+                if (ingrediente == null)
+                    return Results.NotFound();
+
+                bool estaEnUso = await svc.EstaEnUsoAsync(id);
+
+                return Results.Ok(estaEnUso);
+            })
+            .WithName("GetIngredienteEnUso")
+            .Produces<bool>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .RequireAuthorization("AdminOnly")
+            .WithOpenApi();
+            
         }
     }
 }

@@ -73,6 +73,21 @@ namespace WindowsForms
         {
             try
             {
+                bool estaEnUso = await IngredienteApiClient.EstaEnUsoAsync(_ingrediente.Id);
+
+                if (estaEnUso)
+                {
+                    DialogResult resultado = MessageBox.Show(
+                    "Este ingrediente está siendo utilizado en una o más hamburguesas.\n\n" +
+                    "Si lo eliminás, también se quitará de esas hamburguesas.\n\n" +
+                    "¿Estás seguro de que querés eliminarlo?",
+                    "Advertencia",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                    if (resultado != DialogResult.Yes)
+                        return;
+                }
                 await IngredienteApiClient.DeleteAsync(_ingrediente.Id);
                 this.DialogResult = DialogResult.OK;
                 this.Close();

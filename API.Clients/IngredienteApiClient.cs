@@ -114,5 +114,33 @@ namespace API.Clients
             catch (HttpRequestException ex) { throw new Exception("No se pudo conectar con la API al eliminar el ingrediente.", ex); }
             catch (TaskCanceledException ex) { throw new Exception("La API tardó demasiado en responder al eliminar el ingrediente.", ex); }
         }
+
+        public static async Task<bool> EstaEnUsoAsync(int id)
+        {
+            try
+            {
+                using var client = await CreateHttpClientAsync();
+
+                var response = await client.GetAsync($"ingredientes/{id}/en-uso");
+
+                await HandleAuthorizationAsync(response);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al comprobar si el ingrediente {id} está en uso. " + $"Status: {response.StatusCode}. Detalle: {content}");
+                }
+
+                return await response.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception("No se pudo conectar con la API al comprobar el ingrediente.", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                throw new Exception("La API tardó demasiado en responder al comprobar el ingrediente.", ex);
+            }
+        }
     }
 }

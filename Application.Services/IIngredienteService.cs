@@ -15,5 +15,6 @@ namespace Application.Services
         Task<IEnumerable<IngredienteDTO>> GetAllAsync();
         Task<IEnumerable<IngredienteDTO>> GetByCriteriaAsync(string texto);
         Task<bool> UpdateAsync(IngredienteDTO dto);
+        Task<bool> EstaEnUsoAsync(int id);
     }
 }

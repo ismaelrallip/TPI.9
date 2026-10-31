@@ -72,7 +72,7 @@ namespace WindowsForms
 
         private void ConfigurarGrilla()
         {
-            dataGridViewPedidos.AutoGenerateColumns = true;
+            dataGridViewPedidos.AutoGenerateColumns = false;
             dataGridViewPedidos.ReadOnly = true;
             dataGridViewPedidos.AllowUserToAddRows = false;
             dataGridViewPedidos.AllowUserToDeleteRows = false;

@@ -1,5 +1,6 @@
 ﻿using Domain.Model;
 using Microsoft.EntityFrameworkCore;
+using SkiaSharp;
 
 namespace Data
 {
@@ -64,6 +65,12 @@ namespace Data
             context.Ingredientes.Update(existingIngrediente);
             await context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> EstaEnUsoAsync(int ingredienteId)
+        {
+            return await context.Hamburguesas
+                .AnyAsync(h => h.Ingredientes.Any(i => i.Id == ingredienteId));
         }
     }
 }

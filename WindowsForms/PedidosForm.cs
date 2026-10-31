@@ -445,7 +445,7 @@ namespace WindowsForms
             else
             {
                 using var form = new AgregarEditarPedidoForm(pedidoSeleccionado);
-                if (form.ShowDialog() == DialogResult.OK)
+                if (form.ShowDialog(this) == DialogResult.OK)
                 {
                     await LoadPedidos(idPedido);
                 }

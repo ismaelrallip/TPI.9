@@ -77,5 +77,10 @@ namespace Application.Services
             Ingrediente ingrediente = new Ingrediente(dto.Id, dto.Nombre, dto.Descripcion, dto.Stock);
             return await ingredienteRepository.UpdateAsync(ingrediente);
         }
+
+        public async Task<bool> EstaEnUsoAsync(int id)
+        {
+            return await ingredienteRepository.EstaEnUsoAsync(id);
+        }
     }
 }
