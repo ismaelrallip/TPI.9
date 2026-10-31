@@ -13,7 +13,8 @@ builder.Services.AddRazorComponents()
 
 // Autenticacion de la catedra activa
 // un servicio por circuito/navegador
-builder.Services.AddScoped<API.Clients.IAuthService, BlazorServerAuthService>();
+builder.Services.AddScoped<BlazorServerAuthService>();
+builder.Services.AddScoped<IAuthService>(sp => sp.GetRequiredService<BlazorServerAuthService>());
 builder.Services.AddScoped<AuthenticationStateProvider, BlazorAuthenticationStateProvider>();
 
 // permite que los ApiClients (estaticos) lleguen al servicio de autenticacion del circuito actual
@@ -29,7 +30,7 @@ var app = builder.Build();
 
 // ya no se registra una instancia global. Los ApiClients piden el servicio del circuito del usuario actual.
 AuthServiceProvider.RegisterResolver(
-    () => CircuitServicesAccessor.Current?.GetService<API.Clients.IAuthService>());
+    () => CircuitServicesAccessor.Current?.GetService<IAuthService>());
 
 if (!app.Environment.IsDevelopment())
 {
@@ -46,6 +47,7 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode()
+    .AllowAnonymous();   // la autorización real la hace el circuito (AuthorizeRouteView)
 
 app.Run();

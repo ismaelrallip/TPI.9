@@ -120,7 +120,7 @@ namespace API.Auth.Blazor.Server
         }
 
        
-        public async Task CargarSesionGuardadaAsync()
+        public async Task<bool> CargarSesionGuardadaAsync()
         {
             try
             {
@@ -139,11 +139,21 @@ namespace API.Auth.Blazor.Server
                         await LogoutAsync();
                     }
                 }
+                return true;                      // se pudo leer el storage (haya o no sesión)
+            }
+            catch (InvalidOperationException)
+            {
+                return false;                     // JS todavía no disponible: reintentar luego
             }
             catch
             {
-                // Si ocurre un error leyendo el LocalStorage (ej. datos corruptos), se ignora y queda deslogueado
+                return true;                      // datos corruptos: se trata como "sin sesión"
             }
+        }
+
+        Task IAuthService.CargarSesionGuardadaAsync()
+        {
+            return CargarSesionGuardadaAsync();
         }
     }
 }

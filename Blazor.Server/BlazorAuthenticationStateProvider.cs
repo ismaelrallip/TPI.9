@@ -1,49 +1,47 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using API.Auth.Blazor.Server;
 using API.Clients;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Blazor.Server
 {
     public sealed class BlazorAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private readonly IAuthService authService;
+        private readonly BlazorServerAuthService authService;
+        private bool sesionRestaurada;
 
         public BlazorAuthenticationStateProvider(IAuthService authService)
         {
-            this.authService = authService;
-            this.authService.AuthenticationStateChanged += OnAuthenticationStateChanged;
+            this.authService = (BlazorServerAuthService?)authService;
+            this.authService.AuthenticationStateChanged += _ =>
+                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
+            // Primera vez en este circuito: intentar recuperar la sesión del navegador
+            if (authService.CurrentSession == null && !sesionRestaurada)
+            {
+                sesionRestaurada = await authService.CargarSesionGuardadaAsync();
+            }
+
             var session = authService.CurrentSession;
             if (session == null || string.IsNullOrWhiteSpace(session.Token) || DateTime.UtcNow >= session.ExpiresAt)
-            {
-                return Task.FromResult(AnonymousState());
-            }
+                return AnonymousState();
 
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadJwtToken(session.Token);
-                var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
-                return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
+                var jwt = new JwtSecurityTokenHandler().ReadJwtToken(session.Token);
+                var identity = new ClaimsIdentity(jwt.Claims, "jwt");
+                return new AuthenticationState(new ClaimsPrincipal(identity));
             }
             catch
             {
-                return Task.FromResult(AnonymousState());
+                return AnonymousState();
             }
         }
 
-        private void OnAuthenticationStateChanged(bool isAuthenticated)
-        {
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-        }
-
-        private static AuthenticationState AnonymousState()
-        {
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-        }
+        private static AuthenticationState AnonymousState() =>  new(new ClaimsPrincipal(new ClaimsIdentity()));
     }
 }
