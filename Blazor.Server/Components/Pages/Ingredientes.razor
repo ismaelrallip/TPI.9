@@ -99,7 +99,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow">
                 <div class="modal-header">
-                    <h5 class="modal-title">@(esEdicion ? "ActualizarIngredienteForm" : "AgregarIngredienteForm")</h5>
+                    <h5 class="modal-title">@(esEdicion ? "Actualizar Ingrediente" : "Agregar Ingrediente")</h5>
                     <button type="button" class="btn-close" @onclick="CerrarModales"></button>
                 </div>
                 <div class="modal-body">
@@ -362,12 +362,10 @@
 
             if (estaEnUso)
             {
-                // Igual que el MessageBox del WinForm: pedir confirmación
                 mostrarModalConfirmarEliminar = true;
-                return;   // el finally apaga "guardando"
+                return; 
             }
 
-            // No está en uso: se elimina directamente (igual que en WinForms)
             await EliminarYRecargar();
         }
         catch (Exception ex)
@@ -394,7 +392,6 @@
         }
         catch (Exception ex)
         {
-            // Se vuelve al modal del formulario, donde se muestra el error
             mostrarModalConfirmarEliminar = false;
             errorModal = $"Error al eliminar el ingrediente: {ex.Message}";
         }
